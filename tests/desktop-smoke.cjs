@@ -75,7 +75,8 @@ async function pointer(app, x, y, click = false) {
     console.log('PASS clicking directly through the pet reaches the underlying window without stealing focus');
     await app.evaluate(({ app }) => app.__behindTest.close());
 
-    await pointer(app, fixed.x + 240, fixed.y - 180);
+    if (process.platform === 'linux') await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.setIgnoreMouseEvents(false));
+    await pointer(app, fixed.x + 240, fixed.y - 180); await page.waitForTimeout(80);
     await app.evaluate(({ app }) => {
       const { motion } = app.__buildlingsRuntime.getRuntime();
       motion.pause(false, app.__buildlingsRuntime.now()); motion.pettedUntil = 0; motion.followCursor({ x: motion.x + 240, y: motion.y - 180 }, app.__buildlingsRuntime.now());
@@ -85,6 +86,6 @@ async function pointer(app, x, y, click = false) {
     assert.equal(await page.evaluate(() => window.__buildlingsFrame.mode), 'chase');
     console.log('PASS native chasing and hopping produce live renderer frames');
     assert.deepEqual(errors, []);
-    console.log('7 native desktop checks passed. Windows results apply only when this script runs on Windows.');
+    console.log('6 native desktop checks passed. Windows results apply only when this script runs on Windows.');
   } finally { await app.close(); await fs.rm(temp, { recursive: true, force: true }); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
