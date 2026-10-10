@@ -1,8 +1,8 @@
-# 3D desktop preview validation — 0.3.0
+# 3D desktop preview validation — 0.3.1
 
-Release: [desktop-preview-3](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-3)
+Release: [desktop-preview-4](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-4)
 
-[Windows workflow run](https://github.com/prachetas2003/Trial/actions/runs/38092827778)
+[Windows workflow run](https://github.com/prachetas2003/Trial/actions/runs/38093153606)
 passed on GitHub's `windows-latest` runner, with fresh dependency installation,
 38 core/motion/server checks and 8 native desktop checks. The native checks
 verify genuine WebGL 2 rendering with thousands of triangles, transparent
@@ -13,8 +13,9 @@ articulated reaching gesture. Native JavaScript error checks also passed.
 
 Cloud browser validation passed 16 browser-companion checks and 9 3D
 playground checks, including flexible-ear rendering, fractional transforms,
-happy pose blending, 3D particles, reaching and recovery, anticipation and
-landing, motion switches, resizing, and absence of external asset requests.
+happy pose blending, 3D particles, smooth reaching interruption during petting,
+anticipation and landing, motion switches, resizing, and absence of external
+asset requests.
 
 The motion model follows equivalent trajectories at 30, 60, 120, and 144 Hz
 within a 1.5-pixel test tolerance. That verifies timing independence; it does
@@ -29,9 +30,9 @@ Windows 10/11 x64 is the supported release target. WebGL 2 support is required.
 The published ZIP was downloaded back from GitHub and checked for checksum,
 archive integrity, versioned README, and packaged source matching the verified
 desktop code and local Three.js modules (normalizing Windows line endings).
-Archive size: 163,315,116 bytes.
+Archive size: 163,315,284 bytes.
 
-Published SHA-256: `5fd0ad4cc528588229570d7a6b0f1891081d0f167b298c09a2265b09020ee34a`
+Published SHA-256: `7de6e5b8056eba92989c90c77f04fd894b4c4ad98eae498439f30e3211a57026`
 
 The app is unsigned. Individual physical PCs, graphics drivers, battery
 consumption, and mixed-DPI multi-monitor setups still need manual profiling.
