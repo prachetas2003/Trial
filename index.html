@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f5ef">
+  <meta name="description" content="A tiny companion for big little builds. Keep a Buildling beside you, celebrate shipping, and collect new friends.">
+  <title>Buildlings — Tiny friends. Big little builds.</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="app.css">
+  <script src="core.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to companion</a>
+  <div class="app-shell">
+    <header class="header">
+      <a href="./" class="brand" aria-label="Buildlings home"><span class="brand-mark" aria-hidden="true">b.</span><span>buildlings<span class="brand-dot">✳</span></span></a>
+      <nav aria-label="Main navigation"><a href="#collection">Your collection</a><button class="text-button" id="about-button">What is this?</button><span class="preview-badge">PLAYABLE PREVIEW</span></nav>
+    </header>
+    <main id="main">
+      <div class="page-heading"><div><p class="eyebrow"><span></span> A LITTLE COMPANY WHILE YOU CREATE</p><h1>Tiny friends.<br><span>Big little builds.</span></h1></div><p>Your agent has a job.<br>Now your desk has a little soul.</p></div>
+      <div class="workspace">
+        <section class="companion-panel" aria-label="Your companion">
+          <div class="panel-top"><span class="section-label">YOUR DESKMATE</span><button class="pill-button" id="float-button"><span aria-hidden="true">▣</span> Float beside my work</button></div>
+          <div class="pet-stage" id="pet-stage">
+            <span class="stage-spark s1" aria-hidden="true">✧</span><span class="stage-spark s2" aria-hidden="true">✦</span><span class="stage-spark s3" aria-hidden="true">+</span>
+            <div class="speech-bubble" id="pet-message" aria-live="polite">Oh hi. Shall we make something?</div>
+            <button id="pet-button" class="pet-button" aria-label="Give Sprout a little boop"><span id="pet-art" aria-hidden="true"></span></button>
+            <div class="pet-shadow" aria-hidden="true"></div>
+            <div class="floor-line" aria-hidden="true"></div>
+            <span class="corner-note">small friend, big feelings.</span>
+            <div class="confetti-layer" id="confetti" aria-hidden="true"></div>
+          </div>
+          <div class="pet-name-row"><div><h2 id="pet-name">Sprout <span>✳</span></h2><p id="pet-description">A little green optimist. Believes in your next commit.</p></div><span class="mood-badge" id="mood-badge"><span></span> Just vibing</span></div>
+          <div class="progress-row"><span id="next-friend-label">1 shipped build until your next friend</span><span id="build-count">0 shipped</span></div><div class="collection-progress" role="progressbar" aria-label="Progress toward next companion" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0"><span id="collection-progress-fill"></span></div>
+          <p class="float-note" id="float-status" role="status"></p>
+        </section>
+        <aside class="right-column">
+          <section class="session-card" aria-labelledby="session-title"><div class="card-heading"><span class="section-label">ONE LITTLE BUILD</span><span class="card-icon" aria-hidden="true">→</span></div><h2 id="session-title">Let’s make a thing.</h2><p class="card-copy">Something small counts. A fixed bug.<br>A first screen. A very good button.</p>
+            <form id="session-form"><label for="build-title">What are you making?</label><input id="build-title" name="title" maxlength="80" placeholder="My next little idea…" autocomplete="off"><fieldset id="duration-options"><legend>Keep me company for</legend><div class="duration-buttons"><label><input type="radio" name="duration" value="5" checked><span>5 min</span></label><label><input type="radio" name="duration" value="15"><span>15 min</span></label><label><input type="radio" name="duration" value="25"><span>25 min</span></label></div></fieldset><button type="submit" class="button primary full" id="start-button">Start a little build <span aria-hidden="true">→</span></button></form>
+            <div class="active-session" id="active-session" hidden><span class="timer-label" id="active-title"></span><div class="timer" id="timer" role="timer" aria-label="Build time remaining">05:00</div><div class="timer-track"><span id="timer-progress"></span></div><div class="session-actions"><button class="button secondary" id="pause-button">Pause</button><button class="button primary" id="ship-button">I shipped it! <span aria-hidden="true">✦</span></button></div><button class="quiet-button" id="end-button">End without a celebration</button></div>
+            <button class="demo-button" id="demo-button">Just looking? Try a 20-second build <span aria-hidden="true">→</span></button><p class="session-note" id="session-status" role="status">You mark a build as shipped. No agent connection required.</p>
+          </section>
+          <section class="share-card"><div class="share-mini" id="share-mini" aria-hidden="true"></div><div><p class="eyebrow">MADE SOMETHING?</p><h3>Take your friend<br>along for the brag.</h3><button class="text-button" id="share-button">Make a share card <span aria-hidden="true">→</span></button></div></section>
+        </aside>
+      </div>
+      <section class="collection-section" id="collection"><div class="section-heading"><div><p class="eyebrow">YOUR SMALL, EXCELLENT FRIEND GROUP</p><h2>The collection.</h2></div><p>Ship little things. Meet little friends.</p></div><div class="collection-grid" id="collection-grid"></div></section>
+      <section class="build-log"><div class="log-heading"><h2>Little things you shipped.</h2><span class="local-label"><span aria-hidden="true">◉</span> Saved on this device</span></div><div id="build-log"></div></section>
+      <div class="bottom-note"><span aria-hidden="true">✳</span><p>Good company costs zero AI tokens.<br><span>No API keys. No tracking. Your build titles stay in this browser.</span></p></div>
+    </main>
+    <div class="pack-tools"><span id="pack-label">Classic companion colours</span><button class="text-button" id="pack-button">Add a colour pack</button><button class="text-button" id="classic-button" hidden>Use classic colours</button><input type="file" id="pack-file" accept="application/json,.json" hidden></div>
+    <footer><span>buildlings <span aria-hidden="true">✳</span> tiny friends for people who make things.</span><div><button class="text-button" id="backup-button">Save progress backup</button><button class="text-button" id="restore-button">Restore backup</button><input type="file" id="restore-file" accept="application/json,.json" hidden><button class="text-button" id="sound-button" aria-pressed="false">Sound off</button></div></footer>
+    <p class="global-status" id="global-status" role="status"></p>
+  </div>
+  <dialog id="about-dialog"><button class="dialog-close" data-close aria-label="Close information">×</button><p class="eyebrow">MEET YOUR BUILDLING</p><h2>A tiny friend.<br>A reason to <em>finish.</em></h2><p>Start a build and your companion will keep you company. Mark it as shipped to celebrate and unlock more friends. The timer is encouragement, not a test.</p><p>On desktop Chrome or Edge, “Float beside my work” opens a small window that stays above your other windows. Other browsers can use the companion here.</p><p>This is a free, playable prototype. It does not read your editor, agent activity, code, or token usage. Builds are self-reported, and progress is stored in this browser. No purchases are enabled.</p><button class="button primary" data-close>Let’s make something →</button></dialog>
+  <dialog id="share-dialog"><button class="dialog-close" data-close aria-label="Close share card">×</button><p class="eyebrow">A LITTLE PROOF OF MAKING</p><h2>Good things<br>come in <em>small builds.</em></h2><canvas id="share-canvas" width="1200" height="800" aria-label="Your companion and shipped-build count"></canvas><p class="share-note">Your build titles are left off the card. Download the image and share it wherever you like.</p><button class="button primary full" id="download-card">Download my card <span aria-hidden="true">↓</span></button><p id="download-status" role="status"></p></dialog>
+</body>
+</html>
