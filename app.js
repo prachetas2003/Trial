@@ -4,7 +4,6 @@ const KEY = 'buildlings.progress.v1';
 const $ = selector => document.querySelector(selector);
 let state = initialState();
 let storageAvailable = true;
-let pipWindow = null;
 let celebrationUntil = 0;
 let petMessageUntil = 0;
 let petMessage = '';
@@ -81,7 +80,6 @@ function render() {
   $('#classic-button').hidden = !state.pack;
   renderCollection();
   renderLog();
-  renderPip();
 }
 
 function renderCollection() {
@@ -231,36 +229,6 @@ async function drawShareCard() {
 $('#share-button').addEventListener('click', async () => { $('#share-dialog').showModal(); $('#download-card').disabled = true; try { await drawShareCard(); $('#download-card').disabled = false; } catch { $('#download-status').textContent = 'The image could not be prepared. Close this window and try again.'; } });
 $('#download-card').addEventListener('click', () => { $('#share-canvas').toBlob(blob => { if (blob) { download(blob, `buildlings-${currentPet().id}-${state.shipped}.png`); $('#download-status').textContent = 'Card prepared for download. No image was posted or uploaded.'; } else { $('#download-status').textContent = 'Download unavailable. Please try again.'; } }, 'image/png'); });
 
-function renderPip() {
-  if (!pipWindow || pipWindow.closed) return;
-  const doc = pipWindow.document; const pet = currentPet();
-  updatePetArt(doc.querySelector('#pip-art'), pet, mood());
-  doc.querySelector('#pip-message').textContent = message();
-  doc.querySelector('#pip-name').textContent = `${pet.name} ${pet.symbol}`;
-  doc.querySelector('#pip-status').textContent = state.session ? `${state.session.status === 'paused' ? 'Paused · ' : ''}${timeText(remainingTime(state.session, Date.now()))}` : `${state.shipped} little builds shipped`;
-  doc.querySelector('#pip-action').textContent = state.session ? 'I shipped it! ✦' : 'Start a 5-min build →';
-  doc.querySelector('.pip-body').dataset.mood = mood();
-}
-$('#float-button').addEventListener('click', async () => {
-  if (!('documentPictureInPicture' in window)) { $('#float-status').textContent = 'Floating companions need desktop Chrome or Edge. Your friend can stay here in this browser.'; return; }
-  try {
-    if (pipWindow && !pipWindow.closed) { pipWindow.focus(); return; }
-    pipWindow = await window.documentPictureInPicture.requestWindow({ width: 310, height: 380 });
-    const doc = pipWindow.document;
-    doc.title = 'Buildlings companion';
-    const style = doc.createElement('style');
-    style.textContent = [...document.styleSheets].map(sheet => [...sheet.cssRules].map(rule => rule.cssText).join('\n')).join('\n');
-    doc.head.append(style);
-    doc.body.className = 'pip-body';
-    doc.body.innerHTML = '<div class="pip-header"><span>buildlings ✳</span><span id="pip-status"></span></div><p id="pip-message" class="pip-message"></p><button id="pip-art" class="pet-button" aria-label="Boop your companion"></button><p id="pip-name"></p><button id="pip-action" class="button primary full"></button>';
-    doc.querySelector('#pip-action').addEventListener('click', () => state.session ? ship() : start('A little thing', 300000));
-    doc.querySelector('#pip-art').addEventListener('click', () => { say('Tiny window. Enormous moral support.'); render(); });
-    pipWindow.addEventListener('pagehide', () => { pipWindow = null; $('#float-status').textContent = 'Your floating window is closed. Your progress stays here.'; });
-    $('#float-status').textContent = 'Your friend is floating. Keep this main tab open; closing it closes the companion.';
-    renderPip();
-  } catch { $('#float-status').textContent = 'The floating window could not open. Try again from a desktop Chrome or Edge tab.'; }
-});
-
 window.addEventListener('storage', event => {
   if (event.key !== KEY) return;
   try { state = event.newValue ? validateState(JSON.parse(event.newValue)) : initialState(); render(); }
@@ -274,7 +242,6 @@ setInterval(() => {
   const m = mood(); $('#pet-stage').dataset.mood = m; updatePetArt($('#pet-art'), currentPet(), m); $('#pet-message').textContent = message();
   $('#mood-badge').replaceChildren(Object.assign(document.createElement('span'), { className: 'mood-dot' }), document.createTextNode({ idle: 'Just vibing', building: 'Making a thing', ready: 'Ready to celebrate', celebrate: 'Proud of you' }[m]));
   if (state.session?.status === 'ready') $('#session-title').textContent = 'A little moment to celebrate.';
-  renderPip();
 }, 500);
 
 state = tick(state, Date.now());
