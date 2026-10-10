@@ -3,22 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <meta name="description" content="Try Buildlings’ wandering, jumping desktop-pet mechanics in an interactive browser preview.">
-  <title>Buildlings — Movement playground</title>
-  <link rel="stylesheet" href="assets/renderer.css">
-  <link rel="stylesheet" href="preview.css">
-  <script src="assets/core.js" defer></script>
-  <script src="assets/motion.js" defer></script>
-  <script src="assets/art.js" defer></script>
-  <script src="bridge.js" defer></script>
-  <script src="assets/renderer.js" defer></script>
+  <title>Buildlings — 3D movement playground</title>
+  <link rel="stylesheet" href="assets/renderer.css?v=0.3.0">
+  <link rel="stylesheet" href="preview.css?v=0.3.0">
+  <script src="assets/core.js?v=0.3.0" defer></script>
+  <script src="assets/motion.js?v=0.3.0" defer></script>
+  <script src="assets/art.js?v=0.3.0" defer></script>
+  <script src="bridge.js?v=0.3.0" defer></script>
+  <script type="module" src="assets/renderer.js?v=0.3.0"></script>
 </head>
 <body class="preview-body">
   <header><a href="../" class="brand">buildlings <span>✳</span></a><a href="https://github.com/prachetas2003/Trial/releases/download/desktop-preview-1/Buildlings-Windows-x64.zip" class="download-link">Download for Windows ↓</a></header>
-  <main><p class="eyebrow">MOVEMENT PLAYGROUND</p><h1>A little friend.<br><em>Off the leash.</em></h1><p class="intro">Let it wander. Move your cursor nearby.<br>Stroke its head for a little sparkle.</p><p class="scope-note">This preview roams inside this browser page.<br>The Windows app roams over your desktop.</p><p class="scope-note">Windows 10/11 · 64-bit · 155 MB<br>Extract the ZIP, then open Buildlings.exe.<br>Unsigned preview. <a href="https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-1" style="text-decoration:underline">Release details</a></p></main>
+  <main><p class="eyebrow">3D MOVEMENT PLAYGROUND</p><h1>A little friend.<br><em>Off the leash.</em></h1><p class="intro">Let it wander. Move your cursor nearby.<br>Stroke its head for a little sparkle.<br>A real 3D friend, with a little extra soul.</p><p class="scope-note">This preview roams inside this browser page.<br>The Windows app roams over your desktop.</p><p class="scope-note">Windows 10/11 · 64-bit · 155 MB<br>Extract the ZIP, then open Buildlings.exe.<br>Unsigned preview. <a href="https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-1" style="text-decoration:underline">Release details</a></p></main>
   <div class="background-spark" aria-hidden="true">✧</div>
-  <div id="companion-host"><div id="shadow" aria-hidden="true"></div><div id="pet-space"><div id="pet" aria-label="Your roaming companion"></div></div><div id="particles" aria-hidden="true"></div></div>
-  <section class="controls" aria-label="Companion controls"><span class="controls-label">YOUR LITTLE DESKMATE</span><div class="pet-options"><button data-pet="sprout" aria-pressed="true">Sprout</button><button data-pet="ember" aria-pressed="false">Ember</button><button data-pet="orbit" aria-pressed="false">Orbit</button></div><div class="actions"><button id="pause">Pause wandering</button><button id="call">Call your pet</button></div><label><input type="checkbox" id="chasing" checked> Occasionally chase my cursor</label><label><input type="checkbox" id="hopping" checked> Playful jumps</label><p id="status" role="status">Curious, autonomous, and happy to see you.</p></section>
-  <script src="preview.js" defer></script>
+  <div id="companion-host" aria-label="Your 3D desktop companion"></div>
+  <section class="controls" aria-label="Companion controls"><span class="controls-label">YOUR LITTLE DESKMATE</span><div class="pet-options"><button data-pet="sprout" aria-pressed="true">Sprout</button><button data-pet="ember" aria-pressed="false">Ember</button><button data-pet="orbit" aria-pressed="false">Orbit</button></div><div class="actions"><button id="pause">Pause wandering</button><button id="call">Call your pet</button></div><div class="actions"><button id="hello">Say hello</button><button id="jump">Try a jump</button></div><label><input type="checkbox" id="chasing" checked> Occasionally chase my cursor</label><label><input type="checkbox" id="hopping" checked> Playful jumps</label><p id="status" role="status">Curious, autonomous, and happy to see you.</p><p id="graphics-status" role="status"></p></section>
+  <script src="preview.js?v=0.3.0" defer></script>
 </body>
 </html>

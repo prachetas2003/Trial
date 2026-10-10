@@ -4,3 +4,4 @@ test-results/
 dist/
 .tools/
 desktop-settings.json
+desktop/vendor/

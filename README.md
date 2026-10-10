@@ -2,9 +2,10 @@
 
 A transparent Windows desktop pet that wanders, occasionally chases the
 cursor, jumps, looks around, and emits sparkles when stroked. Sprout, Ember,
-and Orbit have original vector artwork with volume shading and layered
-animation. Mouse clicks pass through the pet; controls live in the Windows
-notification area.
+and Orbit use original procedural 3D geometry, skinned flexible ears,
+and articulated paws. Sprout is the primary character; the others share its
+rig with palette and ear variations. Mouse clicks pass through the pet; controls live in the Windows
+notification area, including **Say hello** for the reaching gesture.
 
 Try the [movement playground](https://prachetas2003.github.io/Trial/roam/).
 The browser preview stays within its page. The desktop application moves
@@ -24,7 +25,12 @@ movement through a click-through window. Linux is not a supported release.
 
 ## Develop
 
-Use Node.js 24 or newer. No AI API key is needed.
+Use Node.js 24 or newer. No AI API key is needed. Three.js is pinned in the
+lockfile, copied locally by postinstall, and never fetched from a CDN at runtime.
+The small WebGL 2 canvas requires graphics support; the native surface stays
+stationary while requestAnimationFrame drives travel and pose together.
+Physics runs at 120 Hz, with fractional position and pose interpolation for
+the display refresh rate. Low resource usage still needs physical-PC profiling.
 
 ```sh
 npm ci
@@ -57,7 +63,9 @@ npm run package:desktop
 Browser checks use Playwright and `CHROMIUM_PATH` (default `/usr/bin/chromium`).
 Native checks use a temporary application-data directory and move/click the
 real cursor, so run them on an isolated test desktop. Python is required by
-the pointer test helper. Linux virtual-display tests verify native movement,
+the pointer test helper. Linux tests explicitly select a software graphics
+backend on the isolated virtual display; this flag is not used in shipping.
+Linux virtual-display tests verify native movement,
 transparency, renderer reactions, and click-through separately; only Windows
 checks verify global cursor stroking while click-through remains enabled.
 

@@ -1,4 +1,4 @@
-BUILDLINGS — WINDOWS DESKTOP PREVIEW 0.2.0
+BUILDLINGS — WINDOWS DESKTOP 3D PREVIEW 0.3.0
 
 1. Extract the entire ZIP into a folder. Keep all its files together.
 2. Open Buildlings.exe. No Node.js, account, or API key is needed.
@@ -7,6 +7,8 @@ BUILDLINGS — WINDOWS DESKTOP PREVIEW 0.2.0
 4. Right-click the Buildlings icon in the Windows notification area
    (it may be under the hidden-icons arrow) to switch pet, pause, turn
    chasing/jumps off, bring it to this screen, hide, or quit.
+5. Choose "Say hello" to see Sprout reach its paw toward you.
+   Quit any older Buildlings instance before opening this update.
 
 Keyboard shortcuts: Ctrl+Alt+P pause; Ctrl+Alt+H hide; Ctrl+Alt+Q quit.
 If a shortcut is used by another app, use the notification-area menu.
@@ -15,6 +17,12 @@ The companion lets mouse clicks pass through and does not take keyboard
 focus. It does not read your editor, record keystrokes, use AI credits,
 send cursor data, or run on startup. Cursor position is used locally
 only for animation. Preferences are stored in your Windows app-data.
+
+The pet is original 3D geometry, with flexible ears and articulated paws.
+Its idle, walk, chase, jump, petting, and reaching motions blend together.
+The native surface stays still while the GPU animates a small pet canvas.
+WebGL 2 graphics support is required. Update your display driver if the
+app reports that 3D graphics are unavailable.
 
 This is an unsigned preview for 64-bit Windows 10/11. Windows may show
 an unrecognized-app warning. Only download from the project's official

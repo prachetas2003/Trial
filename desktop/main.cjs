@@ -1,14 +1,10 @@
 const { app, BrowserWindow, screen, Tray, Menu, nativeImage, globalShortcut, ipcMain, powerMonitor } = require('electron');
-const fs = require('node:fs');
-const path = require('node:path');
-const { performance } = require('node:perf_hooks');
-const { CompanionMotion } = require('./motion.js');
+const fs = require('node:fs'), path = require('node:path');
 const windowOptions = require('./window-options.cjs');
-
 if (process.env.BUILDLINGS_TEST_DATA) app.setPath('userData', process.env.BUILDLINGS_TEST_DATA);
 const gotLock = app.requestSingleInstanceLock();
-let win, tray, motion, frameTimer, lastPosition, settings = { pet: 'sprout', chasing: true, hopping: true };
-let hidden = false;
+let win, tray, inputTimer, activeId, lastCursor, lastFrame, paused = false, hidden = false, rendererReady = false;
+let settings = { pet: 'sprout', chasing: true, hopping: true };
 function areas() { return screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })); }
 function settingsPath() { return path.join(app.getPath('userData'), 'desktop-settings.json'); }
 function saveSettings() {
@@ -23,61 +19,69 @@ function loadSettings() {
     if (typeof saved.hopping === 'boolean') settings.hopping = saved.hopping;
   } catch (error) { if (error.code !== 'ENOENT') console.error('Could not load companion preferences:', error.message); }
 }
-function togglePause() { motion.pause(!motion.paused, performance.now()); updateTray(); }
-function toggleHidden() { hidden = !hidden; if (hidden) win.hide(); else win.showInactive(); updateTray(); }
+function send(input) { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:input', input); }
+function state(action) { send({ areas: areas(), activeId, cursor: screen.getCursorScreenPoint(), settings, paused, visible: !hidden, action }); }
+function togglePause() { paused = !paused; state(); updateTray(); }
+function toggleHidden() { hidden = !hidden; state(); if (hidden) win.hide(); else win.showInactive(); updateTray(); }
+function moveToDisplay(id) {
+  const area = areas().find(a => a.id === id) || areas()[0];
+  if (!area) return;
+  const bounds = win.getBounds();
+  // The native surface changes only for display changes, never for pet movement.
+  if (bounds.x !== area.x || bounds.y !== area.y || bounds.width !== area.width || bounds.height !== area.height) win.setBounds({ x: area.x, y: area.y, width: area.width, height: area.height }, false);
+  activeId = area.id;
+}
+function command(action) { if (action === 'call' || action === 'jump') paused = false; state(action); updateTray(); }
 function updateTray() {
   if (!tray || tray.isDestroyed()) return;
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Buildlings — a tiny desktop friend', enabled: false },
+    { label: 'Buildlings — your 3D desktop friend', enabled: false }, { type: 'separator' },
+    ...['sprout', 'ember', 'orbit'].map(pet => ({ label: pet[0].toUpperCase() + pet.slice(1), type: 'radio', checked: settings.pet === pet,
+      click: () => { settings.pet = pet; saveSettings(); state(); updateTray(); } })),
     { type: 'separator' },
-    ...['sprout', 'ember', 'orbit'].map(pet => ({ label: pet[0].toUpperCase() + pet.slice(1), type: 'radio', checked: settings.pet === pet, click: () => { settings.pet = pet; saveSettings(); updateTray(); } })),
-    { type: 'separator' },
-    { label: motion.paused ? 'Resume wandering' : 'Pause wandering', click: togglePause },
-    { label: 'Occasionally chase my cursor', type: 'checkbox', checked: settings.chasing, click: item => { settings.chasing = item.checked; motion.chaseEnabled = item.checked; if (!item.checked && motion.mode === 'chase') motion.pause(false, performance.now()); saveSettings(); updateTray(); } },
-    { label: 'Playful jumps', type: 'checkbox', checked: settings.hopping, click: item => { settings.hopping = item.checked; motion.hopsEnabled = item.checked; if (!item.checked) motion.hopStart = null; saveSettings(); updateTray(); } },
-    { label: 'Bring pet to this screen', click: () => { motion.followCursor(screen.getCursorScreenPoint(), performance.now()); } },
-    { label: hidden ? 'Show companion' : 'Hide companion', click: toggleHidden },
-    { type: 'separator' },
+    { label: paused ? 'Resume wandering' : 'Pause wandering', click: togglePause },
+    { label: 'Occasionally chase my cursor', type: 'checkbox', checked: settings.chasing, click: item => { settings.chasing = item.checked; saveSettings(); state(); updateTray(); } },
+    { label: 'Playful jumps', type: 'checkbox', checked: settings.hopping, click: item => { settings.hopping = item.checked; saveSettings(); state(); updateTray(); } },
+    { label: 'Say hello — reach toward me', click: () => command('reach') },
+    { label: 'Bring pet to this screen', click: () => command('call') },
+    { label: hidden ? 'Show companion' : 'Hide companion', click: toggleHidden }, { type: 'separator' },
     { label: 'Quit Buildlings', click: () => app.quit() }
   ]));
 }
-function frame() {
-  if (!win || win.isDestroyed() || hidden) return;
-  const next = motion.advance(performance.now(), screen.getCursorScreenPoint());
-  if (!lastPosition || lastPosition.x !== next.windowX || lastPosition.y !== next.windowY) {
-    win.setPosition(next.windowX, next.windowY, false);
-    lastPosition = { x: next.windowX, y: next.windowY };
-  }
-  win.webContents.send('companion:frame', { ...next, pet: settings.pet });
+function pollCursor() {
+  if (hidden || !rendererReady) return;
+  const cursor = screen.getCursorScreenPoint();
+  if (!lastCursor || cursor.x !== lastCursor.x || cursor.y !== lastCursor.y) { lastCursor = cursor; send({ cursor }); }
 }
 async function createCompanion() {
-  loadSettings();
-  const cursor = screen.getCursorScreenPoint();
-  motion = new CompanionMotion({ areas: areas(), activeId: screen.getDisplayNearestPoint(cursor).id, now: performance.now() });
-  motion.chaseEnabled = settings.chasing; motion.hopsEnabled = settings.hopping;
-  win = new BrowserWindow(windowOptions(Math.round(motion.x - 130), Math.round(motion.y - 292)));
-  win.setMenu(null); win.setHasShadow(false);
-  win.setAlwaysOnTop(true, 'screen-saver');
+  loadSettings(); const cursor = screen.getCursorScreenPoint(), display = screen.getDisplayNearestPoint(cursor);
+  activeId = display.id; const area = display.workArea;
+  win = new BrowserWindow(windowOptions(area.x, area.y, area.width, area.height));
+  win.setMenu(null); win.setHasShadow(false); win.setAlwaysOnTop(true, 'screen-saver');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  // Global cursor sampling drives petting; the pet never needs to capture a click.
   win.setIgnoreMouseEvents(true, { forward: true });
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-navigate', event => event.preventDefault());
   win.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
   ipcMain.on('companion:ready', event => {
     if (event.sender !== win.webContents) return;
-    win.showInactive(); frame();
-    clearInterval(frameTimer); frameTimer = setInterval(frame, 1000 / 60);
+    rendererReady = true; state(); win.showInactive();
+    clearInterval(inputTimer); inputTimer = setInterval(pollCursor, 8);
   });
-  win.on('closed', () => { win = null; clearInterval(frameTimer); app.quit(); });
-  screen.on('display-added', () => motion.setAreas(areas()));
-  screen.on('display-removed', () => motion.setAreas(areas()));
-  screen.on('display-metrics-changed', () => motion.setAreas(areas()));
-  powerMonitor.on('resume', () => { motion.lastTime = performance.now(); motion.actionUntil = performance.now() + 1000; });
+  ipcMain.on('companion:report', (event, report) => {
+    if (event.sender !== win.webContents || !report || typeof report !== 'object') return;
+    if (report.error) { if (tray) tray.setToolTip('Buildlings — 3D graphics unavailable'); return; }
+    if (![report.x, report.y, report.hop, report.sparkleId].every(Number.isFinite) || !areas().some(a => a.id === report.areaId)) return;
+    lastFrame = { x: report.x, y: report.y, hop: report.hop, sparkleId: report.sparkleId, areaId: report.areaId, mode: String(report.mode).slice(0, 24), renderer: report.renderer === 'webgl2' ? 'webgl2' : 'unavailable' };
+    if (report.areaId !== activeId) moveToDisplay(report.areaId);
+  });
+  win.on('closed', () => { win = null; clearInterval(inputTimer); app.quit(); });
+  const refreshDisplays = () => { moveToDisplay(activeId); state(); };
+  for (const event of ['display-added', 'display-removed', 'display-metrics-changed']) screen.on(event, refreshDisplays);
+  powerMonitor.on('resume', () => state('resume'));
   if (process.platform === 'darwin') app.dock.hide();
-  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png'));
-  tray = new Tray(icon); tray.setToolTip('Buildlings — right-click for controls'); updateTray();
-  tray.on('double-click', togglePause);
+  tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png')));
+  tray.setToolTip('Buildlings — right-click for controls'); updateTray(); tray.on('double-click', togglePause);
   for (const [keys, action] of [['CommandOrControl+Alt+P', togglePause], ['CommandOrControl+Alt+H', toggleHidden], ['CommandOrControl+Alt+Q', () => app.quit()]]) {
     if (!globalShortcut.register(keys, action)) console.warn(`Shortcut unavailable: ${keys}. Use the tray menu.`);
   }
@@ -85,10 +89,9 @@ async function createCompanion() {
 }
 if (!gotLock) app.quit();
 else {
-  app.on('second-instance', () => { if (win) { hidden = false; win.showInactive(); updateTray(); } });
+  app.on('second-instance', () => { if (win) { hidden = false; state(); win.showInactive(); updateTray(); } });
   app.whenReady().then(createCompanion).catch(error => { console.error(error); app.quit(); });
 }
-app.on('before-quit', () => { clearInterval(frameTimer); globalShortcut.unregisterAll(); });
-module.exports = { getRuntime: () => ({ win, motion, settings, hidden }), togglePause, frame, now: () => performance.now() };
-// Main-process test access only; no debug controls are exposed to the renderer.
+app.on('before-quit', () => { clearInterval(inputTimer); globalShortcut.unregisterAll(); });
+module.exports = { getRuntime: () => ({ win, settings, hidden, paused, lastFrame }), togglePause, command, state, moveToDisplay };
 if (process.env.BUILDLINGS_TEST_DATA) app.__buildlingsRuntime = module.exports;

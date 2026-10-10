@@ -1,9 +1,11 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('companion', {
-  onFrame(callback) {
-    const listener = (_event, frame) => callback(frame);
-    ipcRenderer.on('companion:frame', listener);
-    return () => ipcRenderer.removeListener('companion:frame', listener);
+  native: true,
+  onInput(callback) {
+    const listener = (_event, input) => callback(input);
+    ipcRenderer.on('companion:input', listener);
+    return () => ipcRenderer.removeListener('companion:input', listener);
   },
+  report: frame => ipcRenderer.send('companion:report', frame),
   ready: () => ipcRenderer.send('companion:ready')
 });

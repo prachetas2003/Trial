@@ -2,7 +2,7 @@ name: Windows desktop preview
 on:
   push:
     branches: [main]
-    paths: ['desktop/**', 'site/core.js', 'scripts/**', 'tests/**', 'package*.json', 'product/DESKTOP*', '.github/workflows/desktop.yml']
+    paths: ['desktop/**', 'site/core.js', 'scripts/**', 'tests/**', 'package*.json', 'product/DESKTOP_README.txt', 'product/DESKTOP_RELEASE.md', '.github/workflows/desktop.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -47,7 +47,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings — Windows desktop preview' --notes-file product/DESKTOP_RELEASE.md
+          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.3.0 — 3D Windows desktop pet' --notes-file product/DESKTOP_RELEASE.md
       - name: Save native test evidence
         if: always()
         uses: actions/upload-artifact@v4

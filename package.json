@@ -1,11 +1,11 @@
 {
   "name": "buildlings",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "private": true,
   "main": "desktop/main.cjs",
   "description": "A transparent roaming Windows desktop pet and a browser coding companion.",
   "scripts": {
-    "postinstall": "node scripts/install-electron.cjs",
+    "postinstall": "node scripts/install-electron.cjs && node scripts/sync-roam-preview.cjs",
     "start": "node server.cjs",
     "test": "node --test tests/*.test.cjs",
     "test:browser": "node tests/browser.cjs",
@@ -18,7 +18,10 @@
   "devDependencies": {
     "@electron/packager": "20.3.0",
     "electron": "44.7.0",
-    "playwright": "1.62.1"
+    "playwright": "1.62.1",
+    "three": "0.186.1"
   },
-  "engines": { "node": ">=24" }
+  "engines": {
+    "node": ">=24"
+  }
 }

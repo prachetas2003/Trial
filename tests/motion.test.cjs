@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { CompanionMotion, safeArea, hitsPet, WINDOW } = require('../desktop/motion.js');
+const { CompanionMotion, safeArea, hitsPet, WINDOW, spring } = require('../desktop/motion.js');
 const { volumePetSVG } = require('../desktop/art.js');
 const windowOptions = require('../desktop/window-options.cjs');
 const { PETS } = require('../site/core.js');
@@ -51,10 +51,13 @@ test('random behaviour occasionally chooses chasing without user input', () => {
 });
 test('jump lifts off, lands, and applies landing squash', () => {
   const motion = make(); motion.jump(0);
+  const prepare = motion.advance(80, { x: 0, y: 0 });
+  assert.equal(prepare.hop, 0); assert.ok(prepare.scaleY < 1);
   assert.ok(motion.advance(350, { x: 0, y: 0 }).hop > 30);
-  assert.equal(motion.advance(1100, { x: 0, y: 0 }).hop, 0);
-  const landing = motion.advance(1200, { x: 0, y: 0 });
+  const landing = motion.advance(850, { x: 0, y: 0 });
+  assert.equal(landing.hop, 0); assert.equal(landing.jumpPhase, 'landing');
   assert.ok(landing.scaleX > 1); assert.ok(landing.scaleY < 1);
+  assert.equal(motion.advance(1200, { x: 0, y: 0 }).jumpPhase, 'ground');
 });
 test('paused companion stays still, but can still react to petting', () => {
   const motion = make(); motion.pause(true, 0); const x = motion.x, y = motion.y;
@@ -96,11 +99,70 @@ test('pet hit region follows jumps, and small displays have valid safe bounds', 
   assert.equal(hitsPet({ x: 250, y: 100 }, 100, 230, 50), false);
   const b = safeArea({ x: 0, y: 0, width: 200, height: 200 });
   assert.ok(b.left <= b.right && b.top <= b.bottom);
-  assert.equal(WINDOW.width, 260);
+  assert.equal(WINDOW.width, 320);
 });
 test('all companions include volume shading and separately animated layers', () => {
   for (const pet of PETS) {
     const svg = volumePetSVG(pet);
     for (const text of ['radialGradient', 'class="face"', 'class="paw-left"', 'class="ear-left"', 'happy-eyes']) assert.ok(svg.includes(text));
   }
+});
+
+test('locomotion follows equivalent trajectories at 30, 60, 120, and 144 Hz', () => {
+  function simulate(hz) {
+    const m = make(); m.hopsEnabled = false; m.chaseEnabled = false;
+    let frame; for (let i = 0; i <= hz * 10; i++) frame = m.advance(i * 1000 / hz, { x: 0, y: 0 });
+    return frame;
+  }
+  const reference = simulate(120);
+  for (const hz of [30, 60, 144]) {
+    const frame = simulate(hz);
+    assert.ok(Math.hypot(frame.x - reference.x, frame.y - reference.y) < 1.5, `trajectory at ${hz} Hz`);
+    assert.ok(Math.abs(frame.walkPhase - reference.walkPhase) < .2);
+  }
+});
+test('spring timing does not depend on refresh rate and preserves velocity on retargeting', () => {
+  const values = [60, 144].map(hz => { const s = { value: 0, velocity: 0 }; for (let i = 0; i < hz; i++) spring(s, 1, 9, 1 / hz); return s.value; });
+  assert.ok(Math.abs(values[0] - values[1]) < 1e-10);
+  const s = { value: 0, velocity: 0 }; spring(s, 1, 9, .1); const velocity = s.velocity;
+  spring(s, -.5, 9, 1 / 1000); assert.ok(Math.abs(s.velocity - velocity) < .2);
+});
+test('steering changes velocity gradually and keeps fractional render positions', () => {
+  const m = make(); m.hopsEnabled = false; m.followCursor({ x: 1100, y: 450 }, 0);
+  let last = { vx: 0, vy: 0 }, fractional = false;
+  for (let t = 0; t <= 1000; t += 1000 / 120) {
+    const f = m.advance(t, { x: 1100, y: 450 });
+    assert.ok(Math.hypot(f.vx - last.vx, f.vy - last.vy) <= 4);
+    fractional ||= f.windowX !== Math.round(f.windowX); last = f;
+  }
+  assert.equal(fractional, true);
+});
+test('wander paths curve and the gait advances with travelled distance', () => {
+  const m = make(() => .65); m.hopsEnabled = false; m.chooseBehavior(0, { x: 0, y: 0 });
+  assert.ok(m.wanderPath); const p = m.wanderPath.points;
+  assert.ok(Math.abs((p[1].x - p[0].x) * (p[3].y - p[0].y) - (p[1].y - p[0].y) * (p[3].x - p[0].x)) > 1);
+  const before = m.walkPhase;
+  for (let t = 0; t < 1500; t += 16) m.advance(t, { x: 0, y: 0 });
+  assert.ok(m.walkPhase > before); const phase = m.walkPhase;
+  m.pause(true, 1500); m.advance(1516, { x: 0, y: 0 }); assert.equal(m.walkPhase, phase);
+});
+test('reach gesture rises smoothly, holds, and returns to a settled pose', () => {
+  const m = make(); m.reach(0);
+  const opening = m.advance(200, { x: 0, y: 0 }); assert.equal(opening.mode, 'reach'); assert.ok(opening.reach > 0 && opening.reach < 1);
+  assert.equal(m.advance(1000, { x: 0, y: 0 }).reach, 1);
+  assert.ok(m.advance(1800, { x: 0, y: 0 }).reach < 1);
+  assert.equal(m.advance(2200, { x: 0, y: 0 }).reach, 0);
+});
+test('petting blends into the happy pose and interrupts a reaching gesture', () => {
+  const m = make(); m.reach(0);
+  m.advance(50, { x: m.x - 20, y: m.y - 94 });
+  const f = m.advance(100, { x: m.x + 20, y: m.y - 94 });
+  assert.equal(f.mode, 'pet'); assert.equal(m.reachStart, null);
+  assert.ok(f.petWeight > 0 && f.petWeight < 1);
+  assert.equal(f.reach, 0);
+});
+test('jump cannot interrupt a reach and a paused pet can still say hello', () => {
+  const m = make(); m.pause(true, 0); m.reach(0); m.jump(50);
+  assert.equal(m.hopStart, null);
+  assert.ok(m.advance(1000, { x: 0, y: 0 }).reach > .9);
 });
