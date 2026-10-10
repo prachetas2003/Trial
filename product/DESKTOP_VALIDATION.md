@@ -1,5 +1,13 @@
 # Marker-monkey preview validation — 0.4.0
 
+Release: [desktop-preview-5](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-5)
+
+[Windows workflow run](https://github.com/prachetas2003/Trial/actions/runs/38096696782)
+passed fresh dependency installation, 38 core/motion/server checks, and all
+8 native desktop checks before packaging and publishing. Global cursor strokes
+were tested while Windows click-through remained enabled; a real click reached
+the window underneath, and the transparent companion did not take focus.
+
 Local validation passed 38 core/motion/server checks, 16 browser-companion
 checks, and 11 marker-monkey playground checks. Browser checks inspect actual
 rasterized ink, transparent face interiors, stable texture on identical poses,
@@ -19,7 +27,17 @@ Motion follows equivalent trajectories at 30, 60, 120, and 144 Hz within a
 1.5-pixel test tolerance. This does not establish achieved frame rates on a
 physical PC. Canvas pixel ratio is capped at 2×, and WebGL is not required.
 
-Native Windows packaging and public-release verification are pending.
+The public ZIP was downloaded back from GitHub. Its SHA-256 matches the
+published checksum; archive integrity and the versioned README were verified.
+All 16 packaged desktop assets match the checked-in code after normalizing
+Windows line endings, including the monkey artwork, renderer, and app icons.
+Packaged application version: 0.4.0. Archive size: 163,452,309 bytes.
+
+Published SHA-256: `1584872860841c681dc0076dff549f1afef3e95b6cc0121c8b3fe5efe71f369d`
+
+This is an unsigned Windows 10/11 x64 preview. Physical-PC frame rates,
+battery use, and mixed-DPI monitor transitions still need manual profiling.
+The browser preview stays within its page.
 
 ---
 
