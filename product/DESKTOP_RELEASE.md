@@ -1,4 +1,4 @@
-Buildlings 0.3.0 introduces a real 3D desktop companion: original sculpted
+Buildlings 0.3.1 introduces a real 3D desktop companion: original sculpted
 geometry, skinned flexible ears, expressive eyes, and articulated paws.
 
 Sprout wanders along curved paths, occasionally chases your cursor, crouches

@@ -1,4 +1,4 @@
-BUILDLINGS — WINDOWS DESKTOP 3D PREVIEW 0.3.0
+BUILDLINGS — WINDOWS DESKTOP 3D PREVIEW 0.3.1
 
 1. Extract the entire ZIP into a folder. Keep all its files together.
 2. Open Buildlings.exe. No Node.js, account, or API key is needed.

@@ -1,4 +1,4 @@
-import { SproutScene } from './sprout3d.js';
+import { SproutScene } from './sprout3d.js?v=0.3.1';
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
 let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true;

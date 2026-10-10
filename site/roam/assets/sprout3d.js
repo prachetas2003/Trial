@@ -87,7 +87,7 @@ function createPet(data) {
     mesh(new THREE.SphereGeometry(1, 20, 12), dark, paw, [0, -.04, -.025], [.217, .078, .235]);
     feet.push({ paw, side, stance: false, anchorX: 0, anchorY: 0 });
   }
-  return { root, torso, body, face, eyes, happy, smile, arms, feet, ears, eyeX: joint(), eyeY: joint(), headX: joint(), headY: joint(), nextBlink: 3500, blinkStart: -10000 };
+  return { root, torso, body, face, eyes, happy, smile, arms, feet, ears, reach: joint(), eyeX: joint(), eyeY: joint(), headX: joint(), headY: joint(), nextBlink: 3500, blinkStart: -10000 };
 }
 
 export class SproutScene {
@@ -117,6 +117,11 @@ export class SproutScene {
     this.particleGeometry = new THREE.OctahedronGeometry(.052);
     this.particleMaterials = [new THREE.MeshBasicMaterial({ color: '#f7d66f', transparent: true }), new THREE.MeshBasicMaterial({ color: '#f5a3b0', transparent: true })];
     this.setPet(data);
+    // Compile particle shaders before the first stroke. The warm-up meshes
+    // stay outside the camera and never become visible desktop content.
+    const warm = this.particleMaterials.map(material => mesh(this.particleGeometry, material, this.scene, [20, 20, 0]));
+    this.renderer.compile(this.scene, this.camera);
+    warm.forEach(object => this.scene.remove(object));
     this.renderer.domElement.addEventListener('webglcontextlost', event => { event.preventDefault(); window.__buildlingsRenderer.contextLost = true; });
     this.renderer.domElement.addEventListener('webglcontextrestored', () => { window.__buildlingsRenderer.contextLost = false; });
     window.__buildlingsRenderer = { type: 'webgl2', rigged: true, flexibleEars: true, contextLost: false, pixelRatio: this.renderer.getPixelRatio(), canvasWidth: WINDOW.width, canvasHeight: WINDOW.height };
@@ -141,7 +146,7 @@ export class SproutScene {
   }
   draw(frame, now) {
     const dt = this.lastTime === null ? 1 / 60 : clamp((now - this.lastTime) / 1000, 0, .06); this.lastTime = now;
-    const p = this.pet, phase = frame.walkPhase, walk = clamp(frame.walkWeight, 0, 1), happy = clamp(frame.petWeight, 0, 1), reach = frame.reach;
+    const p = this.pet, phase = frame.walkPhase, walk = clamp(frame.walkWeight, 0, 1), happy = clamp(frame.petWeight, 0, 1), reach = spring(p.reach, frame.reach, 18, dt);
     const breathing = Math.sin(now / 650) * .009 + Math.sin(now / 1270) * .003;
     p.root.position.y = frame.hop / this.pixelsPerUnit;
     p.torso.position.y = 1.07 + Math.abs(Math.sin(phase)) * .025 * walk - happy * .055 + reach * .055;

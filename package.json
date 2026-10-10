@@ -1,6 +1,6 @@
 {
   "name": "buildlings",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "main": "desktop/main.cjs",
   "description": "A transparent roaming Windows desktop pet and a browser coding companion.",

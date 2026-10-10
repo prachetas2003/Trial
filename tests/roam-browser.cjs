@@ -54,8 +54,13 @@ const { chromium } = require('playwright');
     const hello = await page.evaluate(() => ({ frame: window.__buildlingsFrame, renderer: window.__buildlingsRenderer }));
     assert.equal(hello.frame.mode, 'reach'); assert.ok(hello.renderer.reachWeight > .95); assert.ok(hello.renderer.pawReach < -1);
     await page.screenshot({ path: path.join(output, '3d-reach.png') });
+    await page.mouse.move(fixed.x - 25, fixed.y - 94); await page.clock.runFor(16);
+    await page.mouse.move(fixed.x + 25, fixed.y - 94); await page.clock.runFor(50);
+    assert.equal(await page.evaluate(() => window.__buildlingsFrame.mode), 'pet');
+    const interrupted = await page.evaluate(() => window.__buildlingsRenderer.reachWeight);
+    assert.ok(interrupted > .15 && interrupted < .95, 'paw blends back instead of snapping on a petting interruption');
     await page.clock.runFor(1400); assert.equal(await page.evaluate(() => window.__buildlingsFrame.reach), 0);
-    console.log('PASS reaching moves an articulated paw toward the perspective camera and settles');
+    console.log('PASS reaching moves toward the camera and smoothly blends out when petted');
 
     await page.getByRole('button', { name: 'Try a jump', exact: true }).click(); await page.clock.runFor(80);
     assert.equal(await page.evaluate(() => window.__buildlingsFrame.jumpPhase), 'anticipation');
