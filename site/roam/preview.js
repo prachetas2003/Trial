@@ -1,16 +1,17 @@
 (() => {
   'use strict';
   let cursor = { x: innerWidth / 2, y: innerHeight / 2 }, paused = false;
-  const settings = { pet: 'sprout', chasing: true, hopping: true };
+  const settings = { pet: 'monkey', ink: 'black', chasing: true, hopping: true };
   const areas = () => [{ id: 'browser', x: 0, y: 0, width: innerWidth, height: innerHeight }];
   const send = input => window.companion.send(input);
   send({ areas: areas(), activeId: 'browser', cursor, settings, paused });
   window.addEventListener('pointermove', event => { cursor = { x: event.clientX, y: event.clientY }; send({ cursor }); });
   window.addEventListener('resize', () => send({ areas: areas() }));
-  document.querySelectorAll('[data-pet]').forEach(button => button.addEventListener('click', () => {
-    settings.pet = button.dataset.pet; send({ settings });
-    document.querySelectorAll('[data-pet]').forEach(other => other.setAttribute('aria-pressed', String(other === button)));
-  }));
+  for (const mode of ['light', 'dark']) document.querySelector(`#${mode}-screen`).addEventListener('click', () => {
+    document.body.classList.toggle('dark-screen', mode === 'dark');
+    settings.ink = mode === 'dark' ? 'white' : 'black'; send({ settings });
+    for (const option of ['light', 'dark']) document.querySelector(`#${option}-screen`).setAttribute('aria-pressed', String(option === mode));
+  });
   document.querySelector('#pause').addEventListener('click', event => {
     paused = !paused; send({ paused }); event.currentTarget.textContent = paused ? 'Resume wandering' : 'Pause wandering';
   });

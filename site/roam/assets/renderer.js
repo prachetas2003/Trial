@@ -1,23 +1,18 @@
-import { SproutScene } from './sprout3d.js?v=0.3.1';
+import { MonkeyScene } from './monkey.js?v=0.4.0';
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
 let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true;
 let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-function selectPet(id) {
-  if (selected === id) return;
-  selected = id;
-  const data = window.Buildlings.PETS.find(p => p.id === id) || window.Buildlings.PETS[0];
-  host.setAttribute('aria-label', `${data.name}, your 3D desktop companion`);
-  if (scene) scene.setPet(data);
-  else {
-    try { scene = new SproutScene(host, data); }
-    catch (error) {
-      console.error('3D renderer unavailable:', error.message);
-      window.__buildlingsRenderer = { type: 'unavailable', error: error.message };
-      host.innerHTML = window.BuildlingsArt.volumePetSVG(data);
-      window.companion.report?.({ error: '3D graphics unavailable. Check graphics acceleration and your display driver.' });
-      document.querySelector('#graphics-status')?.replaceChildren(document.createTextNode('3D graphics are unavailable in this browser. Try a browser with WebGL 2 support.'));
-    }
+function selectPet() {
+  if (scene) return;
+  selected = 'monkey';
+  host.setAttribute('aria-label', 'Mischief, your marker-doodle monkey');
+  try { scene = new MonkeyScene(host); }
+  catch (error) {
+    console.error('Doodle renderer unavailable:', error.message);
+    window.__buildlingsRenderer = { type: 'unavailable', error: error.message };
+    window.companion.report?.({ error: 'Doodle drawing surface unavailable.' });
+    document.querySelector('#graphics-status')?.replaceChildren(document.createTextNode('The doodle drawing surface is unavailable in this browser.'));
   }
 }
 function onInput(input) {
@@ -30,7 +25,8 @@ function onInput(input) {
   }
   if (!motion) return;
   if (input.settings) {
-    selectPet(input.settings.pet || 'sprout');
+    selectPet();
+    scene?.setInk(input.settings.ink);
     motion.chaseEnabled = input.settings.chasing !== false;
     motion.hopsEnabled = input.settings.hopping !== false && !reduceMotion;
     if (!motion.hopsEnabled) motion.hopStart = null;

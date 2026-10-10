@@ -4,7 +4,7 @@ const windowOptions = require('./window-options.cjs');
 if (process.env.BUILDLINGS_TEST_DATA) app.setPath('userData', process.env.BUILDLINGS_TEST_DATA);
 const gotLock = app.requestSingleInstanceLock();
 let win, tray, inputTimer, activeId, lastCursor, lastFrame, paused = false, hidden = false, rendererReady = false;
-let settings = { pet: 'sprout', chasing: true, hopping: true };
+let settings = { pet: 'monkey', ink: 'black', chasing: true, hopping: true };
 function areas() { return screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })); }
 function settingsPath() { return path.join(app.getPath('userData'), 'desktop-settings.json'); }
 function saveSettings() {
@@ -14,7 +14,7 @@ function saveSettings() {
 function loadSettings() {
   try {
     const saved = JSON.parse(fs.readFileSync(settingsPath(), 'utf8'));
-    if (['sprout', 'ember', 'orbit'].includes(saved.pet)) settings.pet = saved.pet;
+    if (['black', 'white'].includes(saved.ink)) settings.ink = saved.ink;
     if (typeof saved.chasing === 'boolean') settings.chasing = saved.chasing;
     if (typeof saved.hopping === 'boolean') settings.hopping = saved.hopping;
   } catch (error) { if (error.code !== 'ENOENT') console.error('Could not load companion preferences:', error.message); }
@@ -35,10 +35,8 @@ function command(action) { if (action === 'call' || action === 'jump') paused = 
 function updateTray() {
   if (!tray || tray.isDestroyed()) return;
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Buildlings — your 3D desktop friend', enabled: false }, { type: 'separator' },
-    ...['sprout', 'ember', 'orbit'].map(pet => ({ label: pet[0].toUpperCase() + pet.slice(1), type: 'radio', checked: settings.pet === pet,
-      click: () => { settings.pet = pet; saveSettings(); state(); updateTray(); } })),
-    { type: 'separator' },
+    { label: 'Mischief — your marker monkey', enabled: false }, { type: 'separator' },
+    { label: 'White marker — for dark screens', type: 'checkbox', checked: settings.ink === 'white', click: item => { settings.ink = item.checked ? 'white' : 'black'; saveSettings(); state(); updateTray(); } },
     { label: paused ? 'Resume wandering' : 'Pause wandering', click: togglePause },
     { label: 'Occasionally chase my cursor', type: 'checkbox', checked: settings.chasing, click: item => { settings.chasing = item.checked; saveSettings(); state(); updateTray(); } },
     { label: 'Playful jumps', type: 'checkbox', checked: settings.hopping, click: item => { settings.hopping = item.checked; saveSettings(); state(); updateTray(); } },
@@ -70,9 +68,9 @@ async function createCompanion() {
   });
   ipcMain.on('companion:report', (event, report) => {
     if (event.sender !== win.webContents || !report || typeof report !== 'object') return;
-    if (report.error) { if (tray) tray.setToolTip('Buildlings — 3D graphics unavailable'); return; }
+    if (report.error) { if (tray) tray.setToolTip('Buildlings — Doodle drawing unavailable'); return; }
     if (![report.x, report.y, report.hop, report.sparkleId].every(Number.isFinite) || !areas().some(a => a.id === report.areaId)) return;
-    lastFrame = { x: report.x, y: report.y, hop: report.hop, sparkleId: report.sparkleId, areaId: report.areaId, mode: String(report.mode).slice(0, 24), renderer: report.renderer === 'webgl2' ? 'webgl2' : 'unavailable' };
+    lastFrame = { x: report.x, y: report.y, hop: report.hop, sparkleId: report.sparkleId, areaId: report.areaId, mode: String(report.mode).slice(0, 24), renderer: report.renderer === 'canvas2d' ? 'canvas2d' : 'unavailable' };
     if (report.areaId !== activeId) moveToDisplay(report.areaId);
   });
   win.on('closed', () => { win = null; clearInterval(inputTimer); app.quit(); });

@@ -80,7 +80,7 @@ const { chromium } = require('playwright');
       assert.match(popup.url(), /\/roam\//);
       await popup.waitForFunction(() => window.__buildlingsFrame);
       assert.equal(await popup.locator('#pet-canvas').count(), 1);
-      assert.equal(await popup.evaluate(() => window.__buildlingsRenderer.type), 'webgl2');
+      assert.equal(await popup.evaluate(() => window.__buildlingsRenderer.type), 'canvas2d');
       await popup.close();
     });
     await check('share card downloads a real 1200×800 PNG', async () => {

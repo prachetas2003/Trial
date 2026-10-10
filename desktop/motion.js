@@ -5,7 +5,8 @@
   const lerp = (a, b, t) => a + (b - a) * t;
   const ease = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
   function safeArea(area) {
-    const margin = Math.min(112, area.width / 2);
+    // Reserve the monkey's curled tail and enlarged reaching hand at turns.
+    const margin = Math.min(128, area.width / 2);
     const top = Math.min(270, area.height / 2);
     const bottom = Math.min(32, area.height / 2);
     return { left: area.x + margin, right: area.x + area.width - margin, top: area.y + top, bottom: area.y + area.height - bottom };

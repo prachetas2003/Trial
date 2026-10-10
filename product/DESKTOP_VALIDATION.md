@@ -1,4 +1,29 @@
-# 3D desktop preview validation — 0.3.1
+# Marker-monkey preview validation — 0.4.0
+
+Local validation passed 38 core/motion/server checks, 16 browser-companion
+checks, and 11 marker-monkey playground checks. Browser checks inspect actual
+rasterized ink, transparent face interiors, stable texture on identical poses,
+white ink on dark screens, 2× pixel resolution, cursor reactions, gestures,
+paused positions, resizing, and absence of external asset requests.
+
+Eight native checks passed on an isolated Linux virtual display, including
+transparent pixels, stationary native bounds during movement, clicks reaching
+an underlying window, cursor reactions, and the enlarged reaching hand.
+Linux cursor reaction checks temporarily enable mouse events; Windows must
+retain click-through while testing global cursor strokes.
+
+An extreme-pose artwork inspection covered walking phases, both turn
+directions, and reaching. Visible ink remained inside the 320 × 370 canvas;
+128-pixel travel margins reserve the tail and reaching hand on full-size displays.
+Motion follows equivalent trajectories at 30, 60, 120, and 144 Hz within a
+1.5-pixel test tolerance. This does not establish achieved frame rates on a
+physical PC. Canvas pixel ratio is capped at 2×, and WebGL is not required.
+
+Native Windows packaging and public-release verification are pending.
+
+---
+
+# Earlier 3D desktop preview validation — 0.3.1
 
 Release: [desktop-preview-4](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-4)
 

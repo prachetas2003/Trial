@@ -1,9 +1,9 @@
 {
   "name": "buildlings",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "main": "desktop/main.cjs",
-  "description": "A transparent roaming Windows desktop pet and a browser coding companion.",
+  "description": "An original animated marker monkey on a transparent Windows desktop surface.",
   "scripts": {
     "postinstall": "node scripts/install-electron.cjs && node scripts/sync-roam-preview.cjs",
     "start": "node server.cjs",

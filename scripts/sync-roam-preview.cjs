@@ -8,8 +8,8 @@ for (const [source, name] of [['build/three.module.js', 'three.module.js'], ['bu
   fs.copyFileSync(path.join(root, 'node_modules/three', source), path.join(vendor, name));
 }
 for (const [source, name] of [
-  ['desktop/motion.js', 'motion.js'], ['desktop/art.js', 'art.js'], ['desktop/sprout3d.js', 'sprout3d.js'],
+  ['desktop/motion.js', 'motion.js'], ['desktop/art.js', 'art.js'], ['desktop/sprout3d.js', 'sprout3d.js'], ['desktop/monkey.js', 'monkey.js'],
   ['desktop/renderer.js', 'renderer.js'], ['desktop/renderer.css', 'renderer.css'], ['site/core.js', 'core.js']
 ]) fs.copyFileSync(path.join(root, source), path.join(target, name));
 fs.cpSync(vendor, path.join(target, 'vendor'), { recursive: true });
-console.log('Movement preview shares the desktop 3D model, renderer, and motion; Three.js is local and pinned.');
+console.log('Movement preview shares the original marker monkey, renderer, and motion.');

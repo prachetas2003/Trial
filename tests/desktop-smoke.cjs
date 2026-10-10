@@ -31,9 +31,9 @@ async function pointer(app, x, y, click = false) {
     console.log('PASS native window is transparent, always on top, unfocusable, and shadowless');
     await page.evaluate(() => { window.__buildlingsEngine.random = () => .5; });
     const renderer = await page.evaluate(() => window.__buildlingsRenderer);
-    assert.equal(renderer.type, 'webgl2', JSON.stringify(renderer)); assert.ok(renderer.triangles > 5000); assert.equal(renderer.rigged, true);
+    assert.equal(renderer.type, 'canvas2d', JSON.stringify(renderer)); assert.ok(renderer.strokes > 30); assert.equal(renderer.rigged, true); assert.equal(renderer.art, 'original-marker-monkey');
     assert.equal(renderer.canvasWidth, 320); assert.equal(renderer.canvasHeight, 370);
-    console.log('PASS native GPU renders original rigged 3D geometry in a small transparent canvas');
+    console.log('PASS native drawing surface renders the articulated marker monkey in a small transparent canvas');
     const before = await page.evaluate(() => ({ x: window.__buildlingsFrame.x, y: window.__buildlingsFrame.y }));
     await page.waitForTimeout(3000);
     const after = await page.evaluate(() => ({ x: window.__buildlingsFrame.x, y: window.__buildlingsFrame.y }));
@@ -92,9 +92,9 @@ async function pointer(app, x, y, click = false) {
     await app.evaluate(({ app }) => app.__buildlingsRuntime.command('reach'));
     await page.waitForTimeout(1000);
     assert.ok(await page.evaluate(() => window.__buildlingsRenderer.reachWeight) > .85);
-    assert.ok(await page.evaluate(() => window.__buildlingsRenderer.pawReach) < -1);
-    await page.screenshot({ path: path.join(output, 'native-3d-reach.png'), omitBackground: true });
-    console.log('PASS tray command drives a real articulated paw toward the camera');
+    assert.ok(await page.evaluate(() => window.__buildlingsRenderer.handScale) > 1.6);
+    await page.screenshot({ path: path.join(output, 'native-monkey-reach.png'), omitBackground: true });
+    console.log('PASS tray command drives an enlarged reaching hand with foreshortening');
     assert.deepEqual(errors, []);
     console.log('8 native desktop checks passed. Windows results apply only when this script runs on Windows.');
   } finally { await app.close(); await fs.rm(temp, { recursive: true, force: true }); }

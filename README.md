@@ -1,11 +1,13 @@
 # Buildlings
 
-A transparent Windows desktop pet that wanders, occasionally chases the
-cursor, jumps, looks around, and emits sparkles when stroked. Sprout, Ember,
-and Orbit use original procedural 3D geometry, skinned flexible ears,
-and articulated paws. Sprout is the primary character; the others share its
-rig with palette and ear variations. Mouse clicks pass through the pet; controls live in the Windows
-notification area, including **Say hello** for the reaching gesture.
+Mischief is an original marker-doodle monkey that wanders over your Windows
+desktop. Thick variable-width ink, fixed nib texture, small glossy highlights,
+a scribbled orange shirt, and an expressive curled tail keep it looking drawn
+on the screen. The face and spaces between strokes remain transparent.
+White-marker mode works over dark editors. The monkey walks, chases, jumps,
+leans into cursor strokes, and reaches a larger hand toward you.
+Mouse clicks pass through; controls live in the Windows notification area.
+This release contains one doodle character.
 
 Try the [movement playground](https://prachetas2003.github.io/Trial/roam/).
 The browser preview stays within its page. The desktop application moves
@@ -25,12 +27,16 @@ movement through a click-through window. Linux is not a supported release.
 
 ## Develop
 
-Use Node.js 24 or newer. No AI API key is needed. Three.js is pinned in the
-lockfile, copied locally by postinstall, and never fetched from a CDN at runtime.
-The small WebGL 2 canvas requires graphics support; the native surface stays
-stationary while requestAnimationFrame drives travel and pose together.
-Physics runs at 120 Hz, with fractional position and pose interpolation for
-the display refresh rate. Low resource usage still needs physical-PC profiling.
+Use Node.js 24 or newer. No AI API key or generated artwork is needed.
+The small Canvas 2D surface stays transparent while requestAnimationFrame
+drives travel and the deformable marker rig together. Physics runs at 120 Hz,
+with fractional position and pose interpolation for the display refresh rate.
+Ink grain is deterministic and travels with the strokes; it never flickers
+from per-frame random noise. The backing canvas follows display pixel ratio,
+up to 2×. Low resource usage still needs physical-PC profiling.
+
+The earlier Sprout 3D renderer and pinned local Three.js source remain in the
+repository for reference; the monkey renderer does not load or require WebGL.
 
 ```sh
 npm ci
@@ -40,12 +46,14 @@ npm run desktop
 Electron is downloaded by the install script with its official checksum
 verification. Injected HTTPS proxies are supported without disabling TLS.
 The renderer is sandboxed with context isolation and no Node integration.
-The desktop application makes no network requests and stores only its pet
+The desktop application makes no network requests and stores only its marker-ink
 and motion preferences. Cursor positions are used locally for animation.
 
 For the website, `npm start` serves only `site/` on port 3000. Publish the
 contents of `site/` to a static host. After editing desktop animation code,
 run `npm run sync:preview` to copy the shared renderer into the playground.
+With the local server running, `node scripts/render-monkey-art.cjs` exports
+the preview image and app icons directly from the same marker artwork.
 
 ## Verify and package
 

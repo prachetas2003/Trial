@@ -5,7 +5,7 @@ https://prachetas2003.github.io/Trial/
 
 The user supplied a recording of this deployed page. The movement playground
 is at `roam/`; its assets share the desktop motion model and renderer. The
-playground now renders real 3D geometry locally. A browser can move the pet
+playground now renders the original animated marker monkey locally. A browser can move the pet
 within its page only. Native desktop motion requires
 the Windows application.
 
