@@ -1,3 +1,44 @@
+# Balanced quote bank and cadence validation — 0.6.1
+
+Release: [desktop-preview-8](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-8)
+
+The quote bank matches `balanced-mischief-quotes` commit `db41367` exactly:
+120 everyday lines and 43 attributed quotations. The additional source notes
+for H036–H043 are included in the portable ZIP.
+
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38118334182)
+passed for source commit `310ade3`: fresh installation, 55 unit/server checks,
+16 native checks, packaging, checksum generation and public release upload.
+The added native check verifies the 120/43 bank, the 12-second default, and
+scheduling after speech without the former randomized delay or 25-second floor.
+
+Local unit, focus-browser, overlay-browser and targeted quote-browser checks
+passed. The quote-browser checks observe actual displayed payloads, confirm
+12-second automatic intervals within the controller's one-second polling
+precision, full quote text, preserved thoughts on upgrade, manual encouragement
+before the next automatic quote, selectable intervals, persistence after reload,
+and disabling automatic quotes. The migration test preserves a paused session,
+its intention, elapsed time and choices, notes, and other preferences; the
+refreshed deck includes all 120 new everyday entries. Later frequency choices
+survive restart. Existing hide and quiet-focus preferences remain respected.
+
+The public ZIP was downloaded back. Its SHA-256, archive CRCs, versioned README,
+additional quote references, and application version 0.6.1 were verified.
+All 22 tracked packaged desktop files match the tested source after normalizing
+Windows text line endings. All 18 checked live website/preview assets match
+local tested files. Pages commit: `f6c834e94b112864500672f14cbee7d90c36fb08`.
+
+Archive: `Buildlings-Windows-x64.zip` — 163,540,837 bytes.
+
+SHA-256: `f7bcae05c31ed835622ad23b746b81221603e3f4dc64fa5ad066a1a5efbb4852`
+
+The interval applies while automatic quotes are enabled and the monkey is
+visible; quiet-focus mode suppresses ordinary quotes during focus. Updating the
+Windows app requires quitting the previous version and opening the new one.
+Physical-computer performance limitations from the previous validation remain.
+
+---
+
 # Mischief movement and top-bar validation — 0.6.0
 
 Release: [desktop-preview-7](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-7)
