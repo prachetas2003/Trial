@@ -1,7 +1,13 @@
 (function (root) {
   'use strict';
   const MINUTE = 60000;
-  const defaults = { focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, presence: 'wander', peekDuringFocus: true, autoQuotes: true, quietFocus: false, quoteSeconds: 12, dragEnabled: true, chaseCursor: false, completionSound: true, returnAfterSession: true, edge: 'right', edgePosition: .85 };
+  const shieldPolicy = typeof module !== 'undefined' && module.exports ? require('./shield-policy.js') : root.MischiefShield;
+  const presets = {
+    companion: { presence: 'wander', quotesEnabled: true, autoQuotes: true, quietFocus: true, peekDuringFocus: true, chaseCursor: false, showHud: true, vignette: false, completionSound: true, shieldEnabled: false },
+    deep: { presence: 'peek', quotesEnabled: false, autoQuotes: false, quietFocus: true, peekDuringFocus: true, chaseCursor: false, showHud: true, vignette: true, completionSound: true, shieldEnabled: true },
+    blocker: { presence: 'hidden', quotesEnabled: false, autoQuotes: false, quietFocus: true, peekDuringFocus: false, chaseCursor: false, showHud: false, vignette: false, completionSound: false, shieldEnabled: true }
+  };
+  const defaults = { focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, presence: 'wander', peekDuringFocus: true, autoQuotes: true, quietFocus: false, quoteSeconds: 12, dragEnabled: true, chaseCursor: false, completionSound: true, returnAfterSession: true, edge: 'right', edgePosition: .85, quotesEnabled: true, showHud: true, vignette: false, shield: shieldPolicy.settings() };
   const integer = (value, lo, hi, fallback) => Number.isFinite(value) ? Math.max(lo, Math.min(hi, Math.round(value))) : fallback;
   const line = (value, length) => typeof value === 'string' ? value.trim().slice(0, length) : '';
   const copy = value => JSON.parse(JSON.stringify(value));
@@ -13,7 +19,8 @@
     out.quoteSeconds = integer(saved.quoteSeconds, 12, 180, out.quoteSeconds);
     if (['left', 'right', 'top', 'bottom'].includes(saved.edge)) out.edge = saved.edge;
     if (Number.isFinite(saved.edgePosition)) out.edgePosition = Math.max(0, Math.min(1, saved.edgePosition));
-    for (const key of ['dragEnabled', 'chaseCursor', 'completionSound', 'returnAfterSession']) if (typeof saved[key] === 'boolean') out[key] = saved[key];
+    for (const key of ['dragEnabled', 'chaseCursor', 'completionSound', 'returnAfterSession', 'quotesEnabled', 'showHud', 'vignette']) if (typeof saved[key] === 'boolean') out[key] = saved[key];
+    out.shield = shieldPolicy.settings(saved.shield);
     return out;
   }
   class FocusCompanion {
@@ -48,6 +55,7 @@
     id(now) { return `${now.toString(36)}-${(++this.serial).toString(36)}-${Math.floor(this.random() * 1e9).toString(36)}`; }
     elapsed(now) { const s = this.session; return s ? Math.min(s.planMs, s.elapsedMs + (s.running ? Math.max(0, now - s.segmentStartedAt) : 0)) : 0; }
     quote(category = 'everyday', now = Date.now()) {
+      if (!this.preferences.quotesEnabled) return null;
       if (!this.decks[category].length) {
         const ids = this.bank[category].map(q => q.id);
         for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(this.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
@@ -121,6 +129,20 @@
           }
           break;
         }
+        case 'preset': {
+          const preset = presets[action.name];
+          if (!preset) throw new Error('Choose a focus mode.');
+          const { shieldEnabled, ...values } = preset;
+          this.preferences = preferences({ ...this.preferences, ...values, shield: { ...this.preferences.shield, enabled: shieldEnabled } });
+          if (this.session) this.session.presenceOverride = null;
+          break;
+        }
+        case 'shield': {
+          const values = action.values || {};
+          if (Array.isArray(values.websites) && values.websites.some(v => !shieldPolicy.domain(v))) throw new Error('Enter website domains, such as reddit.com, without a page path.');
+          this.preferences.shield = shieldPolicy.settings({ ...this.preferences.shield, ...values, features: { ...this.preferences.shield.features, ...values.features } });
+          break;
+        }
         case 'preferences': this.preferences = preferences({ ...this.preferences, ...action.values }); break;
         case 'note-add': {
           const text = line(action.text, 1000);
@@ -141,7 +163,7 @@
       return copy({ version: 2, preferences: this.preferences, notes: this.notes, history: this.history, completedSessions: this.completedSessions, decks: this.decks, lastQuotes: this.lastQuotes, session: this.session ? { ...this.session, elapsedMs: this.elapsed(now), segmentStartedAt: now } : null });
     }
   }
-  const api = { FocusCompanion, defaults, MINUTE };
+  const api = { FocusCompanion, defaults, presets, MINUTE };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MischiefFocus = api;
 })(typeof window !== 'undefined' ? window : globalThis);

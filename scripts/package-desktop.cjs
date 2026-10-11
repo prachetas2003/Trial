@@ -27,5 +27,6 @@ require('./compile-quotes.cjs');
     appVersion, appCopyright: 'Buildlings creator',
     win32metadata: { CompanyName: 'Buildlings', FileDescription: 'Buildlings desktop companion', ProductName: 'Buildlings' }
   });
+  for (const folder of output) await fs.cp(path.join(root, 'extension'), path.join(folder, 'FocusShield'), { recursive: true });
   console.log('Desktop application packaged:', output.join(', '));
 })().catch(error => { console.error(error); process.exitCode = 1; });

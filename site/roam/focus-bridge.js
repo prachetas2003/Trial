@@ -10,7 +10,7 @@
   const quoteDelay = () => focus.preferences.quoteSeconds * 1000;
   nextQuote = Date.now() + quoteDelay();
   const mode = () => focus.presence();
-  const snapshot = () => ({ ...focus.snapshot(), ink, saveError, highlight });
+  const snapshot = () => ({ ...focus.snapshot(), ink, saveError, highlight, browser: { available: false, connected: false, preview: true, tabs: [] } });
   function save() {
     try { localStorage.setItem(key, JSON.stringify({ ...focus.export(), ink })); saveError = ''; }
     catch { saveError = 'Browser storage is unavailable or full. Your changes last only while this page stays open.'; }

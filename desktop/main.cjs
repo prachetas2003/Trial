@@ -1,8 +1,11 @@
-const { app, BrowserWindow, screen, Tray, Menu, nativeImage, globalShortcut, ipcMain, powerMonitor } = require('electron');
+const { app, BrowserWindow, screen, Tray, Menu, nativeImage, globalShortcut, ipcMain, powerMonitor, shell, clipboard } = require('electron');
 const fs = require('node:fs'), path = require('node:path');
 const windowOptions = require('./window-options.cjs');
 const { FocusCompanion } = require('./focus.js');
 const bank = require('./quotes.js');
+const { createShieldBridge } = require('./shield-bridge.cjs');
+const crypto = require('node:crypto');
+let shieldBridge;
 if (process.env.BUILDLINGS_TEST_DATA) app.setPath('userData', process.env.BUILDLINGS_TEST_DATA);
 const gotLock = app.requestSingleInstanceLock();
 let win, focusWin, tray, inputTimer, focusTimer, focus, activeId, lastCursor, lastFrame, paused = false, hidden = false, rendererReady = false, quitting = false;
@@ -45,7 +48,7 @@ function loadSettings() {
 }
 function send(input) { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:input', input); }
 function presence() { return focus.presence(); }
-function snapshot() { return { ...focus.snapshot(), ink: settings.ink, saveError, highlight }; }
+function snapshot() { return { ...focus.snapshot(), ink: settings.ink, saveError, highlight, browser: shieldBridge?.info() }; }
 function state(action) {
   const mode = presence(); hidden = mode === 'hidden';
   send({ areas: areas(), activeId, cursor: screen.getCursorScreenPoint(), settings, paused, visible: !hidden, presence: mode, preferences: focus.preferences, action });
@@ -65,10 +68,25 @@ function processEvents() {
 function applyFocus(action) {
   let error = '';
   try {
-    if (action?.type === 'appearance') {
+    if (action?.type === 'copy-pairing') {
+      clipboard.writeText(shieldBridge.info().pairingCode);
+    } else if (action?.type === 'browser-folder') {
+      const folder = app.isPackaged ? path.join(path.dirname(app.getPath('exe')), 'FocusShield') : path.join(__dirname, '../extension');
+      shell.openPath(folder).then(error => { if (error) console.error('Could not open extension folder.'); });
+    } else if (action?.type === 'appearance') {
       if (!['black', 'white'].includes(action.ink)) throw new Error('Choose a marker colour.');
       settings.ink = action.ink; saveSettings();
-    } else focus.dispatch(action);
+    } else {
+      if ((action?.type === 'start' && action.kind !== 'break') || action?.type === 'resume') {
+        const p = focus.preferences.shield;
+        if (p.enabled && (!focus.session || focus.session.kind === 'focus')) {
+          const browser = shieldBridge?.info();
+          if (!browser?.connected) throw new Error('Connect the browser extension before starting with Focus Shield, or turn blocking off.');
+          if (p.onlyWorkTabs && !browser.tabs.some(t => p.workTabs.includes(t.key))) throw new Error('Select at least one currently open work tab.');
+        }
+      }
+      focus.dispatch(action);
+    }
     if (action?.type === 'start') highlight = null;
     if (action?.type === 'chase' && focus.preferences.chaseCursor) paused = false;
     if (action?.type === 'preferences' && 'quoteSeconds' in (action.values || {})) nextWarmQuote = Date.now() + quoteDelay();
@@ -126,7 +144,8 @@ function updateTray() {
     ...(!s ? [{ label: `Start ${focus.preferences.focusMinutes}-minute focus session`, click: () => applyFocus({ type: 'start' }) }] : [{ label: s.running ? 'Pause timer' : 'Resume timer', click: () => applyFocus({ type: s.running ? 'pause' : 'resume' }) }, { label: s.kind === 'focus' ? 'Finish session' : 'End break', click: () => applyFocus({ type: 'end' }) }]),
     { label: `I’m staying · ${s?.choices || 0} choices · Ctrl+Alt+S`, enabled: s?.kind === 'focus' && s.running, click: stay },
     { label: 'Keep a thought for later · Ctrl+Alt+T', click: () => showFocus('thought') },
-    { label: 'A little encouragement', click: () => applyFocus({ type: 'quote', category: 'hard' }) }, { type: 'separator' },
+    { label: 'Show monkey quotes', type: 'checkbox', checked: focus.preferences.quotesEnabled, click: item => applyFocus({ type: 'preferences', values: { quotesEnabled: item.checked } }) },
+    { label: 'A little encouragement', enabled: focus.preferences.quotesEnabled, click: () => applyFocus({ type: 'quote', category: 'hard' }) }, { type: 'separator' },
     { label: 'White marker — for dark screens', type: 'checkbox', checked: settings.ink === 'white', click: item => applyFocus({ type: 'appearance', ink: item.checked ? 'white' : 'black' }) },
     { label: paused ? 'Resume wandering' : 'Pause wandering', click: togglePause },
     { label: 'Keep chasing my cursor', type: 'checkbox', checked: focus.preferences.chaseCursor, click: item => applyFocus({ type: 'chase', enabled: item.checked }) },
@@ -145,7 +164,7 @@ function setInteractive(value) {
   interactive = value; win.setIgnoreMouseEvents(!value, { forward: true });
 }
 function updateInteractive(cursor = screen.getCursorScreenPoint()) {
-  const inBar = hudRect && cursor.x >= hudRect.x && cursor.x <= hudRect.x + hudRect.width && cursor.y >= hudRect.y && cursor.y <= hudRect.y + hudRect.height;
+  const inBar = focus.preferences.showHud && hudRect && cursor.x >= hudRect.x && cursor.x <= hudRect.x + hudRect.width && cursor.y >= hudRect.y && cursor.y <= hudRect.y + hudRect.height;
   const inPet = !hidden && focus.preferences.dragEnabled && lastFrame && ((cursor.x - lastFrame.x) / 74) ** 2 + ((cursor.y - (lastFrame.y - 94 - lastFrame.hop)) / 86) ** 2 <= 1;
   setInteractive(!!(dragging || inBar || inPet));
 }
@@ -170,7 +189,12 @@ function tickFocus() {
   broadcastFocus(); updateTray();
 }
 async function createCompanion() {
-  loadSettings(); const cursor = screen.getCursorScreenPoint(), display = screen.getDisplayNearestPoint(cursor);
+  loadSettings();
+  const savedBridge = readData('browser-pairing.json');
+  const token = typeof savedBridge?.token === 'string' && /^[a-zA-Z0-9_-]{43}$/.test(savedBridge.token) ? savedBridge.token : crypto.randomBytes(32).toString('base64url');
+  writeData('browser-pairing.json', { token });
+  shieldBridge = createShieldBridge({ token, getState: () => focus.snapshot(), action: applyFocus });
+  const cursor = screen.getCursorScreenPoint(), display = screen.getDisplayNearestPoint(cursor);
   activeId = display.id; const area = display.workArea;
   win = new BrowserWindow(windowOptions(area.x, area.y, area.width, area.height));
   secureWindow(win); win.setHasShadow(false); win.setAlwaysOnTop(true, 'screen-saver');
@@ -222,6 +246,6 @@ else {
   app.on('second-instance', () => showFocus());
   app.whenReady().then(createCompanion).catch(error => { console.error(error); app.quit(); });
 }
-app.on('before-quit', () => { quitting = true; if (focus) { focus.dispatch({ type: 'pause' }); saveFocus(); } clearInterval(inputTimer); clearInterval(focusTimer); globalShortcut.unregisterAll(); });
+app.on('before-quit', () => { quitting = true; if (focus) { focus.dispatch({ type: 'pause' }); saveFocus(); } shieldBridge?.close(); clearInterval(inputTimer); clearInterval(focusTimer); globalShortcut.unregisterAll(); });
 module.exports = { getRuntime: () => ({ win, focusWin, focus, settings, hidden, paused, lastFrame, dragging, interactive, hudRect, highlight, nextWarmQuote }), togglePause, toggleHidden, command, state, moveToDisplay, applyFocus, showFocus, tickFocus };
 if (process.env.BUILDLINGS_TEST_DATA) app.__buildlingsRuntime = module.exports;

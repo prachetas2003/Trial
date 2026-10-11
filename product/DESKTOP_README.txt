@@ -1,4 +1,4 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.6.1
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.7.0
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
@@ -9,12 +9,25 @@ GET STARTED
 5. Write one intention, choose your focus/break lengths, and start.
    Use the arrow in the focus corner to return to your work. The timer continues.
 
+FOCUS SHIELD AND MODES
+- Companion: monkey, gentle quotes and timer, with blocking off.
+- Deep Focus: blocking, a quiet edge-peeking monkey, timer and amber glow.
+- Blocker Only: blocking with no monkey, quotes, timer overlay, glow or sounds.
+- Adjust individual features in Focus Shield and Customize individually.
+- Focus Shield needs the included Chrome/Edge extension. Open Focus Shield >
+  Connect your browser for setup, or read FocusShield/README.txt.
+- Choose website domains, Shorts/Reels, locked tabs or Only my work tabs.
+  Select Work tabs before starting. New tabs lock until approved in the panel.
+- Pause, finish, quit or take a break to release restrictions. The extension
+  popup also has Pause timer & unlock. Browser settings pages cannot be covered.
+- Blocker Only can be controlled from the tray or Ctrl+Alt+F.
+
 YOUR LITTLE CORNER
 - A focus timer with pause, resume, early finish, and optional breaks.
 - A longer break after every fourth completed focus session.
 - "Keep my thoughts" saves ideas and distractions for later. Ctrl+Enter saves.
 - "I'm staying" records a choice during a running focus session. It shows
-  a sourced quote and a little sparkle. Rapid duplicate presses are coalesced.
+  a sourced quote and a little sparkle when quotes and the monkey are enabled. Rapid duplicate presses are coalesced.
 - Your summary shows timer time and choices recorded, including early finishes.
   These counts do not measure your attention or discipline.
 - Recent history keeps the last 50 focus sessions. Thoughts stay until removed.
@@ -29,12 +42,12 @@ THE TOP BAR
 - Chase keeps following your cursor until switched off. Tucking turns chase off.
 - When a timer expires, a soft bell plays and the bar glows. Click Highlights
   to see the session intention, time and choices. Sound can be turned off.
-- The top bar remains visible when the monkey is hidden.
+- The top bar has its own visibility switch. Blocker Only hides it too.
 
 THE MONKEY
 Click and hold the monkey's head/body to drag him. His body and legs swing
 with momentum and settle after release. While peeking, drag along the margins
-or onto another edge. You can disable dragging in "Make this corner yours"
+or onto another edge. You can disable dragging in "Customize individually"
 for clicks to pass through the monkey as well.
 Move your cursor gently across Mischief to pet it. Right-click the tray icon
 for motion, marker ink, quotes, hiding, and timer controls. White marker works
@@ -42,7 +55,7 @@ well over dark editors. The monkey can wander freely, peek from the edge,
 or be hidden completely. It tucks to the edge during focus by default.
 Warm quotes appear every 12 seconds by default. Choose 12, 25, 45 or 90
 seconds in the focus corner; you can keep ordinary quotes quiet during focus.
-This update switches old quote intervals to 12 seconds and refreshes the deck.
+Turn Show monkey quotes off to keep him present without any speech.
 Your thoughts, sessions and other preferences are preserved. Bringing him back during focus affects
 only this session; the next one can still tuck automatically. By default he
 comes back when the focus session ends.
@@ -80,4 +93,4 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.6.1
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.7.0

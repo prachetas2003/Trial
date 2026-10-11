@@ -1,26 +1,37 @@
-Buildlings 0.6.1 uses the updated **balanced Mischief quote bank**:
-120 everyday lines and 43 attributed quotations, imported from the
-`balanced-mischief-quotes` branch.
+Buildlings 0.7.0 adds **Focus Shield** and a simpler focus corner.
 
-- A warm quote appears **every 12 seconds** by default. The old randomized
-  timing and 25-second minimum delay are removed.
-- Existing installations switch to 12 seconds on this update. Thoughts,
-  sessions, marker appearance, and other preferences remain saved.
-- Choose 12, 25, 45 or 90 seconds in the focus corner. Turning automatic quotes
-  off, quiet quotes during focus, and complete hiding are still respected.
-- Everyday bubbles finish before the next scheduled quote. A manual quote or
-  “I'm staying” restarts the interval so encouragement has time to be read.
-- The refreshed deck includes the new lines immediately and avoids repeats
-  until exhausted. Attributed quotes show only the quotation and name.
+- Block selected website domains, YouTube Shorts and Instagram Reels during
+  a running focus timer. Regular YouTube videos stay available unless blocked.
+- Lock individual open tabs, or enable **Only my work tabs** and select your
+  workspace. New tabs are locked; approve extra work tabs from the panel.
+- **Companion**, **Deep Focus**, and **Blocker Only** apply settings together.
+  Adjust every feature individually in grouped controls.
+- Blocker Only hides the monkey, quotes, timer overlay, amber edges and sounds.
+  The tray and Ctrl+Alt+F still open your panel.
+- Turn **Show monkey quotes** off for a silent monkey, including manual and
+  “I'm staying” encouragement. Choice counting and saved thoughts still work.
+- Optional amber focus edges glow once and settle; they remain click-through.
+- Pausing, finishing, breaks, quitting or losing the desktop connection release
+  restrictions. The browser extension menu has **Pause timer & unlock**.
 
-Drag physics, edge peeking, persistent cursor chase, the top timer bar, session
-highlights, saved thoughts, and the completion chime are included.
+Download **Buildlings-Windows-x64.zip**, quit the old version (Ctrl+Alt+Q),
+extract the whole ZIP and run **Buildlings.exe**. Your saved data is preserved.
 
-Download **Buildlings-Windows-x64.zip**, quit the previous version from its
-notification-area menu, extract the entire ZIP, and open **Buildlings.exe**.
-`QUOTE_SOURCES.md` and `QUOTE_SOURCES_ADDITIONS.md` include the quotation
-references. This is an unsigned Windows 10/11 x64 preview; the archive checksum
-is in `SHA256SUMS.txt`.
+**Browser blocking needs the included FocusShield extension.** In the focus
+corner, open **Focus Shield > Connect your browser**. Load the FocusShield
+folder using Developer mode at chrome://extensions or edge://extensions,
+then paste the pairing code into the extension popup. Nothing is uploaded:
+current tab inventory goes only to the local app over an authenticated
+loopback connection. See FocusShield/README.txt for installation and limits.
 
-Browser preview: https://prachetas2003.github.io/Trial/roam/?v=0.6.1
-The browser preview stays inside its page and keeps separate browser data.
+Chrome/Edge profiles with the extension are supported. Browser settings and
+other protected browser pages cannot be covered. This is a voluntary focus
+helper; it cannot prevent switching browsers or disabling the extension.
+Shorts/Reels URLs and common links are targeted; website changes may need
+rule updates. Existing locked documents are covered without closing them;
+new blocked navigation uses a focus page and restores its URL when released.
+
+Windows 10/11 x64 unsigned preview. SHA256SUMS.txt contains the archive checksum.
+Browser preview: https://prachetas2003.github.io/Trial/roam/?v=0.7.0
+The website demonstrates settings and visuals; real tab blocking needs the app
+and extension. Balanced 120/43 quotes and previous pet/timer features remain.

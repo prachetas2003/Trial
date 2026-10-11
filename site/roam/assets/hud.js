@@ -22,6 +22,8 @@ export class OverlayBar {
   }
   render(state) {
     this.state = state;
+    this.element.hidden = state.preferences.showHud === false;
+    document.body.classList.toggle('focus-vignette', !!state.preferences.vignette && state.session?.kind === 'focus' && state.session.running);
     const s = state.session, p = state.preferences, pending = !!state.highlight;
     const secs = Math.ceil((s ? s.remainingMs : p.focusMinutes * 60000) / 1000);
     const clock = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;

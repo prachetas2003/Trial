@@ -2,7 +2,7 @@ name: Windows desktop preview
 on:
   push:
     branches: [main]
-    paths: ['desktop/**', 'site/core.js', 'scripts/**', 'tests/**', 'package*.json', 'product/DESKTOP_README.txt', 'product/DESKTOP_RELEASE.md', 'product/MONKEY_QUOTE_BANK.md', 'product/MONKEY_QUOTE_SOURCES.md', 'product/MONKEY_QUOTE_SOURCES_ADDITIONS.md', '.github/workflows/desktop.yml']
+    paths: ['desktop/**', 'extension/**', 'site/core.js', 'scripts/**', 'tests/**', 'package*.json', 'product/DESKTOP_README.txt', 'product/DESKTOP_RELEASE.md', 'product/MONKEY_QUOTE_BANK.md', 'product/MONKEY_QUOTE_SOURCES.md', 'product/MONKEY_QUOTE_SOURCES_ADDITIONS.md', '.github/workflows/desktop.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -26,6 +26,10 @@ jobs:
       - run: npm test
       - name: Verify native Windows interaction
         run: npm run test:desktop
+      - name: Install browser test runtime
+        run: npx playwright install chromium
+      - name: Verify browser blocking extension
+        run: npm run test:extension
       - name: Package Windows application
         run: npm run package:desktop
       - name: Create portable download
@@ -49,7 +53,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.6.1 — balanced quotes every 12 seconds' --notes-file product/DESKTOP_RELEASE.md
+          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.7.0 — Focus Shield and configurable modes' --notes-file product/DESKTOP_RELEASE.md
       - name: Save native test evidence
         if: always()
         uses: actions/upload-artifact@v4

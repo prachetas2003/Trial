@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Mischief Focus Shield",
+  "version": "0.7.0",
+  "description": "Website, Shorts/Reels and work-tab restrictions for your local Mischief focus timer.",
+  "permissions": ["storage", "tabs", "alarms", "declarativeNetRequestWithHostAccess"],
+  "host_permissions": ["http://127.0.0.1:43827/*", "http://*/*", "https://*/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Mischief Focus Shield", "default_popup": "popup.html" },
+  "content_scripts": [{ "matches": ["http://*/*", "https://*/*"], "js": ["shield-policy.js", "content.js"], "run_at": "document_start" }],
+  "web_accessible_resources": [{ "resources": ["blocked.html", "blocked.js", "shield.css"], "matches": ["http://*/*", "https://*/*"] }]
+}

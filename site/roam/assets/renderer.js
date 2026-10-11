@@ -1,10 +1,10 @@
-import { MonkeyScene } from './monkey.js?v=0.6.1';
-import { SpeechBubble } from './bubbles.js?v=0.6.1';
-import { OverlayBar } from './hud.js?v=0.6.1';
+import { MonkeyScene } from './monkey.js?v=0.7.0';
+import { SpeechBubble } from './bubbles.js?v=0.7.0';
+import { OverlayBar } from './hud.js?v=0.7.0';
 const hud = new OverlayBar(window.companion);
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
-let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true, grabZone, dragEnabled = true, heldPointer = null, lastInteractive = false;
+let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true, grabZone, quotesEnabled = true, dragEnabled = true, heldPointer = null, lastInteractive = false;
 let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const bubble = new SpeechBubble();
 function selectPet() {
@@ -50,6 +50,8 @@ function onInput(input) {
   host.style.visibility = enabled ? 'visible' : 'hidden';
   if (input.presence) motion.setPresence(input.presence === 'peek' ? 'peek' : 'wander', performance.now());
   if (input.preferences) {
+    quotesEnabled = input.preferences.quotesEnabled !== false;
+    if (!quotesEnabled) { bubble.quote = null; bubble.element.hidden = true; }
     dragEnabled = input.preferences.dragEnabled !== false; if (!dragEnabled) stopDrag();
     if (grabZone) grabZone.hidden = !dragEnabled;
     if (!motion.dragging) motion.setEdge(input.preferences.edge, input.preferences.edgePosition);
@@ -57,8 +59,8 @@ function onInput(input) {
   }
   if (!enabled) stopDrag();
   if (input.completion) hud.complete(input.completion);
-  if (input.quote && enabled) bubble.show(input.quote, performance.now());
-  bubble.element.style.display = enabled ? '' : 'none';
+  if (input.quote && enabled && quotesEnabled) bubble.show(input.quote, performance.now());
+  bubble.element.style.display = enabled && quotesEnabled ? '' : 'none';
   if (input.action === 'call') { motion.pause(false, performance.now()); motion.pettedUntil = 0; motion.followCursor(cursor, performance.now()); }
   if (input.action === 'reach') motion.reach(performance.now());
   if (input.action === 'ack') { motion.pettedUntil = performance.now() + 1500; motion.sparkleId++; motion.reachStart = null; motion.mode = 'pet'; }
@@ -90,7 +92,7 @@ function frame(now) {
     if (enabled) scene?.draw(next, now);
     if (grabZone) grabZone.style.transform = `translateY(${-next.hop}px)`;
     if (window.companion.native) {
-      const bar = hud.rectangle(area), overBar = cursor.x >= bar.x && cursor.x <= bar.x + bar.width && cursor.y >= bar.y && cursor.y <= bar.y + bar.height;
+      const bar = hud.rectangle(area), overBar = bar.width > 0 && cursor.x >= bar.x && cursor.x <= bar.x + bar.width && cursor.y >= bar.y && cursor.y <= bar.y + bar.height;
       const hot = motion.dragging || overBar || (enabled && dragEnabled && window.BuildlingsMotion.hitsPet(cursor, next.x, next.y, next.hop));
       if (hot !== lastInteractive) { lastInteractive = hot; window.companion.setInteractive(hot); }
     }

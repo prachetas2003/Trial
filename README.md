@@ -10,7 +10,7 @@ Drag the monkey by its head or body. Empty screen areas and speech bubbles
 let clicks through; a compact timer bar stays at the top of the screen.
 This release contains one doodle character.
 
-Version 0.6.1 includes click-and-drag with body and leg momentum, dragging along
+Version 0.7.0 includes click-and-drag with body and leg momentum, dragging along
 all four screen margins while peeking, and a continuous cursor-chase toggle.
 The top bar shows the timer, an “I’m staying” button, thought capture, tuck/bring
 back, and chase controls. Click the timer to open the focus corner. Completion
@@ -18,16 +18,23 @@ plays a soft offline chime and lights up clickable session highlights. The
 monkey returns after focus by default; retrieving it during focus overrides
 only that session, preserving automatic tucking for the next one.
 
-The balanced bank has 120 everyday lines and 43 attributed quotations.
-Warm quotes appear every 12 seconds, with 12/25/45/90-second frequency options.
-Updating from the previous release sets the cadence to 12 seconds while keeping
-your thoughts, sessions and other preferences. Quiet ordinary quotes during focus and completion sound are optional.
-You can turn dragging off for clicks to pass through the monkey too. The bar
-remains usable even when you completely hide the monkey. Pomodoro sessions,
-breaks, saved thoughts, and session
-summaries remain local. Double-click the tray icon or press **Ctrl+Alt+F** to
-open the focus corner. **Ctrl+Alt+T** captures a thought; **Ctrl+Alt+S** records
-a choice during a running focus session.
+Focus Shield adds website, Shorts/Reels, individual-tab and selected-workspace
+blocking through the included Chrome/Edge extension. Restrictions follow the
+running focus timer and release on pause, finish, breaks or disconnection.
+Connect the extension from **Focus Shield > Connect your browser**; see
+[extension setup and limits](extension/README.txt). Browser settings and other
+protected browser pages cannot be covered. This is a voluntary focus tool.
+
+Choose **Companion**, **Deep Focus**, or **Blocker Only**, then customize
+individual settings in grouped sections. Blocker Only hides every desktop
+visual and sound. Quotes have a master switch, so the monkey can remain
+without speech. Optional amber focus edges glow once then settle. The monkey,
+timer bar, glow and sound have independent controls. Your notes and session
+history remain local. Press **Ctrl+Alt+F** to open the panel even with everything
+hidden. **Ctrl+Alt+Q** quits completely.
+
+The balanced quote bank remains 120 everyday lines and 43 attributed quotations,
+with a 12-second default interval. Prior saved data is preserved.
 
 Try the [movement playground](https://prachetas2003.github.io/Trial/roam/).
 The browser preview stays within its page. The desktop application moves
