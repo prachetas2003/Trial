@@ -72,7 +72,7 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     const popup = pairingPopup; await popup.reload(); await popup.locator('#unlock').waitFor({ state: 'visible' }); await popup.locator('#unlock').click();
     await distraction.waitForFunction(() => !document.querySelector('[data-mischief-locked]')); assert.equal(focus.session.running, false);
     assert.equal(await distraction.locator('#draft').inputValue(), 'Keep my unfinished draft');
-    await fresh.waitForURL('chrome://newtab/');
+    await fresh.waitForURL(/^chrome:\/\/(?:newtab|new-tab-page)\//, { waitUntil: 'domcontentloaded' });
     assert.equal((await worker.evaluate(() => chrome.declarativeNetRequest.getSessionRules())).length, 0);
     console.log('PASS emergency pause releases overlays and network rules and restores new tab');
     focus.dispatch({ type: 'resume' }); await distraction.locator('[data-mischief-locked]').waitFor();
@@ -85,7 +85,7 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     assert.deepEqual(errors, []);
     await work.screenshot({ path: 'test-results/shield-work-tab.png' });
   } catch (error) {
-    error.message += '\n' + JSON.stringify({ rejections, browserState: worker ? await worker.evaluate(() => chrome.storage.session.get('shieldState')).catch(() => ({})) : {} });
+    error.stack += '\n' + JSON.stringify({ rejections, browserState: worker ? await worker.evaluate(() => chrome.storage.session.get('shieldState')).catch(() => ({})) : {} });
     throw error;
   } finally { if (context) await context.close(); bridge.close(); web.close(); fs.rmSync(profile, { recursive: true, force: true }); }
 })().catch(error => { console.error(error); if (process.env.GITHUB_ACTIONS) console.log('::error title=Focus Shield extension::' + error.stack.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')); if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\nFocus Shield extension check failed:\n\n\`\`\`text\n${error.stack}\n\`\`\`\n`); process.exitCode = 1; });
