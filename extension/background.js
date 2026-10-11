@@ -9,6 +9,10 @@ function original(tab) {
   if (url.startsWith(blockedPrefix())) return originalUrls.get(tab.id) || url.slice(url.indexOf('#') + 1);
   return url;
 }
+async function navigateIfCurrent(tab, url) {
+  const live = await chrome.tabs.get(tab.id).catch(() => null);
+  if (live && (live.pendingUrl || live.url) === (tab.pendingUrl || tab.url)) await chrome.tabs.update(tab.id, { url }).catch(() => {});
+}
 async function restrictions(next, tabs) {
   const p = MischiefShield.settings(next.shield), rules = []; let id = 1;
   const redirect = regex => ({ id: id++, priority: 1, action: { type: 'redirect', redirect: { regexSubstitution: `${blockedPrefix()}#\\0` } }, condition: { regexFilter: regex, resourceTypes: ['main_frame'] } });
@@ -32,11 +36,11 @@ async function restrictions(next, tabs) {
     const url = tab.url || '', actual = original(tab), reason = MischiefShield.reason(actual, key(tab.id), next);
     if (url.startsWith(blockedPrefix()) && !reason) {
       // Only restore pages that this extension redirected. Existing documents remain intact beneath the content shield.
-      if (/^https?:\/\//.test(actual)) await chrome.tabs.update(tab.id, { url: actual }).catch(() => {});
-      else if (!next.active) await chrome.tabs.update(tab.id, { url: 'chrome://newtab/' }).catch(() => {});
+      if (/^https?:\/\//.test(actual)) await navigateIfCurrent(tab, actual);
+      else if (!next.active) await navigateIfCurrent(tab, 'chrome://newtab/');
       originalUrls.delete(tab.id);
     } else if (next.active && p.onlyWorkTabs && !p.workTabs.includes(key(tab.id)) && /^(chrome|edge):\/\/newtab\/?$|^about:blank$/.test(url)) {
-      originalUrls.set(tab.id, url); await chrome.tabs.update(tab.id, { url: `${blockedPrefix()}#${url}` }).catch(() => {});
+      originalUrls.set(tab.id, url); await navigateIfCurrent(tab, `${blockedPrefix()}#${url}`);
     }
     chrome.tabs.sendMessage(tab.id, { type: 'state', state: next, tabKey: key(tab.id), lastGood }).catch(() => {});
   }

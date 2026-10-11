@@ -14,11 +14,11 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
   const web = http.createServer((req, res) => { res.setHeader('Content-Type', 'text/html'); res.end(`<!doctype html><title>${req.url === '/work' ? 'My work' : 'Other page'}</title><body><input id="draft" value="unfinished work"><a id="shorts" href="/shorts/example">Shorts</a><a id="normal" href="/watch?v=lesson">Lesson</a><p>Preserve this page.</p></body>`); });
   web.listen(0, '127.0.0.1'); await once(web, 'listening');
   const port = web.address().port, url = (host, pathname) => `http://${host}:${port}${pathname}`;
-  let context;
+  let context, worker;
   try {
     const ext = path.resolve('extension');
     context = await chromium.launchPersistentContext(profile, { ...(process.env.CHROMIUM_PATH || process.platform === 'linux' ? { executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium' } : { channel: 'chromium' }), headless: true, ignoreDefaultArgs: ['--disable-extensions'], args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-proxy-server', '--host-resolver-rules=MAP *.test 127.0.0.1, MAP youtube.com 127.0.0.1, MAP instagram.com 127.0.0.1'], viewport: { width: 1200, height: 850 } });
-    let worker = context.serviceWorkers()[0]; if (!worker) worker = await context.waitForEvent('serviceworker', { timeout: 15000 });
+    worker = context.serviceWorkers()[0]; if (!worker) worker = await context.waitForEvent('serviceworker', { timeout: 15000 });
     context.setDefaultTimeout(15000);
     let disconnecting = false;
     const errors = []; worker.on('console', m => { if (m.type() === 'error' && !disconnecting) errors.push(m.text()); });
@@ -29,7 +29,7 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     const pairingPopup = await context.newPage(); await pairingPopup.goto(`${extBase}popup.html`);
     await pairingPopup.locator('#code').fill(token); await pairingPopup.getByRole('button', { name: 'Connect browser' }).click();
     await pairingPopup.waitForFunction(() => document.querySelector('#status').textContent.includes('Connected'));
-    await pairingPopup.close();
+    // Keep the extension page available for the emergency-unlock test; real toolbar popups are separate from website tabs.
     await new Promise(resolve => setTimeout(resolve, 1600));
     assert.equal(bridge.info().connected, true, JSON.stringify({ message: 'real extension pairing', rejections, state: await worker.evaluate(() => chrome.storage.session.get('shieldState')) }));
     console.log('PASS real Chrome extension pairing and live tab inventory');
@@ -65,7 +65,7 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     focus.dispatch({ type: 'shield', values: { workTabs: [workKey, added.key] } });
     await newBlocked.waitForFunction(() => !document.querySelector('[data-mischief-locked]'));
     console.log('PASS individual tab lock, selected work tabs, locked new tabs, and approving an additional tab');
-    const popup = await context.newPage(); await popup.goto(`${extBase}popup.html`); await popup.locator('#unlock').waitFor({ state: 'visible' }); await popup.locator('#unlock').click();
+    const popup = pairingPopup; await popup.reload(); await popup.locator('#unlock').waitFor({ state: 'visible' }); await popup.locator('#unlock').click();
     await distraction.waitForFunction(() => !document.querySelector('[data-mischief-locked]')); assert.equal(focus.session.running, false);
     assert.equal(await distraction.locator('#draft').inputValue(), 'Keep my unfinished draft');
     await fresh.waitForURL('chrome://newtab/');
@@ -80,5 +80,8 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     console.log('PASS end/break release and desktop disconnection fail-open with no lingering rules');
     assert.deepEqual(errors, []);
     await work.screenshot({ path: 'test-results/shield-work-tab.png' });
+  } catch (error) {
+    error.message += '\n' + JSON.stringify({ rejections, browserState: worker ? await worker.evaluate(() => chrome.storage.session.get('shieldState')).catch(() => ({})) : {} });
+    throw error;
   } finally { if (context) await context.close(); bridge.close(); web.close(); fs.rmSync(profile, { recursive: true, force: true }); }
-})().catch(error => { console.error(error); if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\nFocus Shield extension check failed:\n\n\`\`\`text\n${error.stack}\n\`\`\`\n`); process.exitCode = 1; });
+})().catch(error => { console.error(error); if (process.env.GITHUB_ACTIONS) console.log('::error title=Focus Shield extension::' + error.stack.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')); if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\nFocus Shield extension check failed:\n\n\`\`\`text\n${error.stack}\n\`\`\`\n`); process.exitCode = 1; });
