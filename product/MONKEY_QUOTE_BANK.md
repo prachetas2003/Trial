@@ -1,29 +1,17 @@
 # Mischief’s quote bank
 
-Editorial draft: **90 everyday lines + 40 harder-moment lines**.
+Editorial draft: **90 everyday lines + 35 harder-moment quotations**.
 
-Everyday lines A001–A090 and harder-moment lines H001–H035 are original
-product copy prepared for Mischief. They are not quotations from famous
-people. H036–H040 are sourced literary excerpts, with authors, context, and
-verification links below. Display quotation marks and author credit for those
-five; original monkey dialogue does not need quotation marks or an author line.
+A001–A090 are original monkey dialogue. H001–H035 are quotations from
+accomplished investors, entrepreneurs, inventors, and scientists.
+Each harder-moment entry displays only the quotation and the speaker’s name.
 
-## Voice and placement
+The everyday bank is for occasional companionship. The harder-moment bank
+is for someone requesting encouragement or choosing to stay with their work.
+No acknowledgement or extra monkey commentary accompanies those quotations.
 
-Warm, plain, patient, and occasionally playful. The monkey does not know what
-someone is feeling or how much work they completed unless they tell it.
-These lines acknowledge possibilities and choices rather than inventing facts.
-
-The everyday bank is for occasional companionship. Starting, resting, and
-ending lines should preferably appear at those moments. During a focus session,
-keep spontaneous speech quiet; offer harder-moment lines when the person
-explicitly presses “I’m staying,” requests encouragement, or gives a check-in.
-Never infer distress from cursor movement or inactivity.
-
-An acknowledgement of a choice is not proof of what happened afterward.
-Keep rest, changing plans, and returning after a distraction welcome too.
-The bank makes no claims about dopamine, brain changes, measured discipline,
-or a person’s worth. Its tone should stay warm in unfinished sessions.
+Verification links, source context, and excerpt notes are kept separately in
+[MONKEY_QUOTE_SOURCES.md](MONKEY_QUOTE_SOURCES.md).
 
 ## A. Everyday warmth — 90 original lines
 
@@ -135,124 +123,40 @@ or a person’s worth. Its tone should stay warm in unfinished sessions.
 - **A089** — You can put this down and pick it up another time.
 - **A090** — Thanks for sharing a little corner of your screen with me.
 
-## H. Harder moments — 40 lines
+## H. Harder moments — 35 quotations
 
-### When the person chooses to stay
-
-These ten acknowledge the button press. They do not claim the person has
-already resisted successfully for a measured length of time.
-
-- **H001** — You noticed the pull and chose a next step. That choice deserves acknowledgement.
-- **H002** — You can want the distraction and still try the next sentence.
-- **H003** — You don’t have to solve the whole session. Choose what comes next.
-- **H004** — This moment can be a chance to act toward something you care about.
-- **H005** — You’ve named what you want to do. Let’s make the next step manageable.
-- **H006** — Let’s give the thing you chose another small piece of your attention.
-- **H007** — A difficult moment can hold a deliberate choice.
-- **H008** — You can feel pulled elsewhere and still choose what to do now.
-- **H009** — You’re practising making a choice when it takes effort.
-- **H010** — Your “I’m staying” is a moment worth noticing.
-
-### Making the next step smaller
-
-- **H011** — What’s one action you could finish before deciding what to do next?
-- **H012** — One rough line is enough to give yourself a starting point.
-- **H013** — Let’s make the task small enough for the energy you have.
-- **H014** — You could give this two minutes, then check what you need.
-- **H015** — Start with opening the thing you want to work on.
-- **H016** — You can save that thought for later and try the next small step.
-- **H017** — If the whole task feels too large, choose one part to touch.
-- **H018** — A brief pause might help you choose your next action.
-- **H019** — You’re allowed to make a simpler version of the plan.
-- **H020** — Ask what would help right now: a smaller task, a break, or some help.
-
-### Returning after a distraction
-
-- **H021** — Welcome back. You can begin from where you are.
-- **H022** — A distraction doesn’t erase the effort that came before it.
-- **H023** — Leave the last few minutes behind and choose this next one.
-- **H024** — You’re welcome to return without giving yourself a lecture.
-- **H025** — Your note can help you find where you left off.
-- **H026** — You can return to the task or thoughtfully change the plan.
-- **H027** — One detour doesn’t have to decide the rest of your session.
-- **H028** — You can be honest about getting distracted and gentle about starting again.
-- **H029** — If you need a break, you can choose it deliberately.
-- **H030** — There’s room here for another attempt, whenever you’re ready.
-
-### Reflection after a difficult session
-
-- **H031** — The choices you recorded are worth acknowledging, even if the task remains unfinished.
-- **H032** — You can appreciate the effort this took without pretending it felt easy.
-- **H033** — What helped you make even one choice you felt good about?
-- **H034** — A difficult session can teach you what support to bring next time.
-- **H035** — You can feel proud of a choice and still give yourself permission to rest.
-
-### Sourced literary alternatives for reflection
-
-Use these occasionally, preferably after a session or when someone requests
-a quotation. They are literary perspectives, not scientific evidence about
-urges or instructions that a person must work through exhaustion.
-
-- **H036** — “Isn't it nice to think that tomorrow is a new day with no mistakes in it yet?”
-  — L. M. Montgomery, *Anne of Green Gables*, chapter XXI; Anne speaking to
-  Marilla. Excerpt omitting the opening address “Marilla,” and capitalizing
-  the initial I; the remaining wording is unchanged. Best for a fresh start. [S1]
-
-- **H037** — “I'm not afraid of storms, for I'm learning how to sail my ship.”
-  — Louisa May Alcott, *Little Women*, chapter XLIV, “My Lord and Lady”;
-  Amy speaking about married life. The metaphor can support reflection on
-  learning through difficulty; it is not a claim that fear should vanish. [S2]
-
-- **H038** — “I exist as I am, that is enough”
-  — Walt Whitman, *Leaves of Grass*, “Song of Myself,” section 20.
-  Exact excerpt; the original line ends with a comma. Best when someone is
-  judging their worth by an unfinished task. [S3]
-
-- **H039** — “Only that day dawns to which we are awake.”
-  — Henry David Thoreau, *Walden*, “Conclusion.” A literary reflection on
-  awareness and renewal; use for a reflective restart rather than a live urge. [S4]
-
-- **H040** — “What do we live for, if it is not to make life less difficult to each other?”
-  — George Eliot, *Middlemarch*, chapter LXXII; Dorothea speaking to Sir James.
-  Best for kindness, asking for support, or remembering that help belongs here. [S5]
-
-## Source notes
-
-The five literary quotations were checked against the full Project Gutenberg
-texts mirrored by GITenberg. Verification normalized line breaks and repeated
-whitespace; H036 also capitalizes the first letter of an excerpt. The original
-excerpts were not rewritten into modern motivational phrases. Literary
-dialogue is credited to both the author and the speaking
-character where applicable.
-
-- **S1:** L. M. Montgomery, *Anne of Green Gables* (1908), chapter XXI.
-  [Book record](https://www.gutenberg.org/ebooks/45) ·
-  [Text checked](https://raw.githubusercontent.com/GITenberg/Anne-of-Green-Gables_45/master/45.txt).
-- **S2:** Louisa May Alcott, *Little Women*, chapter XLIV, “My Lord and Lady.”
-  [Book record](https://www.gutenberg.org/ebooks/514) ·
-  [Text checked](https://raw.githubusercontent.com/GITenberg/Little-Women_514/master/514.txt).
-- **S3:** Walt Whitman, *Leaves of Grass*, “Song of Myself,” section 20.
-  [Book record](https://www.gutenberg.org/ebooks/1322) ·
-  [Text checked](https://raw.githubusercontent.com/GITenberg/Leaves-of-Grass_1322/master/1322.txt).
-- **S4:** Henry David Thoreau, *Walden* (1854), “Conclusion.”
-  [Book record](https://www.gutenberg.org/ebooks/205) ·
-  [Text checked](https://raw.githubusercontent.com/GITenberg/Walden-and-On-The-Duty-Of-Civil-Disobedience_205/master/205.txt).
-- **S5:** George Eliot, *Middlemarch*, chapter LXXII.
-  [Book record](https://www.gutenberg.org/ebooks/145) ·
-  [Text checked](https://raw.githubusercontent.com/GITenberg/Middlemarch_145/master/145.txt).
-
-## Editorial selection notes
-
-- Instant “I’m staying” replies: H001–H010.
-- Requested help with the next step: H011–H020.
-- Explicit return after distraction: H021–H030.
-- End-of-session reflection: H031–H040.
-- Everyday speech should be occasional; the bank size is not a target frequency.
-- Vary categories and avoid repeating a line within the same session.
-- Keep the user’s own saved intention visible separately. Do not alter a
-  sourced quotation by inserting their task into the author’s words.
-- The source notes belong in credits or a details view. A literary speech
-  bubble needs the excerpt and author; it does not need a bibliography.
-
-This file prepares content only. Scheduling, bubbles, buttons, timers, and
-session summaries are separate implementation work.
+- **H001** — “No matter how great the talent or effort, some things just take time” — Warren Buffett
+- **H002** — “Don’t follow your passions, follow your effort.” — Mark Cuban
+- **H003** — “If you’re not sure what to work on, guess. But pick something and get going.” — Paul Graham
+- **H004** — “Sometimes life hits you in the head with a brick. Don’t lose faith.” — Steve Jobs
+- **H005** — “Once you get your courage up and believe that you can do important problems, then you can.” — Richard Hamming
+- **H006** — “I tell you genius is hard work, stick-to-it-iveness, and common sense.” — Thomas Edison
+- **H007** — “As far as I can judge, I am not apt to follow blindly the lead of other men.” — Charles Darwin
+- **H008** — “To invent you have to experiment, and if you know in advance that it’s going to work, it’s not an experiment.” — Jeff Bezos
+- **H009** — “Games are won by players who focus on the playing field – not by those whose eyes are glued to the scoreboard.” — Warren Buffett
+- **H010** — “When you work hard at something you become good at it.” — Mark Cuban
+- **H011** — “People who do great things don’t get a lot done every day. They get something done, rather than nothing.” — Paul Graham
+- **H012** — “Your time is limited, so don’t waste it living someone else’s life.” — Steve Jobs
+- **H013** — “The prepared mind sooner or later finds something important and does it.” — Richard Hamming
+- **H014** — “Results! Why, man, I have gotten a lot of results! I know several thousand things that won’t work.” — Thomas Edison
+- **H015** — “These causes combined have given me the patience to reflect or ponder for any number of years over any unexplained problem.” — Charles Darwin
+- **H016** — “If you’re good at course correcting, being wrong may be less costly than you think, whereas being slow is going to be expensive for sure.” — Jeff Bezos
+- **H017** — “Time is the most valuable asset you don’t own.” — Mark Cuban
+- **H018** — “Big things start small.” — Paul Graham
+- **H019** — “If you haven’t found it yet, keep looking. Don’t settle.” — Steve Jobs
+- **H020** — “The more you know, the more you learn; the more you learn, the more you can do; the more you can do, the more the opportunity” — Richard Hamming
+- **H021** — “Genius is 1 per cent. inspiration and 99 per cent. perspiration.” — Thomas Edison
+- **H022** — “I have never turned one inch out of my course to gain fame.” — Charles Darwin
+- **H023** — “The only thing any entrepreneur, salesperson or anyone in any position can control is their effort.” — Mark Cuban
+- **H024** — “It will probably be harder to start working than to keep working.” — Paul Graham
+- **H025** — “And the only way to do great work is to love what you do.” — Steve Jobs
+- **H026** — “Great scientists tolerate ambiguity very well.” — Richard Hamming
+- **H027** — “It’s OK to start slow. It’s ok to grow slow.” — Mark Cuban
+- **H028** — “Try to finish what you start, though, even if it turns out to be more work than you expected.” — Paul Graham
+- **H029** — “Don’t let the noise of others’ opinions drown out your own inner voice.” — Steve Jobs
+- **H030** — “Go forth, then, and do great work!” — Richard Hamming
+- **H031** — “Effort is measured by setting goals and getting results.” — Mark Cuban
+- **H032** — “Great work happens by focusing consistently on something you’re genuinely interested in.” — Paul Graham
+- **H033** — “And most important, have the courage to follow your heart and intuition.” — Steve Jobs
+- **H034** — “The way to figure out what to work on is by working.” — Paul Graham
+- **H035** — “Interest will drive you to work harder than mere diligence ever could.” — Paul Graham
