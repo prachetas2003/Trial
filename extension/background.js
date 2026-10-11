@@ -49,8 +49,13 @@ async function poll(action, url, force = false) {
   if (pollBusy) return action || force ? new Promise(resolve => setTimeout(() => resolve(poll(action, url, force)), 100)) : state; pollBusy = true;
   try {
     const saved = await chrome.storage.local.get(['pairingCode', 'clientId']);
-    identity = saved.clientId || crypto.randomUUID(); paired = !!saved.pairingCode;
-    if (!saved.clientId) await chrome.storage.local.set({ clientId: identity });
+    const profileId = saved.clientId || crypto.randomUUID();
+    if (!saved.clientId) await chrome.storage.local.set({ clientId: profileId });
+    const session = await chrome.storage.session.get('browserEpoch');
+    const epoch = session.browserEpoch || crypto.randomUUID();
+    if (!session.browserEpoch) await chrome.storage.session.set({ browserEpoch: epoch });
+    // Session storage survives worker restarts but resets with the browser, preventing reused tab IDs inheriting old permissions.
+    identity = `${profileId}_${epoch}`; paired = !!saved.pairingCode;
     const tabs = await chrome.tabs.query({});
     if (!saved.pairingCode) { await restrictions({ active: false, connected: false }, tabs); return state; }
     const response = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Mischief-Key': saved.pairingCode }, body: JSON.stringify({ clientId: identity, browser: navigator.userAgent.includes('Edg/') ? 'Edge' : 'Chrome', tabs: tabs.map(t => ({ id: t.id, title: t.title, url: original(t) })), action, url, applied: { active: state.active, sessionId: state.sessionId, rules: JSON.stringify(MischiefShield.settings(state.shield)) } }), signal: AbortSignal.timeout(2000) });

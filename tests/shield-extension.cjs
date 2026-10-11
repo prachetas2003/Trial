@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const fs = require('node:fs'), os = require('node:os'), path = require('node:path'), http = require('node:http');
+const fs = require('node:fs'), os = require('node:os'), path = require('node:path'), https = require('node:https'), crypto = require('node:crypto');
 const { once } = require('node:events');
 const { chromium } = require('playwright');
 const { FocusCompanion } = require('../desktop/focus.js');
@@ -11,13 +11,17 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
   const rejections = [];
   const bridge = createShieldBridge({ onReject: r => rejections.push(r), token, getState: () => focus.snapshot(), action: a => focus.dispatch(a) });
   await once(bridge.server, 'listening');
-  const web = http.createServer((req, res) => { res.setHeader('Content-Type', 'text/html'); res.end(`<!doctype html><title>${req.url === '/work' ? 'My work' : 'Other page'}</title><body><input id="draft" value="unfinished work"><a id="shorts" href="/shorts/example">Shorts</a><a id="normal" href="/watch?v=lesson">Lesson</a><p>Preserve this page.</p></body>`); });
+  // A public test-only key/certificate for local fixtures; never used by the shipped app.
+  const cert = fs.readFileSync(path.join(__dirname, 'fixtures/shield-local-cert.pem'));
+  const localKey = fs.readFileSync(path.join(__dirname, 'fixtures/shield-local-key.pem'));
+  const spki = crypto.createHash('sha256').update(crypto.createPublicKey(cert).export({ type: 'spki', format: 'der' })).digest('base64');
+  const web = https.createServer({ key: localKey, cert }, (req, res) => { res.setHeader('Content-Type', 'text/html'); res.end(`<!doctype html><title>${req.url === '/work' ? 'My work' : 'Other page'}</title><body><input id="draft" value="unfinished work"><a id="shorts" href="/shorts/example">Shorts</a><a id="normal" href="/watch?v=lesson">Lesson</a><p>Preserve this page.</p></body>`); });
   web.listen(0, '127.0.0.1'); await once(web, 'listening');
-  const port = web.address().port, url = (host, pathname) => `http://${host}:${port}${pathname}`;
+  const port = web.address().port, url = (host, pathname) => `https://${host}:${port}${pathname}`;
   let context, worker;
   try {
     const ext = path.resolve('extension');
-    context = await chromium.launchPersistentContext(profile, { ...(process.env.CHROMIUM_PATH || process.platform === 'linux' ? { executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium' } : { channel: 'chromium' }), headless: true, ignoreDefaultArgs: ['--disable-extensions'], args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-proxy-server', '--host-resolver-rules=MAP *.test 127.0.0.1, MAP youtube.com 127.0.0.1, MAP instagram.com 127.0.0.1'], viewport: { width: 1200, height: 850 } });
+    context = await chromium.launchPersistentContext(profile, { ...(process.env.CHROMIUM_PATH || process.platform === 'linux' ? { executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium' } : { channel: 'chromium' }), headless: true, ignoreDefaultArgs: ['--disable-extensions'], args: [`--ignore-certificate-errors-spki-list=${spki}`, `--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-proxy-server', '--host-resolver-rules=MAP *.test 127.0.0.1, MAP youtube.com 127.0.0.1, MAP instagram.com 127.0.0.1'], viewport: { width: 1200, height: 850 } });
     worker = context.serviceWorkers()[0]; if (!worker) worker = await context.waitForEvent('serviceworker', { timeout: 15000 });
     context.setDefaultTimeout(15000);
     let disconnecting = false;
