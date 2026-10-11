@@ -1,546 +1,177 @@
 // Generated from the reviewed product/MONKEY_QUOTE_BANK.md.
 (function(root) {
+  const everydayText = [
+    "You don't have to arrive impressive. Just arrive.",
+    "I'm here. You can take it one line at a time.",
+    "Open the thing. That's enough for a beginning.",
+    "You can start before you feel ready.",
+    "A rough start is still a real start.",
+    "One small honest step can carry more than it looks.",
+    "You don't need the whole map. Just the next turn.",
+    "Coming back counts as courage too.",
+    "The blank page isn't judging you. Neither am I.",
+    "We can make this a little less impossible together.",
+    "You don't need a perfect day to make a useful hour.",
+    "Start with the part you can reach.",
+    "You can be unsure and still be moving.",
+    "Today doesn't have to look like anyone else's day.",
+    "Your pace is allowed to be yours.",
+    "Quiet effort still belongs to the story.",
+    "Some good work happens without an audience.",
+    "You don't have to prove anything to begin.",
+    "I'll keep you company while you figure out the next bit.",
+    "A tiny step can still change the direction of the day.",
+    "There's room here for an imperfect attempt.",
+    "You can learn while you're doing it.",
+    "Not knowing yet is a perfectly normal place to be.",
+    "An unfinished idea is welcome at this desk.",
+    "You don't have to impress a doodle monkey.",
+    "I brought absolutely no judgment. Also no snacks. Sorry.",
+    "If today is weird, we can be weird together.",
+    "I can sit quietly while you find your words.",
+    "You're welcome here on the messy days too.",
+    "I'm not keeping score. I'm keeping you company.",
+    "You do the thinking. I'll handle the moral support.",
+    "A little silliness belongs beside serious dreams.",
+    "I saved you the good branch. Excellent working conditions.",
+    "My tail is curled in support of your mysterious human plans.",
+    "I can't solve the problem, but I can stay nearby.",
+    "You are more interesting than your to-do list.",
+    "There's more to you than what gets finished today.",
+    "One monkey. Plenty of patience.",
+    "If this takes another try, I'll still be here.",
+    "A complicated day can still have one decent moment.",
+    "You can change the plan without calling the day a failure.",
+    "An awkward draft is a perfectly respectable thing to have.",
+    "Even monkeys miss a branch sometimes.",
+    "You can start over without starting from nothing.",
+    "A mistake can give you a better question.",
+    "You don't have to turn one hard moment into a verdict.",
+    "Whatever happens with this task, you're still allowed to be proud of trying.",
+    "Thanks for sharing a little corner of your screen with me.",
+    "Even if the task is ordinary, showing up is still practice.",
+    "The task may be small. The habit of returning isn't.",
+    "Discipline is keeping a promise after the mood changes.",
+    "You don't need to feel motivated to do one honest piece.",
+    "Do the next useful thing before negotiating with your mood.",
+    "A little resistance doesn't get the final vote.",
+    "Some work builds results. Some work builds your ability to work.",
+    "Hard things teach you that discomfort isn't always a stop sign.",
+    "You can dislike this step and still choose it on purpose.",
+    "One kept promise makes the next one easier to believe.",
+    "The boring middle is where a lot of good things are built.",
+    "Consistency is courage in ordinary clothes.",
+    "Don't wait for perfect energy. Use the energy you actually have.",
+    "Five focused minutes are better than fifty minutes of circling.",
+    "You don't have to win the day. Just honor this block.",
+    "Finish the next honest piece. Then reassess.",
+    "Your future self benefits from the work nobody applauds.",
+    "Repetition is how awkward things become familiar.",
+    "You are allowed to be a beginner and still take the practice seriously.",
+    "Every return makes focus a little more familiar.",
+    "Progress is often quiet enough to miss while it's happening.",
+    "You don't need a dramatic breakthrough. You need another useful attempt.",
+    "Small standards kept repeatedly become character.",
+    "Try before you decide you can't.",
+    "The first answer doesn't need to be good. It needs to exist.",
+    "Stuck is information. Change the angle, not the verdict.",
+    "Confusion can be the doorway, not the conclusion.",
+    "A failed attempt can save you from ten wrong turns.",
+    "Stay with the question long enough to learn its shape.",
+    "Make the problem smaller until you can move it.",
+    "Don't confuse a difficult hour with a permanent limit.",
+    "One more thoughtful attempt can teach you more than another hour of worrying.",
+    "The work doesn't need your drama. It needs your attention.",
+    "Your mood can come along, but it doesn't have to drive.",
+    "You build self-trust by doing what you said you'd try.",
+    "The point isn't to suffer. It's to become someone you can rely on.",
+    "Being disciplined doesn't mean being harsh with yourself.",
+    "Every hard thing you do on purpose expands what ‘normal’ feels like.",
+    "You don't need a perfect streak. You need a reliable way back.",
+    "Start again before shame turns one missed day into a week.",
+    "Sometimes the strongest move is simply not quitting on the next step.",
+    "Give this block your full attention. The rest of the day can wait.",
+    "You haven't met every version of yourself yet.",
+    "Someone will make something wonderful. Why not you?",
+    "Your ideas deserve an experiment, not just a daydream.",
+    "You are allowed to want a bigger life than the one you know.",
+    "One day, today's difficult thing may be your easy thing.",
+    "You don't need permission to take your own work seriously.",
+    "A small start is still a vote for a larger future.",
+    "Being new at something isn't evidence you don't belong.",
+    "Make the attempt you wish you'd made.",
+    "You can build something that didn't exist yesterday.",
+    "The gap between taste and skill closes by making things.",
+    "Don't wait to feel like the kind of person who can do it.",
+    "Your future isn't decided by this one session.",
+    "Nobody can promise it'll work. That's what makes trying brave.",
+    "Keep enough curiosity alive to surprise yourself.",
+    "The dream can be enormous. Today's step can be tiny.",
+    "You may be closer to a breakthrough in skill than your feelings can measure.",
+    "Take your own potential seriously enough to practice.",
+    "You're a person, not a progress bar.",
+    "Rest isn't a prize you have to earn.",
+    "A break can protect the part of you that wants to try again.",
+    "Unclench your jaw. Yes, that one.",
+    "The world can wait while you drink some water.",
+    "A rested brain makes kinder decisions.",
+    "You don't have to squeeze one more drop out of this hour.",
+    "Nothing falls apart because you looked away from the screen.",
+    "Enough is a word you're allowed to use.",
+    "Ambition works better when it has somewhere to recover.",
+    "Stopping at a good point is a skill too.",
+    "You can end the day unfinished and still let the day be over."
+  ];
+  const hardRows = [
+    ["No matter how great the talent or effort, some things just take time", "Warren Buffett"],
+    ["Don’t follow your passions, follow your effort.", "Mark Cuban"],
+    ["If you’re not sure what to work on, guess. But pick something and get going.", "Paul Graham"],
+    ["Sometimes life hits you in the head with a brick. Don’t lose faith.", "Steve Jobs"],
+    ["Once you get your courage up and believe that you can do important problems, then you can.", "Richard Hamming"],
+    ["I tell you genius is hard work, stick-to-it-iveness, and common sense.", "Thomas Edison"],
+    ["As far as I can judge, I am not apt to follow blindly the lead of other men.", "Charles Darwin"],
+    ["To invent you have to experiment, and if you know in advance that it’s going to work, it’s not an experiment.", "Jeff Bezos"],
+    ["Games are won by players who focus on the playing field – not by those whose eyes are glued to the scoreboard.", "Warren Buffett"],
+    ["When you work hard at something you become good at it.", "Mark Cuban"],
+    ["People who do great things don’t get a lot done every day. They get something done, rather than nothing.", "Paul Graham"],
+    ["Your time is limited, so don’t waste it living someone else’s life.", "Steve Jobs"],
+    ["The prepared mind sooner or later finds something important and does it.", "Richard Hamming"],
+    ["Results! Why, man, I have gotten a lot of results! I know several thousand things that won’t work.", "Thomas Edison"],
+    ["These causes combined have given me the patience to reflect or ponder for any number of years over any unexplained problem.", "Charles Darwin"],
+    ["If you’re good at course correcting, being wrong may be less costly than you think, whereas being slow is going to be expensive for sure.", "Jeff Bezos"],
+    ["Time is the most valuable asset you don’t own.", "Mark Cuban"],
+    ["Big things start small.", "Paul Graham"],
+    ["If you haven’t found it yet, keep looking. Don’t settle.", "Steve Jobs"],
+    ["The more you know, the more you learn; the more you learn, the more you can do; the more you can do, the more the opportunity", "Richard Hamming"],
+    ["Genius is 1 per cent. inspiration and 99 per cent. perspiration.", "Thomas Edison"],
+    ["I have never turned one inch out of my course to gain fame.", "Charles Darwin"],
+    ["The only thing any entrepreneur, salesperson or anyone in any position can control is their effort.", "Mark Cuban"],
+    ["It will probably be harder to start working than to keep working.", "Paul Graham"],
+    ["And the only way to do great work is to love what you do.", "Steve Jobs"],
+    ["Great scientists tolerate ambiguity very well.", "Richard Hamming"],
+    ["It’s OK to start slow. It’s ok to grow slow.", "Mark Cuban"],
+    ["Try to finish what you start, though, even if it turns out to be more work than you expected.", "Paul Graham"],
+    ["Don’t let the noise of others’ opinions drown out your own inner voice.", "Steve Jobs"],
+    ["Go forth, then, and do great work!", "Richard Hamming"],
+    ["Effort is measured by setting goals and getting results.", "Mark Cuban"],
+    ["Great work happens by focusing consistently on something you’re genuinely interested in.", "Paul Graham"],
+    ["And most important, have the courage to follow your heart and intuition.", "Steve Jobs"],
+    ["The way to figure out what to work on is by working.", "Paul Graham"],
+    ["Interest will drive you to work harder than mere diligence ever could.", "Paul Graham"],
+    ["You do not rise to the level of your goals. You fall to the level of your systems.", "James Clear"],
+    ["Focus is a force multiplier on work.", "Sam Altman"],
+    ["It is much more important to work on the right thing than it is to work many hours.", "Sam Altman"],
+    ["What I cannot create, I do not understand.", "Richard Feynman"],
+    ["The discoveries are out there, waiting to be made. Why not by you?", "Paul Graham"],
+    ["Begin by trying the simplest thing that could possibly work.", "Paul Graham"],
+    ["If you do not work on an important problem, it's unlikely you'll do important work.", "Richard Hamming"],
+    ["I made 5,127 mistakes - or ‘prototypes’ as they are politely referred to.", "James Dyson"]
+  ];
+  const pad = number => String(number).padStart(3, '0');
   const bank = {
-  "everyday": [
-    {
-      "id": "A001",
-      "text": "You can begin before you have the whole thing figured out."
-    },
-    {
-      "id": "A002",
-      "text": "There’s room here for an imperfect start."
-    },
-    {
-      "id": "A003",
-      "text": "One sentence, one sketch, one small beginning."
-    },
-    {
-      "id": "A004",
-      "text": "The first step can be smaller than you think."
-    },
-    {
-      "id": "A005",
-      "text": "Today can have its own pace."
-    },
-    {
-      "id": "A006",
-      "text": "You can bring your unfinished self to an unfinished task."
-    },
-    {
-      "id": "A007",
-      "text": "A rough first version gives you something to work with."
-    },
-    {
-      "id": "A008",
-      "text": "You’re allowed to learn while you go."
-    },
-    {
-      "id": "A009",
-      "text": "Start with the part you can reach."
-    },
-    {
-      "id": "A010",
-      "text": "Coming back is a beginning too."
-    },
-    {
-      "id": "A011",
-      "text": "You don’t need a perfect morning to have a worthwhile afternoon."
-    },
-    {
-      "id": "A012",
-      "text": "Choose something small enough to begin with the energy you have."
-    },
-    {
-      "id": "A013",
-      "text": "The next line can be simple."
-    },
-    {
-      "id": "A014",
-      "text": "You can leave room to change your mind."
-    },
-    {
-      "id": "A015",
-      "text": "Let’s give one little idea somewhere to land."
-    },
-    {
-      "id": "A016",
-      "text": "Quiet effort deserves a little recognition."
-    },
-    {
-      "id": "A017",
-      "text": "Some useful work happens without an audience."
-    },
-    {
-      "id": "A018",
-      "text": "A question can be a good place to start."
-    },
-    {
-      "id": "A019",
-      "text": "Finding out what doesn’t work is information you can use."
-    },
-    {
-      "id": "A020",
-      "text": "You can care about something and still take your time with it."
-    },
-    {
-      "id": "A021",
-      "text": "There’s space to do this carefully."
-    },
-    {
-      "id": "A022",
-      "text": "A clearer question can make the next step easier."
-    },
-    {
-      "id": "A023",
-      "text": "Small details are allowed to matter to you."
-    },
-    {
-      "id": "A024",
-      "text": "Your curiosity is welcome here."
-    },
-    {
-      "id": "A025",
-      "text": "A little practice can fit into an ordinary day."
-    },
-    {
-      "id": "A026",
-      "text": "You can make something useful without making something enormous."
-    },
-    {
-      "id": "A027",
-      "text": "An idea can grow through a few ordinary attempts."
-    },
-    {
-      "id": "A028",
-      "text": "You get to decide what deserves your attention today."
-    },
-    {
-      "id": "A029",
-      "text": "Something familiar can still teach you something new."
-    },
-    {
-      "id": "A030",
-      "text": "Leave a note for the thought you want to return to."
-    },
-    {
-      "id": "A031",
-      "text": "An awkward draft is a perfectly reasonable thing to have."
-    },
-    {
-      "id": "A032",
-      "text": "A mistake can give you a clearer question."
-    },
-    {
-      "id": "A033",
-      "text": "You can revise the work and be kind to yourself."
-    },
-    {
-      "id": "A034",
-      "text": "Changing the plan can be a thoughtful decision."
-    },
-    {
-      "id": "A035",
-      "text": "Even monkeys miss a branch sometimes."
-    },
-    {
-      "id": "A036",
-      "text": "A complicated day can still have a gentle moment."
-    },
-    {
-      "id": "A037",
-      "text": "You’re allowed to say, “I’m still working that out.”"
-    },
-    {
-      "id": "A038",
-      "text": "Some things become clearer after a little distance."
-    },
-    {
-      "id": "A039",
-      "text": "Asking for help can be the next useful step."
-    },
-    {
-      "id": "A040",
-      "text": "You can make room for an answer you didn’t expect."
-    },
-    {
-      "id": "A041",
-      "text": "An unfinished idea is welcome at this desk."
-    },
-    {
-      "id": "A042",
-      "text": "You don’t owe every idea an immediate answer."
-    },
-    {
-      "id": "A043",
-      "text": "A slower route might suit this part."
-    },
-    {
-      "id": "A044",
-      "text": "You can keep the lesson and let the embarrassment settle."
-    },
-    {
-      "id": "A045",
-      "text": "Your first attempt is allowed to look like a first attempt."
-    },
-    {
-      "id": "A046",
-      "text": "You’re allowed to take a break before you run out of energy."
-    },
-    {
-      "id": "A047",
-      "text": "A glass of water is a reasonable next step."
-    },
-    {
-      "id": "A048",
-      "text": "You can look away from the screen for a moment."
-    },
-    {
-      "id": "A049",
-      "text": "There’s no need to fill every quiet minute."
-    },
-    {
-      "id": "A050",
-      "text": "Your shoulders are welcome to come down a little."
-    },
-    {
-      "id": "A051",
-      "text": "Leave yourself a little room to breathe."
-    },
-    {
-      "id": "A052",
-      "text": "You’re allowed to have interests beyond what you’re working on."
-    },
-    {
-      "id": "A053",
-      "text": "A pause can give an idea some space."
-    },
-    {
-      "id": "A054",
-      "text": "Enough is a word you’re allowed to use."
-    },
-    {
-      "id": "A055",
-      "text": "You can choose a pace you can live with."
-    },
-    {
-      "id": "A056",
-      "text": "Rest belongs in the plan too."
-    },
-    {
-      "id": "A057",
-      "text": "You’re allowed to enjoy something without turning it into a project."
-    },
-    {
-      "id": "A058",
-      "text": "A little daylight might be a nice change of scenery."
-    },
-    {
-      "id": "A059",
-      "text": "This task can share the day with the rest of your life."
-    },
-    {
-      "id": "A060",
-      "text": "You can leave some energy for yourself."
-    },
-    {
-      "id": "A061",
-      "text": "One monkey. Plenty of patience."
-    },
-    {
-      "id": "A062",
-      "text": "I’m happy to keep you a little company."
-    },
-    {
-      "id": "A063",
-      "text": "I brought a curly tail and absolutely no deadlines."
-    },
-    {
-      "id": "A064",
-      "text": "If this desk had a spare branch, I’d be sitting on it."
-    },
-    {
-      "id": "A065",
-      "text": "I’d offer you a banana. A little company will have to do."
-    },
-    {
-      "id": "A066",
-      "text": "We can let this be an ordinary, decent moment."
-    },
-    {
-      "id": "A067",
-      "text": "You don’t have to impress a doodle monkey."
-    },
-    {
-      "id": "A068",
-      "text": "I can sit quietly while you find your words."
-    },
-    {
-      "id": "A069",
-      "text": "You’re welcome here, even on a messy day."
-    },
-    {
-      "id": "A070",
-      "text": "There’s room for a little humour beside the serious things."
-    },
-    {
-      "id": "A071",
-      "text": "I’ll be over here, practising my extremely important tail curl."
-    },
-    {
-      "id": "A072",
-      "text": "A small kindness can belong in the middle of a busy day."
-    },
-    {
-      "id": "A073",
-      "text": "You can give yourself the patience you’d offer a friend."
-    },
-    {
-      "id": "A074",
-      "text": "There’s more to you than what gets finished today."
-    },
-    {
-      "id": "A075",
-      "text": "You can take your work seriously and still enjoy a silly monkey."
-    },
-    {
-      "id": "A076",
-      "text": "You can notice what moved forward, however modest it looks."
-    },
-    {
-      "id": "A077",
-      "text": "Something you learned is worth remembering."
-    },
-    {
-      "id": "A078",
-      "text": "Leave yourself a friendly note about where to begin next time."
-    },
-    {
-      "id": "A079",
-      "text": "You get to decide what enough looks like today."
-    },
-    {
-      "id": "A080",
-      "text": "A small thing you made can have a place in your day."
-    },
-    {
-      "id": "A081",
-      "text": "An unfinished task can wait beside a finished day."
-    },
-    {
-      "id": "A082",
-      "text": "You’re allowed to be pleased with a little progress."
-    },
-    {
-      "id": "A083",
-      "text": "What would you like to remember from this session?"
-    },
-    {
-      "id": "A084",
-      "text": "You can appreciate your effort without grading the whole day."
-    },
-    {
-      "id": "A085",
-      "text": "Closing a tab can be a good ending too."
-    },
-    {
-      "id": "A086",
-      "text": "Tomorrow can begin with the note you leave today."
-    },
-    {
-      "id": "A087",
-      "text": "You’re allowed to end the day gently."
-    },
-    {
-      "id": "A088",
-      "text": "There may be a small detail here worth feeling good about."
-    },
-    {
-      "id": "A089",
-      "text": "You can put this down and pick it up another time."
-    },
-    {
-      "id": "A090",
-      "text": "Thanks for sharing a little corner of your screen with me."
-    }
-  ],
-  "hard": [
-    {
-      "id": "H001",
-      "text": "No matter how great the talent or effort, some things just take time",
-      "author": "Warren Buffett"
-    },
-    {
-      "id": "H002",
-      "text": "Don’t follow your passions, follow your effort.",
-      "author": "Mark Cuban"
-    },
-    {
-      "id": "H003",
-      "text": "If you’re not sure what to work on, guess. But pick something and get going.",
-      "author": "Paul Graham"
-    },
-    {
-      "id": "H004",
-      "text": "Sometimes life hits you in the head with a brick. Don’t lose faith.",
-      "author": "Steve Jobs"
-    },
-    {
-      "id": "H005",
-      "text": "Once you get your courage up and believe that you can do important problems, then you can.",
-      "author": "Richard Hamming"
-    },
-    {
-      "id": "H006",
-      "text": "I tell you genius is hard work, stick-to-it-iveness, and common sense.",
-      "author": "Thomas Edison"
-    },
-    {
-      "id": "H007",
-      "text": "As far as I can judge, I am not apt to follow blindly the lead of other men.",
-      "author": "Charles Darwin"
-    },
-    {
-      "id": "H008",
-      "text": "To invent you have to experiment, and if you know in advance that it’s going to work, it’s not an experiment.",
-      "author": "Jeff Bezos"
-    },
-    {
-      "id": "H009",
-      "text": "Games are won by players who focus on the playing field – not by those whose eyes are glued to the scoreboard.",
-      "author": "Warren Buffett"
-    },
-    {
-      "id": "H010",
-      "text": "When you work hard at something you become good at it.",
-      "author": "Mark Cuban"
-    },
-    {
-      "id": "H011",
-      "text": "People who do great things don’t get a lot done every day. They get something done, rather than nothing.",
-      "author": "Paul Graham"
-    },
-    {
-      "id": "H012",
-      "text": "Your time is limited, so don’t waste it living someone else’s life.",
-      "author": "Steve Jobs"
-    },
-    {
-      "id": "H013",
-      "text": "The prepared mind sooner or later finds something important and does it.",
-      "author": "Richard Hamming"
-    },
-    {
-      "id": "H014",
-      "text": "Results! Why, man, I have gotten a lot of results! I know several thousand things that won’t work.",
-      "author": "Thomas Edison"
-    },
-    {
-      "id": "H015",
-      "text": "These causes combined have given me the patience to reflect or ponder for any number of years over any unexplained problem.",
-      "author": "Charles Darwin"
-    },
-    {
-      "id": "H016",
-      "text": "If you’re good at course correcting, being wrong may be less costly than you think, whereas being slow is going to be expensive for sure.",
-      "author": "Jeff Bezos"
-    },
-    {
-      "id": "H017",
-      "text": "Time is the most valuable asset you don’t own.",
-      "author": "Mark Cuban"
-    },
-    {
-      "id": "H018",
-      "text": "Big things start small.",
-      "author": "Paul Graham"
-    },
-    {
-      "id": "H019",
-      "text": "If you haven’t found it yet, keep looking. Don’t settle.",
-      "author": "Steve Jobs"
-    },
-    {
-      "id": "H020",
-      "text": "The more you know, the more you learn; the more you learn, the more you can do; the more you can do, the more the opportunity",
-      "author": "Richard Hamming"
-    },
-    {
-      "id": "H021",
-      "text": "Genius is 1 per cent. inspiration and 99 per cent. perspiration.",
-      "author": "Thomas Edison"
-    },
-    {
-      "id": "H022",
-      "text": "I have never turned one inch out of my course to gain fame.",
-      "author": "Charles Darwin"
-    },
-    {
-      "id": "H023",
-      "text": "The only thing any entrepreneur, salesperson or anyone in any position can control is their effort.",
-      "author": "Mark Cuban"
-    },
-    {
-      "id": "H024",
-      "text": "It will probably be harder to start working than to keep working.",
-      "author": "Paul Graham"
-    },
-    {
-      "id": "H025",
-      "text": "And the only way to do great work is to love what you do.",
-      "author": "Steve Jobs"
-    },
-    {
-      "id": "H026",
-      "text": "Great scientists tolerate ambiguity very well.",
-      "author": "Richard Hamming"
-    },
-    {
-      "id": "H027",
-      "text": "It’s OK to start slow. It’s ok to grow slow.",
-      "author": "Mark Cuban"
-    },
-    {
-      "id": "H028",
-      "text": "Try to finish what you start, though, even if it turns out to be more work than you expected.",
-      "author": "Paul Graham"
-    },
-    {
-      "id": "H029",
-      "text": "Don’t let the noise of others’ opinions drown out your own inner voice.",
-      "author": "Steve Jobs"
-    },
-    {
-      "id": "H030",
-      "text": "Go forth, then, and do great work!",
-      "author": "Richard Hamming"
-    },
-    {
-      "id": "H031",
-      "text": "Effort is measured by setting goals and getting results.",
-      "author": "Mark Cuban"
-    },
-    {
-      "id": "H032",
-      "text": "Great work happens by focusing consistently on something you’re genuinely interested in.",
-      "author": "Paul Graham"
-    },
-    {
-      "id": "H033",
-      "text": "And most important, have the courage to follow your heart and intuition.",
-      "author": "Steve Jobs"
-    },
-    {
-      "id": "H034",
-      "text": "The way to figure out what to work on is by working.",
-      "author": "Paul Graham"
-    },
-    {
-      "id": "H035",
-      "text": "Interest will drive you to work harder than mere diligence ever could.",
-      "author": "Paul Graham"
-    }
-  ]
-};
+    everyday: everydayText.map((text, index) => ({ id: `A${pad(index + 1)}`, text })),
+    hard: hardRows.map(([text, author], index) => ({ id: `H${pad(index + 1)}`, text, author }))
+  };
   if (typeof module !== 'undefined' && module.exports) module.exports = bank;
   root.MischiefQuotes = bank;
 })(typeof window !== 'undefined' ? window : globalThis);
