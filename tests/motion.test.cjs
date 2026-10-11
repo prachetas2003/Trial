@@ -166,3 +166,14 @@ test('jump cannot interrupt a reach and a paused pet can still say hello', () =>
   assert.equal(m.hopStart, null);
   assert.ok(m.advance(1000, { x: 0, y: 0 }).reach > .9);
 });
+
+test('edge-peeking glides to the screen edge and returns without a position jump', () => {
+  const m = make(); const cursor = { x: 10, y: 10 }, before = m.x;
+  m.setPresence('peek', 0); assert.equal(m.x, before);
+  let f;
+  for (let t = 0; t <= 10000; t += 16) f = m.advance(t, cursor);
+  assert.ok(Math.abs(f.x - 1422) < 4); assert.equal(f.mode, 'peek'); assert.equal(f.hop, 0);
+  const edge = m.x; m.setPresence('wander', 10000); assert.equal(m.x, edge);
+  for (let t = 10016; t < 14000; t += 16) f = m.advance(t, cursor);
+  assert.ok(f.x <= safeArea(areas[0]).right + 3);
+});

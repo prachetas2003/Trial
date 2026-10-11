@@ -1,9 +1,9 @@
 {
   "name": "buildlings",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "main": "desktop/main.cjs",
-  "description": "An original animated marker monkey on a transparent Windows desktop surface.",
+  "description": "Mischief: a transparent marker monkey with focus sessions, saved thoughts, and encouragement.",
   "scripts": {
     "postinstall": "node scripts/install-electron.cjs && node scripts/sync-roam-preview.cjs",
     "start": "node server.cjs",
@@ -13,7 +13,8 @@
     "test:desktop": "node tests/desktop-smoke.cjs",
     "test:roam": "node tests/roam-browser.cjs",
     "sync:preview": "node scripts/sync-roam-preview.cjs",
-    "package:desktop": "node scripts/package-desktop.cjs"
+    "package:desktop": "node scripts/package-desktop.cjs",
+    "test:focus": "node tests/focus-browser.cjs"
   },
   "devDependencies": {
     "@electron/packager": "20.3.0",

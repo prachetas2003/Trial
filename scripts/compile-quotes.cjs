@@ -1,0 +1,10 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const text = fs.readFileSync(path.join(root, 'product/MONKEY_QUOTE_BANK.md'), 'utf8');
+const everyday = [...text.matchAll(/^- \*\*(A\d{3})\*\* — (.+)$/gm)].map(([, id, text]) => ({ id, text }));
+const hard = [...text.matchAll(/^- \*\*(H\d{3})\*\* — “(.+)” — (.+)$/gm)].map(([, id, text, author]) => ({ id, text, author }));
+if (everyday.length !== 90 || hard.length !== 35) throw new Error('Expected the reviewed 90 + 35 quote bank.');
+const content = `// Generated from the reviewed product/MONKEY_QUOTE_BANK.md.\n(function(root) {\n  const bank = ${JSON.stringify({ everyday, hard }, null, 2)};\n  if (typeof module !== 'undefined' && module.exports) module.exports = bank;\n  root.MischiefQuotes = bank;\n})(typeof window !== 'undefined' ? window : globalThis);\n`;
+fs.writeFileSync(path.join(root, 'desktop/quotes.js'), content);
+console.log('Compiled 90 everyday lines and 35 attributed quotations.');

@@ -4,6 +4,7 @@ const { packager } = require('@electron/packager');
 const { initializeProxy } = require('@electron/get');
 const root = path.resolve(__dirname, '..');
 const appVersion = require('../package.json').version;
+require('./compile-quotes.cjs');
 
 (async () => {
   if (process.env.HTTPS_PROXY || process.env.HTTP_PROXY) initializeProxy();

@@ -15,7 +15,8 @@ async function pointer(app, x, y, click = false) {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'buildlings-native-test-'));
   const args = ['.'];
   if (process.platform === 'linux') args.push('--disable-setuid-sandbox', '--use-angle=swiftshader');
-  const app = await _electron.launch({ executablePath: require('electron'), args, cwd: root, timeout: 25000, env: { ...process.env, BUILDLINGS_TEST_DATA: temp } });
+  const launch = () => _electron.launch({ executablePath: require('electron'), args, cwd: root, timeout: 25000, env: { ...process.env, BUILDLINGS_TEST_DATA: temp } });
+  let app = await launch();
   const errors = [];
   const output = path.join(root, 'test-results'); await fs.mkdir(output, { recursive: true });
   try {
@@ -88,14 +89,51 @@ async function pointer(app, x, y, click = false) {
     assert.equal(await page.evaluate(() => window.__buildlingsFrame.mode), 'chase');
     console.log('PASS native chasing and hopping produce live renderer frames');
     await page.waitForTimeout(900);
+    // Keep the cursor away so petting cannot interrupt this deliberate gesture.
+    await pointer(app, config.bounds.x + 30, config.bounds.y + 30); await page.waitForTimeout(150);
     await app.evaluate(({ app }) => app.__buildlingsRuntime.togglePause());
     await app.evaluate(({ app }) => app.__buildlingsRuntime.command('reach'));
-    await page.waitForTimeout(1000);
+    await page.waitForFunction(() => window.__buildlingsRenderer.reachWeight > .95, null, { timeout: 5000 });
     assert.ok(await page.evaluate(() => window.__buildlingsRenderer.reachWeight) > .85);
     assert.ok(await page.evaluate(() => window.__buildlingsRenderer.handScale) > 1.6);
     await page.screenshot({ path: path.join(output, 'native-monkey-reach.png'), omitBackground: true });
     console.log('PASS tray command drives an enlarged reaching hand with foreshortening');
+    const focusPagePromise = app.waitForEvent('window');
+    await app.evaluate(async ({ app }) => app.__buildlingsRuntime.showFocus());
+    const focusPage = await focusPagePromise; focusPage.on('pageerror', error => errors.push(error.message));
+    await focusPage.locator('#start-form').waitFor({ state: 'visible' });
+    await focusPage.locator('#intention').fill('Finish my own project');
+    await focusPage.locator('#focus-minutes').fill('1');
+    await focusPage.getByRole('button', { name: 'Start my focus session' }).click();
+    await focusPage.locator('#session-controls').waitFor({ state: 'visible' });
+    await focusPage.locator('#stay-button').click();
+    await focusPage.waitForFunction(() => document.querySelector('#choice-count').textContent === '1');
+    await page.waitForFunction(() => !document.querySelector('#speech-bubble').hidden && document.querySelector('.bubble-author').textContent.length > 2);
+    assert.equal(await page.locator('#speech-bubble').evaluate(e => getComputedStyle(e).pointerEvents), 'none');
+    assert.equal(await page.evaluate(() => window.__buildlingsEngine.presence), 'peek');
+    await focusPage.locator('#thought-input').fill('An idea I can come back to');
+    await focusPage.getByRole('button', { name: 'Keep this for later' }).click();
+    await focusPage.locator('#session-pause').click();
+    await focusPage.waitForFunction(() => document.querySelector('#session-pause').textContent === 'Resume timer');
+    await focusPage.screenshot({ path: path.join(output, 'native-focus-desk.png') });
+    await focusPage.locator('.close-desk').click();
+    assert.equal(await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().focusWin.isVisible()), false);
+    const saved = JSON.parse(await fs.readFile(path.join(temp, 'focus-data.json'), 'utf8'));
+    assert.equal(saved.session.running, false); assert.equal(saved.session.choices, 1); assert.equal(saved.notes[0].text, 'An idea I can come back to');
+    console.log('PASS native focus controls, choice counting, attributed speech, edge presence, thought capture and hideable focus window');
+
+    await app.close(); app = await launch();
+    const restored = await app.firstWindow(); await restored.waitForFunction(() => window.__buildlingsFrame);
+    const recovered = await app.evaluate(({ app }) => {
+      const r = app.__buildlingsRuntime.getRuntime(); return r.focus.snapshot();
+    });
+    assert.equal(recovered.recovered, true); assert.equal(recovered.session.running, false); assert.equal(recovered.session.choices, 1); assert.equal(recovered.notes[0].text, 'An idea I can come back to');
+    assert.equal(recovered.session.elapsedMs, saved.session.elapsedMs);
+    await app.evaluate(({ app }) => { const r = app.__buildlingsRuntime; r.applyFocus({ type: 'resume' }); r.getRuntime().focus.session.segmentStartedAt = Date.now() - 61000; r.tickFocus(); r.tickFocus(); });
+    const finished = await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().focus.snapshot());
+    assert.equal(finished.session, null); assert.equal(finished.history.length, 1); assert.equal(finished.history[0].choices, 1); assert.equal(finished.history[0].completed, true);
+    console.log('PASS native disk recovery restores paused timer/notes and records exactly one completed session');
     assert.deepEqual(errors, []);
-    console.log('8 native desktop checks passed. Windows results apply only when this script runs on Windows.');
+    console.log('10 native desktop checks passed. Windows results apply only when this script runs on Windows.');
   } finally { await app.close(); await fs.rm(temp, { recursive: true, force: true }); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

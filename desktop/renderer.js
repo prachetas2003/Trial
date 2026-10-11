@@ -1,8 +1,10 @@
-import { MonkeyScene } from './monkey.js?v=0.4.0';
+import { MonkeyScene } from './monkey.js?v=0.5.0';
+import { SpeechBubble } from './bubbles.js?v=0.5.0';
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
 let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true;
 let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const bubble = new SpeechBubble();
 function selectPet() {
   if (scene) return;
   selected = 'monkey';
@@ -27,15 +29,20 @@ function onInput(input) {
   if (input.settings) {
     selectPet();
     scene?.setInk(input.settings.ink);
-    motion.chaseEnabled = input.settings.chasing !== false;
-    motion.hopsEnabled = input.settings.hopping !== false && !reduceMotion;
+    if ('chasing' in input.settings) motion.chaseEnabled = input.settings.chasing !== false;
+    if ('hopping' in input.settings) motion.hopsEnabled = input.settings.hopping !== false && !reduceMotion;
     if (!motion.hopsEnabled) motion.hopStart = null;
     if (!motion.chaseEnabled && motion.mode === 'chase') { motion.mode = 'idle'; motion.target = { x: motion.x, y: motion.y }; }
   }
   if (typeof input.paused === 'boolean' && input.paused !== motion.paused) motion.pause(input.paused, performance.now());
   if (typeof input.visible === 'boolean') enabled = input.visible;
+  host.style.visibility = enabled ? 'visible' : 'hidden';
+  if (input.presence) motion.setPresence(input.presence === 'peek' ? 'peek' : 'wander', performance.now());
+  if (input.quote && enabled) bubble.show(input.quote, performance.now());
+  bubble.element.style.display = enabled ? '' : 'none';
   if (input.action === 'call') { motion.pause(false, performance.now()); motion.pettedUntil = 0; motion.followCursor(cursor, performance.now()); }
   if (input.action === 'reach') motion.reach(performance.now());
+  if (input.action === 'ack') { motion.pettedUntil = performance.now() + 1500; motion.sparkleId++; motion.reachStart = null; motion.mode = 'pet'; }
   if (input.action === 'jump') { motion.pause(false, performance.now()); motion.jump(performance.now()); }
   if (input.action === 'resume') { motion.lastTime = performance.now(); motion.accumulator = 0; }
 }
@@ -52,6 +59,7 @@ function frame(now) {
     const next = motion.advance(now, cursor), area = motion.area();
     host.style.transform = `translate3d(${next.x - area.x - (scene?.footX ?? WINDOW.footX)}px,${next.y - area.y - (scene?.footY ?? WINDOW.footY)}px,0)`;
     scene?.draw(next, now);
+    bubble.draw({ ...next, x: next.x - area.x, y: next.y - area.y }, now, reduceMotion);
     document.body.dataset.mood = next.mode;
     window.__buildlingsFrame = { ...next, pet: selected };
     window.dispatchEvent(new CustomEvent('companion-frame', { detail: window.__buildlingsFrame }));

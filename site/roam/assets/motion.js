@@ -34,7 +34,7 @@
       this.areaId = areas.some(a => a.id === activeId) ? activeId : areas[0].id;
       const b = this.bounds(); this.x = (b.left + b.right) / 2; this.y = Math.max(b.top, b.bottom - 70);
       this.target = { x: this.x, y: this.y }; this.vx = 0; this.vy = 0;
-      this.mode = 'idle'; this.paused = false; this.chaseEnabled = true; this.hopsEnabled = true;
+      this.mode = 'idle'; this.paused = false; this.chaseEnabled = true; this.hopsEnabled = true; this.presence = 'wander'; this.returning = false;
       this.lastTime = now; this.simTime = now; this.accumulator = 0; this.actionUntil = now + 1800;
       this.nextChase = now + 7000; this.nextHop = now + 6500; this.nextReach = now + 10000;
       this.hopStart = null; this.hopDuration = 920; this.hopPeak = 55; this.landedAt = -Infinity;
@@ -51,7 +51,20 @@
         walk: this.visual.walk.value, pet: this.visual.pet.value, lean: this.visual.lean.value,
         lookX: this.look.x.value, lookY: this.look.y.value };
     }
-    bounds() { return safeArea(this.area()); }
+    bounds() {
+      const b = safeArea(this.area());
+      if (this.presence === 'peek' || this.returning) b.right = this.area().x + this.area().width + 25;
+      return b;
+    }
+    setPresence(value, now) {
+      if (value === this.presence) return;
+      this.presence = value; this.hopStart = null; this.reachStart = null; this.wanderPath = null;
+      const area = this.area(), b = safeArea(area);
+      this.returning = value !== 'peek' && this.x > b.right;
+      this.mode = value === 'peek' ? 'peek' : this.returning ? 'return' : 'idle';
+      this.target = value === 'peek' ? { x: area.x + area.width - 18, y: b.bottom - 25 } : { x: clamp(this.x, b.left, b.right), y: clamp(this.y, b.top, b.bottom) };
+      this.actionUntil = now + 1800;
+    }
     setAreas(areas) {
       const valid = areas.filter(a => Number.isFinite(a.x) && Number.isFinite(a.y) && a.width > 0 && a.height > 0);
       if (!valid.length) return;
@@ -123,21 +136,26 @@
     }
     step(dt, now, cursor, hovering, pose) {
       this.previous = this.snapshot();
-      const occupied = this.paused || hovering || now < this.pettedUntil || this.reachStart !== null;
+      const edgeTravel = this.presence === 'peek' || this.returning;
+      const occupied = (!edgeTravel && this.paused) || hovering || now < this.pettedUntil || this.reachStart !== null;
+      if (this.presence === 'peek') {
+        const area = this.area(); this.target = { x: area.x + area.width - 18, y: safeArea(area).bottom - 25 };
+        if (now >= this.pettedUntil && this.reachStart === null) this.mode = 'peek';
+      }
       if (!occupied) {
         if (this.mode === 'pet') this.actionUntil = now;
-        if (now >= this.actionUntil) this.chooseBehavior(now, cursor);
+        if (!edgeTravel && now >= this.actionUntil) this.chooseBehavior(now, cursor);
         if (this.mode === 'chase') {
           const b = this.bounds(), dx = cursor.x - this.x, dy = cursor.y - this.y + 94, d = Math.hypot(dx, dy) || 1;
           this.target = { x: clamp(cursor.x - dx / d * 92, b.left, b.right), y: clamp(cursor.y + 94 - dy / d * 62, b.top, b.bottom) };
         } else if (this.mode === 'wander' && this.wanderPath) {
           const p = this.wanderPath; this.target = bezier(p.points, clamp((now - p.start + 480) / p.duration, 0, 1));
         }
-        if (now >= this.nextHop && Math.hypot(this.vx, this.vy) > 15) this.jump(now);
+        if (!edgeTravel && now >= this.nextHop && Math.hypot(this.vx, this.vy) > 15) this.jump(now);
       }
-      const moving = !occupied && ['wander', 'chase'].includes(this.mode);
+      const moving = !occupied && (edgeTravel || ['wander', 'chase'].includes(this.mode));
       const dx = this.target.x - this.x, dy = this.target.y - this.y, distance = Math.hypot(dx, dy);
-      const maxSpeed = this.mode === 'chase' ? 145 : 76;
+      const maxSpeed = edgeTravel ? 240 : this.mode === 'chase' ? 145 : 76;
       const speed = moving && distance > 3 && pose.jumpPhase !== 'anticipation' ? Math.min(maxSpeed, distance * 1.9) : 0;
       const desiredX = distance > 0 ? dx / distance * speed : 0, desiredY = distance > 0 ? dy / distance * speed : 0;
       const smoothing = 1 - Math.exp(-dt * (occupied ? 18 : 6.5));
@@ -149,6 +167,7 @@
       const b = this.bounds(); this.x = clamp(this.x + this.vx * dt, b.left, b.right); this.y = clamp(this.y + this.vy * dt, b.top, b.bottom);
       if ((this.x === b.left && this.vx < 0) || (this.x === b.right && this.vx > 0)) this.vx = 0;
       if ((this.y === b.top && this.vy < 0) || (this.y === b.bottom && this.vy > 0)) this.vy = 0;
+      if (this.returning && Math.hypot(this.target.x - this.x, this.target.y - this.y) < 2) { this.returning = false; this.mode = 'idle'; this.actionUntil = now + 1800; }
       const velocity = Math.hypot(this.vx, this.vy);
       if (pose.jumpPhase === 'ground' && velocity > 1) this.walkPhase += velocity * dt / 58 * Math.PI * 2;
       spring(this.visual.walk, pose.jumpPhase === 'ground' ? clamp(velocity / 65, 0, 1) : 0, 14, dt);

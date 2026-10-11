@@ -9,6 +9,14 @@ leans into cursor strokes, and reaches a larger hand toward you.
 Mouse clicks pass through; controls live in the Windows notification area.
 This release contains one doodle character.
 
+Version 0.5.0 adds a focus corner: configurable Pomodoro sessions, breaks,
+90 warm lines and 35 sourced quotations, a hide-and-peek mode, saved thoughts,
+and an “I’m staying” button with a session summary. Double-click the tray icon
+or press **Ctrl+Alt+F** to open it. **Ctrl+Alt+T** captures a thought;
+**Ctrl+Alt+S** records a choice during a running focus session. The focus corner
+can be closed while the timer continues. By default, Mischief peeks from the
+edge during focus and ordinary quotes stay quiet.
+
 Try the [movement playground](https://prachetas2003.github.io/Trial/roam/).
 The browser preview stays within its page. The desktop application moves
 over other applications without a visible rectangular background.
@@ -46,8 +54,16 @@ npm run desktop
 Electron is downloaded by the install script with its official checksum
 verification. Injected HTTPS proxies are supported without disabling TLS.
 The renderer is sandboxed with context isolation and no Node integration.
-The desktop application makes no network requests and stores only its marker-ink
-and motion preferences. Cursor positions are used locally for animation.
+The desktop application makes no network requests. Preferences, saved thoughts,
+the last 50 focus sessions, choice counts, and a paused timer checkpoint stay in
+local app-data. Cursor positions are used locally for animation. Quit, sleep,
+and screen lock pause the timer; restarting restores the last saved checkpoint
+as paused. Session time and recorded choices do not measure attention.
+
+The [quote bank](product/MONKEY_QUOTE_BANK.md) is the source of the compiled
+offline dialogue. [Quote references](product/MONKEY_QUOTE_SOURCES.md) are separate
+from speech; an attributed bubble shows only the quote and name. Use
+`npm run sync:preview` after editing the bank or shared desktop code.
 
 For the website, `npm start` serves only `site/` on port 3000. Publish the
 contents of `site/` to a static host. After editing desktop animation code,
@@ -63,6 +79,7 @@ npm start
 # In another terminal, with Chromium available:
 npm run test:browser
 npm run test:roam
+npm run test:focus
 # On a graphical Windows desktop:
 npm run test:desktop
 npm run package:desktop
