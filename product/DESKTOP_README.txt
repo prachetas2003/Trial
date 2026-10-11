@@ -1,4 +1,4 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.6.0
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.6.1
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
@@ -40,9 +40,10 @@ Move your cursor gently across Mischief to pet it. Right-click the tray icon
 for motion, marker ink, quotes, hiding, and timer controls. White marker works
 well over dark editors. The monkey can wander freely, peek from the edge,
 or be hidden completely. It tucks to the edge during focus by default.
-Warm quotes appear about every 45 seconds by default. Choose 25, 45 or 90
+Warm quotes appear every 12 seconds by default. Choose 12, 25, 45 or 90
 seconds in the focus corner; you can keep ordinary quotes quiet during focus.
-Existing preferences are preserved. Bringing him back during focus affects
+This update switches old quote intervals to 12 seconds and refreshes the deck.
+Your thoughts, sessions and other preferences are preserved. Bringing him back during focus affects
 only this session; the next one can still tuck automatically. By default he
 comes back when the focus session ends.
 
@@ -63,7 +64,8 @@ not read your editor, record keystrokes elsewhere, use AI credits, sample your
 screen, block websites, send cursor positions, or run on startup. The app
 makes no network requests. Preferences, thoughts, sessions, and timer
 checkpoints are stored locally in Electron's app-data folder. Quote sources
-are listed in QUOTE_SOURCES.md. There are 90 warm lines and 35 sourced quotes.
+are listed in QUOTE_SOURCES.md and QUOTE_SOURCES_ADDITIONS.md.
+There are 120 balanced everyday lines and 43 sourced quotations.
 
 The original marker artwork has variable-width strokes, stable ink grain,
 small highlights, an orange shirt, and movable arms, legs, head, and tail.
@@ -78,4 +80,4 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.6.0
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.6.1

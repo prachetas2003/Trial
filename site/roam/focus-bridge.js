@@ -1,13 +1,14 @@
 (() => {
   'use strict';
   const api = window.companion, key = 'mischief-focus-preview-v1';
-  let saved = {}, saveError = '', lastSave = 0, nextQuote = Date.now() + 15000, ink = 'black';
+  let saved = {}, saveError = '', lastSave = 0, nextQuote = Date.now() + 12000, ink = 'black';
   try { saved = JSON.parse(localStorage.getItem(key) || '{}') || {}; }
   catch { saveError = 'Your saved browser data could not be read. This session starts fresh.'; }
   if (saved.ink === 'white') ink = 'white';
   const focus = new window.MischiefFocus.FocusCompanion({ saved, bank: window.MischiefQuotes });
   const listeners = new Set(); let viewListener = () => {}, highlight = null;
-  const quoteDelay = () => focus.preferences.quoteSeconds * 1000 * (.8 + Math.random() * .4);
+  const quoteDelay = () => focus.preferences.quoteSeconds * 1000;
+  nextQuote = Date.now() + quoteDelay();
   const mode = () => focus.presence();
   const snapshot = () => ({ ...focus.snapshot(), ink, saveError, highlight });
   function save() {
@@ -18,7 +19,7 @@
   function state() { api.send({ presence: mode(), visible: mode() !== 'hidden', preferences: focus.preferences }); for (const listener of listeners) listener(snapshot()); }
   function events() {
     for (const event of focus.drainEvents()) {
-      if (event.type === 'quote') { api.send({ quote: event.quote }); nextQuote = Date.now() + Math.max(25000, quoteDelay()); }
+      if (event.type === 'quote') { api.send({ quote: event.quote }); nextQuote = Date.now() + quoteDelay(); }
       if (event.type === 'stayed') api.send({ action: 'ack' });
       if (event.type === 'finished' || event.type === 'break-finished') {
         highlight = { kind: event.type === 'finished' ? 'focus' : 'break', id: event.summary?.id || event.id, completed: event.summary?.completed ?? event.completed };

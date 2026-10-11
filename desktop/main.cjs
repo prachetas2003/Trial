@@ -6,9 +6,9 @@ const bank = require('./quotes.js');
 if (process.env.BUILDLINGS_TEST_DATA) app.setPath('userData', process.env.BUILDLINGS_TEST_DATA);
 const gotLock = app.requestSingleInstanceLock();
 let win, focusWin, tray, inputTimer, focusTimer, focus, activeId, lastCursor, lastFrame, paused = false, hidden = false, rendererReady = false, quitting = false;
-let saveError = '', lastSaved = 0, nextWarmQuote = Date.now() + 15000, trayKey = '';
+let saveError = '', lastSaved = 0, nextWarmQuote = Date.now() + 12000, trayKey = '';
 let dragging = false, interactive = false, hudRect = null, highlight = null;
-const quoteDelay = () => focus.preferences.quoteSeconds * 1000 * (.8 + Math.random() * .4);
+const quoteDelay = () => focus.preferences.quoteSeconds * 1000;
 let settings = { pet: 'monkey', ink: 'black', chasing: true, hopping: true };
 const dataPath = name => path.join(app.getPath('userData'), name);
 function areas() { return screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })); }
@@ -41,6 +41,7 @@ function loadSettings() {
   if (typeof saved?.chasing === 'boolean') settings.chasing = saved.chasing;
   if (typeof saved?.hopping === 'boolean') settings.hopping = saved.hopping;
   focus = new FocusCompanion({ saved: readData('focus-data.json') || {}, bank });
+  nextWarmQuote = Date.now() + quoteDelay();
 }
 function send(input) { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:input', input); }
 function presence() { return focus.presence(); }
@@ -53,7 +54,7 @@ function state(action) {
 function broadcastFocus() { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:focus-state', snapshot()); if (focusWin && !focusWin.isDestroyed() && focusWin.isVisible()) focusWin.webContents.send('companion:focus-state', snapshot()); }
 function processEvents() {
   for (const event of focus.drainEvents()) {
-    if (event.type === 'quote') { send({ quote: event.quote }); nextWarmQuote = Date.now() + Math.max(25000, quoteDelay()); }
+    if (event.type === 'quote') { send({ quote: event.quote }); nextWarmQuote = Date.now() + quoteDelay(); }
     if (event.type === 'stayed') send({ action: 'ack' });
     if (event.type === 'finished' || event.type === 'break-finished') {
       highlight = { kind: event.type === 'finished' ? 'focus' : 'break', id: event.summary?.id || event.id, completed: event.summary?.completed ?? event.completed };

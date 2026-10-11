@@ -10,7 +10,7 @@ Drag the monkey by its head or body. Empty screen areas and speech bubbles
 let clicks through; a compact timer bar stays at the top of the screen.
 This release contains one doodle character.
 
-Version 0.6.0 adds click-and-drag with body and leg momentum, dragging along
+Version 0.6.1 includes click-and-drag with body and leg momentum, dragging along
 all four screen margins while peeking, and a continuous cursor-chase toggle.
 The top bar shows the timer, an “I’m staying” button, thought capture, tuck/bring
 back, and chase controls. Click the timer to open the focus corner. Completion
@@ -18,11 +18,13 @@ plays a soft offline chime and lights up clickable session highlights. The
 monkey returns after focus by default; retrieving it during focus overrides
 only that session, preserving automatic tucking for the next one.
 
-Warm quotes appear roughly every 45 seconds, with 25/45/90-second frequency
-options. Quiet ordinary quotes during focus and completion sound are optional.
+The balanced bank has 120 everyday lines and 43 attributed quotations.
+Warm quotes appear every 12 seconds, with 12/25/45/90-second frequency options.
+Updating from the previous release sets the cadence to 12 seconds while keeping
+your thoughts, sessions and other preferences. Quiet ordinary quotes during focus and completion sound are optional.
 You can turn dragging off for clicks to pass through the monkey too. The bar
 remains usable even when you completely hide the monkey. Pomodoro sessions,
-breaks, 90 warm lines, 35 sourced quotations, saved thoughts, and session
+breaks, saved thoughts, and session
 summaries remain local. Double-click the tray icon or press **Ctrl+Alt+F** to
 open the focus corner. **Ctrl+Alt+T** captures a thought; **Ctrl+Alt+S** records
 a choice during a running focus session.
@@ -91,6 +93,7 @@ npm run test:browser
 npm run test:roam
 npm run test:focus
 npm run test:overlay
+npm run test:quotes
 # On a graphical Windows desktop:
 npm run test:desktop
 npm run package:desktop

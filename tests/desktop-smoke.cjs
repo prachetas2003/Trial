@@ -216,6 +216,15 @@ async function clickOverlay(app, page, selector) {
     assert.equal(await restored.locator('#companion-host').isVisible(), false); assert.equal(await restored.locator('#timer-bar').isVisible(), true);
     await clickOverlay(app, restored, '#bar-tuck'); assert.equal(await restored.locator('#companion-host').isVisible(), true);
     console.log('PASS top distraction button records a choice and top controls retrieve a completely hidden monkey');
-    console.log('15 native desktop checks passed. Windows results apply only when this script runs on Windows.');
+    const nativeQuoteSchedule = await app.evaluate(({ app }) => {
+      const r = app.__buildlingsRuntime;
+      const intervals = [];
+      for (let i = 0; i < 2; i++) { r.applyFocus({ type: 'quote' }); intervals.push(r.getRuntime().nextWarmQuote - Date.now()); }
+      return { intervals, seconds: r.getRuntime().focus.preferences.quoteSeconds, everyday: r.getRuntime().focus.bank.everyday.length, hard: r.getRuntime().focus.bank.hard.length };
+    });
+    assert.equal(nativeQuoteSchedule.seconds, 12); assert.equal(nativeQuoteSchedule.everyday, 120); assert.equal(nativeQuoteSchedule.hard, 43);
+    assert.ok(nativeQuoteSchedule.intervals.every(ms => ms > 11000 && ms <= 12000), JSON.stringify(nativeQuoteSchedule));
+    console.log('PASS native balanced 120/43 quote bank and fixed 12-second scheduling without a 25-second minimum');
+    console.log('16 native desktop checks passed. Windows results apply only when this script runs on Windows.');
   } finally { await app.close(); await fs.rm(temp, { recursive: true, force: true }); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

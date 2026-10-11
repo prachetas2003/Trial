@@ -11,7 +11,7 @@ export class SpeechBubble {
   }
   show(quote, now) {
     this.quote = quote; this.startedAt = now; this.words = quote.text.split(' '); this.wordCount = 0;
-    this.until = now + Math.max(9000, Math.min(22000, this.words.length * 350 + 5000));
+    this.until = now + Math.max(9000, Math.min(quote.category === 'everyday' ? 11500 : 22000, this.words.length * 350 + 5000));
     this.element.hidden = false; this.element.classList.remove('bubble-exit');
     this.accessible.textContent = quote.author ? `${quote.text} — ${quote.author}` : quote.text;
     this.text.style.minHeight = '';

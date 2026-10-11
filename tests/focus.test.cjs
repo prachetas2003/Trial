@@ -82,8 +82,8 @@ test('continuous chase persists through restart and session completion; explicit
 });
 test('quote frequency, edge location and interactive preferences reject invalid saved values', () => {
   const f = make({ preferences: { quoteSeconds: -40, edge: 'unknown', edgePosition: 20, dragEnabled: 'yes', completionSound: false } });
-  assert.equal(f.preferences.quoteSeconds, 15); assert.equal(f.preferences.edge, 'right'); assert.equal(f.preferences.edgePosition, 1); assert.equal(f.preferences.dragEnabled, true); assert.equal(f.preferences.completionSound, false);
-  f.dispatch({ type: 'preferences', values: { quoteSeconds: Infinity, edgePosition: -20 } }, 1000); assert.equal(f.preferences.quoteSeconds, 45); assert.equal(f.preferences.edgePosition, 0);
+  assert.equal(f.preferences.quoteSeconds, 12); assert.equal(f.preferences.edge, 'right'); assert.equal(f.preferences.edgePosition, 1); assert.equal(f.preferences.dragEnabled, true); assert.equal(f.preferences.completionSound, false);
+  f.dispatch({ type: 'preferences', values: { quoteSeconds: Infinity, edgePosition: -20 } }, 1000); assert.equal(f.preferences.quoteSeconds, 12); assert.equal(f.preferences.edgePosition, 0);
 });
 test('break expiry and early ending have distinct completion events for sound', () => {
   const f = make(); f.dispatch({ type: 'preferences', values: { breakMinutes: 1 } }, 1000);
@@ -91,4 +91,17 @@ test('break expiry and early ending have distinct completion events for sound', 
   assert.equal(f.drainEvents().find(e => e.type === 'break-finished').completed, false);
   f.dispatch({ type: 'start', kind: 'break' }, 3000); f.tick(63000); f.tick(64000);
   const events = f.drainEvents().filter(e => e.type === 'break-finished'); assert.equal(events.length, 1); assert.equal(events[0].completed, true); assert.ok(events[0].id);
+});
+test('updating a version-1 installation switches to 12-second quotes and refreshes the balanced bank without losing work', () => {
+  const old = make(); old.dispatch({ type: 'preferences', values: { quoteSeconds: 90, quietFocus: true, completionSound: false } }, 1000);
+  old.dispatch({ type: 'note-add', text: 'Keep my idea' }, 1000); old.dispatch({ type: 'start', intention: 'Continue my project' }, 1000); old.dispatch({ type: 'stay' }, 2000);
+  const saved = old.export(9000); saved.version = 1; saved.decks.everyday = ['A001', 'A002'];
+  const updated = make(saved);
+  assert.equal(updated.preferences.quoteSeconds, 12); assert.equal(updated.preferences.quietFocus, true); assert.equal(updated.preferences.completionSound, false);
+  assert.equal(updated.notes[0].text, 'Keep my idea'); assert.equal(updated.session.intention, 'Continue my project'); assert.equal(updated.session.choices, 1); assert.equal(updated.session.elapsedMs, 8000); assert.equal(updated.session.running, false);
+  assert.deepEqual(updated.decks.everyday, []); updated.quote(); assert.equal(updated.decks.everyday.length, 119);
+  assert.equal(bank.everyday.length, 120); assert.equal(bank.hard.length, 43); assert.equal(bank.everyday.find(q => q.id === 'A120').text, "You can end the day unfinished and still let the day be over.");
+  assert.equal(bank.hard.find(q => q.id === 'H043').author, 'James Dyson');
+  updated.dispatch({ type: 'preferences', values: { quoteSeconds: 25 } }, 10000);
+  const restarted = make(updated.export(10000)); assert.equal(restarted.preferences.quoteSeconds, 25); assert.deepEqual(restarted.decks, updated.decks);
 });

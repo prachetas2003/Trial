@@ -1,34 +1,26 @@
-Buildlings 0.6.0 gives **Mischief** hands-on movement and a top-screen focus bar.
+Buildlings 0.6.1 uses the updated **balanced Mischief quote bank**:
+120 everyday lines and 43 attributed quotations, imported from the
+`balanced-mischief-quotes` branch.
 
-- **Grab and drag:** hold the monkey's head or body to move him. His body and
-  legs swing with momentum and settle on release. In peek mode, drag along
-  the margins or onto any of the four edges. Dragging can be turned off.
-- **Keep chasing:** the Chase button follows your cursor until you turn it
-  off. Tucking the monkey turns chase off.
-- **More company:** warm quotes appear about every 45 seconds, with 25/45/90
-  second frequency options. Quotes do not repeat until their deck is exhausted.
-- **Timer at the top:** a compact recording-style bar shows the countdown,
-  “I'm staying,” thought capture, tuck/bring-back, and Chase. Click the timer
-  to open your focus corner. It remains visible when the monkey is hidden.
-- **Timer completion:** a soft, local bell plays once when a timer expires.
-  The bar glows; click Highlights to see your session. Sound is optional.
-- **Tuck and retrieve:** bring him back during focus without changing future
-  automatic tucking. He returns when focus ends by default, including sessions
-  that started with the monkey already tucked. Complete hiding is respected.
+- A warm quote appears **every 12 seconds** by default. The old randomized
+  timing and 25-second minimum delay are removed.
+- Existing installations switch to 12 seconds on this update. Thoughts,
+  sessions, marker appearance, and other preferences remain saved.
+- Choose 12, 25, 45 or 90 seconds in the focus corner. Turning automatic quotes
+  off, quiet quotes during focus, and complete hiding are still respected.
+- Everyday bubbles finish before the next scheduled quote. A manual quote or
+  “I'm staying” restarts the interval so encouragement has time to be read.
+- The refreshed deck includes the new lines immediately and avoids repeats
+  until exhausted. Attributed quotes show only the quotation and name.
 
-Pomodoro, optional breaks, saved thoughts, 90 warm lines, 35 sourced quotations,
-choice counting and local session history are included. No account or API is
-needed. Existing local data and preferences are preserved. Session time and
-choice counts record the timer and your presses, rather than measuring attention.
-
-Empty overlay areas and bubbles pass mouse clicks to your work. The monkey's
-small grab region and timer bar accept clicks without taking keyboard focus.
-You can disable grabbing for clicks to pass through the monkey too.
+Drag physics, edge peeking, persistent cursor chase, the top timer bar, session
+highlights, saved thoughts, and the completion chime are included.
 
 Download **Buildlings-Windows-x64.zip**, quit the previous version from its
 notification-area menu, extract the entire ZIP, and open **Buildlings.exe**.
-`QUOTE_SOURCES.md` includes quotation references. This is an unsigned Windows
-10/11 x64 preview; the archive checksum is in `SHA256SUMS.txt`.
+`QUOTE_SOURCES.md` and `QUOTE_SOURCES_ADDITIONS.md` include the quotation
+references. This is an unsigned Windows 10/11 x64 preview; the archive checksum
+is in `SHA256SUMS.txt`.
 
-Browser preview: https://prachetas2003.github.io/Trial/roam/?v=0.6.0
-The browser monkey stays inside the page; the Windows app roams over other apps.
+Browser preview: https://prachetas2003.github.io/Trial/roam/?v=0.6.1
+The browser preview stays inside its page and keeps separate browser data.

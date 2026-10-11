@@ -1,129 +1,158 @@
 # Mischief’s quote bank
 
-Editorial draft: **90 everyday lines + 35 harder-moment quotations**.
+Editorial draft: **120 everyday lines + 43 harder-moment quotations**.
 
-A001–A090 are original monkey dialogue. H001–H035 are quotations from
-accomplished investors, entrepreneurs, inventors, and scientists.
+The everyday deck is intentionally balanced:
+- **40% warmth and companionship**
+- **35% discipline and gentle motivation**
+- **15% ambition and inspiration**
+- **10% rest and perspective**
+
+A001–A120 are original Mischief dialogue. H001–H043 are sourced quotations
+from accomplished investors, entrepreneurs, inventors, scientists, and builders.
 Each harder-moment entry displays only the quotation and the speaker’s name.
 
 The everyday bank is for occasional companionship. The harder-moment bank
 is for someone requesting encouragement or choosing to stay with their work.
 No acknowledgement or extra monkey commentary accompanies those quotations.
 
-Verification links, source context, and excerpt notes are kept separately in
-[MONKEY_QUOTE_SOURCES.md](MONKEY_QUOTE_SOURCES.md).
+Verification links, source context, and excerpt notes for H001–H035 are kept in
+[MONKEY_QUOTE_SOURCES.md](MONKEY_QUOTE_SOURCES.md). Sources for H036–H043 are in
+[MONKEY_QUOTE_SOURCES_ADDITIONS.md](MONKEY_QUOTE_SOURCES_ADDITIONS.md).
 
-## A. Everyday warmth — 90 original lines
+## Warmth and companionship
 
-### Beginning and returning
+- **A001** — You don't have to arrive impressive. Just arrive.
+- **A002** — I'm here. You can take it one line at a time.
+- **A003** — Open the thing. That's enough for a beginning.
+- **A004** — You can start before you feel ready.
+- **A005** — A rough start is still a real start.
+- **A006** — One small honest step can carry more than it looks.
+- **A007** — You don't need the whole map. Just the next turn.
+- **A008** — Coming back counts as courage too.
+- **A009** — The blank page isn't judging you. Neither am I.
+- **A010** — We can make this a little less impossible together.
+- **A011** — You don't need a perfect day to make a useful hour.
+- **A012** — Start with the part you can reach.
+- **A013** — You can be unsure and still be moving.
+- **A014** — Today doesn't have to look like anyone else's day.
+- **A015** — Your pace is allowed to be yours.
+- **A016** — Quiet effort still belongs to the story.
+- **A017** — Some good work happens without an audience.
+- **A018** — You don't have to prove anything to begin.
+- **A019** — I'll keep you company while you figure out the next bit.
+- **A020** — A tiny step can still change the direction of the day.
+- **A021** — There's room here for an imperfect attempt.
+- **A022** — You can learn while you're doing it.
+- **A023** — Not knowing yet is a perfectly normal place to be.
+- **A024** — An unfinished idea is welcome at this desk.
+- **A025** — You don't have to impress a doodle monkey.
+- **A026** — I brought absolutely no judgment. Also no snacks. Sorry.
+- **A027** — If today is weird, we can be weird together.
+- **A028** — I can sit quietly while you find your words.
+- **A029** — You're welcome here on the messy days too.
+- **A030** — I'm not keeping score. I'm keeping you company.
+- **A031** — You do the thinking. I'll handle the moral support.
+- **A032** — A little silliness belongs beside serious dreams.
+- **A033** — I saved you the good branch. Excellent working conditions.
+- **A034** — My tail is curled in support of your mysterious human plans.
+- **A035** — I can't solve the problem, but I can stay nearby.
+- **A036** — You are more interesting than your to-do list.
+- **A037** — There's more to you than what gets finished today.
+- **A038** — One monkey. Plenty of patience.
+- **A039** — If this takes another try, I'll still be here.
+- **A040** — A complicated day can still have one decent moment.
+- **A041** — You can change the plan without calling the day a failure.
+- **A042** — An awkward draft is a perfectly respectable thing to have.
+- **A043** — Even monkeys miss a branch sometimes.
+- **A044** — You can start over without starting from nothing.
+- **A045** — A mistake can give you a better question.
+- **A046** — You don't have to turn one hard moment into a verdict.
+- **A047** — Whatever happens with this task, you're still allowed to be proud of trying.
+- **A048** — Thanks for sharing a little corner of your screen with me.
 
-- **A001** — You can begin before you have the whole thing figured out.
-- **A002** — There’s room here for an imperfect start.
-- **A003** — One sentence, one sketch, one small beginning.
-- **A004** — The first step can be smaller than you think.
-- **A005** — Today can have its own pace.
-- **A006** — You can bring your unfinished self to an unfinished task.
-- **A007** — A rough first version gives you something to work with.
-- **A008** — You’re allowed to learn while you go.
-- **A009** — Start with the part you can reach.
-- **A010** — Coming back is a beginning too.
-- **A011** — You don’t need a perfect morning to have a worthwhile afternoon.
-- **A012** — Choose something small enough to begin with the energy you have.
-- **A013** — The next line can be simple.
-- **A014** — You can leave room to change your mind.
-- **A015** — Let’s give one little idea somewhere to land.
+## Discipline and quiet strength
 
-### Steady effort and curiosity
+- **A049** — Even if the task is ordinary, showing up is still practice.
+- **A050** — The task may be small. The habit of returning isn't.
+- **A051** — Discipline is keeping a promise after the mood changes.
+- **A052** — You don't need to feel motivated to do one honest piece.
+- **A053** — Do the next useful thing before negotiating with your mood.
+- **A054** — A little resistance doesn't get the final vote.
+- **A055** — Some work builds results. Some work builds your ability to work.
+- **A056** — Hard things teach you that discomfort isn't always a stop sign.
+- **A057** — You can dislike this step and still choose it on purpose.
+- **A058** — One kept promise makes the next one easier to believe.
+- **A059** — The boring middle is where a lot of good things are built.
+- **A060** — Consistency is courage in ordinary clothes.
+- **A061** — Don't wait for perfect energy. Use the energy you actually have.
+- **A062** — Five focused minutes are better than fifty minutes of circling.
+- **A063** — You don't have to win the day. Just honor this block.
+- **A064** — Finish the next honest piece. Then reassess.
+- **A065** — Your future self benefits from the work nobody applauds.
+- **A066** — Repetition is how awkward things become familiar.
+- **A067** — You are allowed to be a beginner and still take the practice seriously.
+- **A068** — Every return makes focus a little more familiar.
+- **A069** — Progress is often quiet enough to miss while it's happening.
+- **A070** — You don't need a dramatic breakthrough. You need another useful attempt.
+- **A071** — Small standards kept repeatedly become character.
+- **A072** — Try before you decide you can't.
+- **A073** — The first answer doesn't need to be good. It needs to exist.
+- **A074** — Stuck is information. Change the angle, not the verdict.
+- **A075** — Confusion can be the doorway, not the conclusion.
+- **A076** — A failed attempt can save you from ten wrong turns.
+- **A077** — Stay with the question long enough to learn its shape.
+- **A078** — Make the problem smaller until you can move it.
+- **A079** — Don't confuse a difficult hour with a permanent limit.
+- **A080** — One more thoughtful attempt can teach you more than another hour of worrying.
+- **A081** — The work doesn't need your drama. It needs your attention.
+- **A082** — Your mood can come along, but it doesn't have to drive.
+- **A083** — You build self-trust by doing what you said you'd try.
+- **A084** — The point isn't to suffer. It's to become someone you can rely on.
+- **A085** — Being disciplined doesn't mean being harsh with yourself.
+- **A086** — Every hard thing you do on purpose expands what “normal” feels like.
+- **A087** — You don't need a perfect streak. You need a reliable way back.
+- **A088** — Start again before shame turns one missed day into a week.
+- **A089** — Sometimes the strongest move is simply not quitting on the next step.
+- **A090** — Give this block your full attention. The rest of the day can wait.
 
-- **A016** — Quiet effort deserves a little recognition.
-- **A017** — Some useful work happens without an audience.
-- **A018** — A question can be a good place to start.
-- **A019** — Finding out what doesn’t work is information you can use.
-- **A020** — You can care about something and still take your time with it.
-- **A021** — There’s space to do this carefully.
-- **A022** — A clearer question can make the next step easier.
-- **A023** — Small details are allowed to matter to you.
-- **A024** — Your curiosity is welcome here.
-- **A025** — A little practice can fit into an ordinary day.
-- **A026** — You can make something useful without making something enormous.
-- **A027** — An idea can grow through a few ordinary attempts.
-- **A028** — You get to decide what deserves your attention today.
-- **A029** — Something familiar can still teach you something new.
-- **A030** — Leave a note for the thought you want to return to.
+## Inspiration and ambition
 
-### Imperfection and changing plans
+- **A091** — You haven't met every version of yourself yet.
+- **A092** — Someone will make something wonderful. Why not you?
+- **A093** — Your ideas deserve an experiment, not just a daydream.
+- **A094** — You are allowed to want a bigger life than the one you know.
+- **A095** — One day, today's difficult thing may be your easy thing.
+- **A096** — You don't need permission to take your own work seriously.
+- **A097** — A small start is still a vote for a larger future.
+- **A098** — Being new at something isn't evidence you don't belong.
+- **A099** — Make the attempt you wish you'd made.
+- **A100** — You can build something that didn't exist yesterday.
+- **A101** — The gap between taste and skill closes by making things.
+- **A102** — Don't wait to feel like the kind of person who can do it.
+- **A103** — Your future isn't decided by this one session.
+- **A104** — Nobody can promise it'll work. That's what makes trying brave.
+- **A105** — Keep enough curiosity alive to surprise yourself.
+- **A106** — The dream can be enormous. Today's step can be tiny.
+- **A107** — You may be closer to a breakthrough in skill than your feelings can measure.
+- **A108** — Take your own potential seriously enough to practice.
 
-- **A031** — An awkward draft is a perfectly reasonable thing to have.
-- **A032** — A mistake can give you a clearer question.
-- **A033** — You can revise the work and be kind to yourself.
-- **A034** — Changing the plan can be a thoughtful decision.
-- **A035** — Even monkeys miss a branch sometimes.
-- **A036** — A complicated day can still have a gentle moment.
-- **A037** — You’re allowed to say, “I’m still working that out.”
-- **A038** — Some things become clearer after a little distance.
-- **A039** — Asking for help can be the next useful step.
-- **A040** — You can make room for an answer you didn’t expect.
-- **A041** — An unfinished idea is welcome at this desk.
-- **A042** — You don’t owe every idea an immediate answer.
-- **A043** — A slower route might suit this part.
-- **A044** — You can keep the lesson and let the embarrassment settle.
-- **A045** — Your first attempt is allowed to look like a first attempt.
+## Rest and perspective
 
-### Space, rest, and enough
+- **A109** — You're a person, not a progress bar.
+- **A110** — Rest isn't a prize you have to earn.
+- **A111** — A break can protect the part of you that wants to try again.
+- **A112** — Unclench your jaw. Yes, that one.
+- **A113** — The world can wait while you drink some water.
+- **A114** — A rested brain makes kinder decisions.
+- **A115** — You don't have to squeeze one more drop out of this hour.
+- **A116** — Nothing falls apart because you looked away from the screen.
+- **A117** — Enough is a word you're allowed to use.
+- **A118** — Ambition works better when it has somewhere to recover.
+- **A119** — Stopping at a good point is a skill too.
+- **A120** — You can end the day unfinished and still let the day be over.
 
-- **A046** — You’re allowed to take a break before you run out of energy.
-- **A047** — A glass of water is a reasonable next step.
-- **A048** — You can look away from the screen for a moment.
-- **A049** — There’s no need to fill every quiet minute.
-- **A050** — Your shoulders are welcome to come down a little.
-- **A051** — Leave yourself a little room to breathe.
-- **A052** — You’re allowed to have interests beyond what you’re working on.
-- **A053** — A pause can give an idea some space.
-- **A054** — Enough is a word you’re allowed to use.
-- **A055** — You can choose a pace you can live with.
-- **A056** — Rest belongs in the plan too.
-- **A057** — You’re allowed to enjoy something without turning it into a project.
-- **A058** — A little daylight might be a nice change of scenery.
-- **A059** — This task can share the day with the rest of your life.
-- **A060** — You can leave some energy for yourself.
-
-### A little company
-
-- **A061** — One monkey. Plenty of patience.
-- **A062** — I’m happy to keep you a little company.
-- **A063** — I brought a curly tail and absolutely no deadlines.
-- **A064** — If this desk had a spare branch, I’d be sitting on it.
-- **A065** — I’d offer you a banana. A little company will have to do.
-- **A066** — We can let this be an ordinary, decent moment.
-- **A067** — You don’t have to impress a doodle monkey.
-- **A068** — I can sit quietly while you find your words.
-- **A069** — You’re welcome here, even on a messy day.
-- **A070** — There’s room for a little humour beside the serious things.
-- **A071** — I’ll be over here, practising my extremely important tail curl.
-- **A072** — A small kindness can belong in the middle of a busy day.
-- **A073** — You can give yourself the patience you’d offer a friend.
-- **A074** — There’s more to you than what gets finished today.
-- **A075** — You can take your work seriously and still enjoy a silly monkey.
-
-### Reflection and winding down
-
-- **A076** — You can notice what moved forward, however modest it looks.
-- **A077** — Something you learned is worth remembering.
-- **A078** — Leave yourself a friendly note about where to begin next time.
-- **A079** — You get to decide what enough looks like today.
-- **A080** — A small thing you made can have a place in your day.
-- **A081** — An unfinished task can wait beside a finished day.
-- **A082** — You’re allowed to be pleased with a little progress.
-- **A083** — What would you like to remember from this session?
-- **A084** — You can appreciate your effort without grading the whole day.
-- **A085** — Closing a tab can be a good ending too.
-- **A086** — Tomorrow can begin with the note you leave today.
-- **A087** — You’re allowed to end the day gently.
-- **A088** — There may be a small detail here worth feeling good about.
-- **A089** — You can put this down and pick it up another time.
-- **A090** — Thanks for sharing a little corner of your screen with me.
-
-## H. Harder moments — 35 quotations
+## H. Harder moments — 43 quotations
 
 - **H001** — “No matter how great the talent or effort, some things just take time” — Warren Buffett
 - **H002** — “Don’t follow your passions, follow your effort.” — Mark Cuban
@@ -160,3 +189,11 @@ Verification links, source context, and excerpt notes are kept separately in
 - **H033** — “And most important, have the courage to follow your heart and intuition.” — Steve Jobs
 - **H034** — “The way to figure out what to work on is by working.” — Paul Graham
 - **H035** — “Interest will drive you to work harder than mere diligence ever could.” — Paul Graham
+- **H036** — “You do not rise to the level of your goals. You fall to the level of your systems.” — James Clear
+- **H037** — “Focus is a force multiplier on work.” — Sam Altman
+- **H038** — “It is much more important to work on the right thing than it is to work many hours.” — Sam Altman
+- **H039** — “What I cannot create, I do not understand.” — Richard Feynman
+- **H040** — “The discoveries are out there, waiting to be made. Why not by you?” — Paul Graham
+- **H041** — “Begin by trying the simplest thing that could possibly work.” — Paul Graham
+- **H042** — “If you do not work on an important problem, it's unlikely you'll do important work.” — Richard Hamming
+- **H043** — “I made 5,127 mistakes - or “prototypes” as they are politely referred to.” — James Dyson
