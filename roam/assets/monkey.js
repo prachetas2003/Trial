@@ -110,14 +110,17 @@ export class MonkeyScene {
     const bob=Math.abs(Math.sin(phase))*2.7*walk,breath=Math.sin(now/1050)*.6;
     c.setTransform(this.ratio,0,0,this.ratio,0,0);c.clearRect(0,0,WINDOW.width,WINDOW.height);m.strokes=0;
     c.save();c.translate(160,336-frame.hop);c.scale(frame.scaleX,frame.scaleY);c.translate(-160,-336);
+    if(frame.edge==='left' && frame.mode==='peek'){c.translate(160,0);c.scale(-1,1);c.translate(-160,0);}
+    c.translate(160,200);c.rotate(frame.bodySwing||0);c.translate(-160,-200);
     // The tail follows the body, and stays behind the head and shirt.
     c.save();c.translate(182,286);c.rotate(tail);c.translate(-182,-286);
     m.stroke(curves([182,286],[207,313,246,316,264,283],[278,255,277,220,258,212],[241,203,225,217,229,232],[233,247,253,246,256,233],[259,225,254,221,249,223]),8.2,INK,3);
     c.restore();
+    const held=clamp(frame.dragWeight||0,0,1),legSwing=frame.legSwing||0;
     const air=frame.jumpPhase==='air';
     for(let i=0;i<2;i++) {
       const foot=this.feet[i],side=foot.side,cycle=((phase/(Math.PI*2)+i*.5)%1+1)%1;
-      const stance=walk>.15&&!air&&cycle<.60,baseX=160+side*20;
+      const stance=walk>.15&&!air&&held<.05&&cycle<.60,baseX=160+side*20;
       if(stance&&!foot.stance) {
         const speed=Math.hypot(frame.vx,frame.vy)||1;
         foot.anchorX=frame.x+side*20+frame.vx/speed*13;foot.anchorY=frame.y+frame.vy/speed*7;
@@ -125,6 +128,8 @@ export class MonkeyScene {
       let fx=baseX+side*5+Math.sin(phase+i*Math.PI)*13*walk,fy=331-Math.max(0,Math.sin(phase+i*Math.PI))*12*walk;
       if(stance){fx=clamp(160+foot.anchorX-frame.x,baseX-21,baseX+21);fy=331+clamp(foot.anchorY-frame.y,-7,7);}
       if(air){fx+=side*14;fy-=12;}
+      fx+=Math.sin(legSwing+side*.13)*43;fy+=held*7-(1-Math.cos(legSwing))*18;
+      fx+=Math.sin(now/220+i*1.7)*held*3;
       foot.stance=stance;
       m.stroke(curves([160+side*13,291],[160+side*20,306,fx-side*12,fy-8,fx,fy]),6.5,INK,i+8);
       m.stroke(curves([fx-side*2,fy-3],[fx+side*15,fy-5,fx+side*19,fy+4,fx+side*10,fy+5],[fx+side*4,fy+7,fx-side*3,fy+4,fx-side*2,fy-3]),6.2,INK,i+6);
@@ -178,6 +183,6 @@ export class MonkeyScene {
       m.stroke(star.slice(0,Math.max(2,Math.ceil(star.length*draw))),2.3,p.index%2?ORANGE:INK,p.index,false);c.restore();
     }
     window.__buildlingsRenderer={type:'canvas2d',art:'original-marker-monkey',ink:this.ink,rigged:true,textureStable:true,pixelRatio:this.ratio,canvasWidth:WINDOW.width,canvasHeight:WINDOW.height,
-      strokes:m.strokes,particles:this.particles.length,petWeight:happy,reachWeight:reach,handScale:1+reach*.68,tailBend:tail,footX:this.footX,footY:this.footY};
+      dragWeight:held,bodySwing:frame.bodySwing||0,legSwing,strokes:m.strokes,particles:this.particles.length,petWeight:happy,reachWeight:reach,handScale:1+reach*.68,tailBend:tail,footX:this.footX,footY:this.footY};
   }
 }

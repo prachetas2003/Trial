@@ -17,11 +17,12 @@
   for (const mode of ['light', 'dark']) document.querySelector(`#${mode}-screen`).addEventListener('click', () => {
     window.companion.focusAction({ type: 'appearance', ink: mode === 'dark' ? 'white' : 'black' });
   });
+  window.addEventListener('companion-chase-start', () => { paused = false; document.querySelector('#pause').textContent = 'Pause wandering'; send({ paused }); });
   document.querySelector('#pause').addEventListener('click', event => {
     paused = !paused; send({ paused }); event.currentTarget.textContent = paused ? 'Resume wandering' : 'Pause wandering';
   });
   document.querySelector('#call').addEventListener('click', () => {
-    window.companion.focusAction({ type: 'preferences', values: { presence: 'wander', ...(window.__mischiefFocus?.session?.kind === 'focus' ? { peekDuringFocus: false } : {}) } });
+    window.companion.focusAction({ type: 'presence', value: 'wander' });
     paused = false; document.querySelector('#pause').textContent = 'Pause wandering'; send({ paused, action: 'call' });
   });
   document.querySelector('#hello').addEventListener('click', () => send({ action: 'reach' }));
@@ -30,7 +31,7 @@
   });
   document.querySelector('#chasing').addEventListener('change', event => { settings.chasing = event.target.checked; send({ settings }); });
   document.querySelector('#hopping').addEventListener('change', event => { settings.hopping = event.target.checked; send({ settings }); });
-  const moods = { idle: 'Taking a tiny breather.', wander: 'Off on a little adventure.', curious: 'Hmm. What are you making?', chase: 'Wait for me, cursor!', pet: 'Tiny heart: full.', reach: 'A little hello, just for you.', rest: 'Resting. Still available for head pats.', peek: 'A little company, from the edge.', return: 'Coming back to say hello.' };
+  const moods = { drag: 'Wheee. Take me with you.', idle: 'Taking a tiny breather.', wander: 'Off on a little adventure.', curious: 'Hmm. What are you making?', chase: 'Wait for me, cursor!', pet: 'Tiny heart: full.', reach: 'A little hello, just for you.', rest: 'Resting. Still available for head pats.', peek: 'A little company, from the edge.', return: 'Coming back to say hello.' };
   window.addEventListener('companion-frame', event => {
     const status = document.querySelector('#status'), message = moods[event.detail.mode];
     if (status.textContent !== message) status.textContent = message;
