@@ -1,3 +1,60 @@
+# Focus Shield and mode validation — 0.7.0
+
+Release: [desktop-preview-14](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-14)
+
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38179254649)
+passed for source commit `c4ea5ab`: fresh installation, 60 unit/server checks,
+18 native Windows checks, installation of the browser runtime, six extension
+check groups, packaging and public release upload. All workflow steps succeeded.
+
+The native checks verify transparent rendering, drag/click-through, saved focus
+state, completion audio, the 12-second quote cadence, blocker-only visibility,
+the master quote switch, disconnected-start and work-tab guards, authenticated
+browser connection and tab selection through the actual panel.
+
+The extension runs in real Chromium with controlled local HTTPS fixtures and
+DNS mappings for its feature hosts. Only the fixture certificate's SPKI is
+trusted by the test browser; this configuration is absent from shipping.
+Checks exercise the actual popup pairing flow, live tab inventory, existing
+page covers, declarative network redirects, Save for later, Shorts/Reels paths,
+Shorts-link hiding, SPA navigation, individual tab locks, strict workspaces,
+new-tab restrictions, approval of an additional tab, emergency pause, form
+preservation, end/break release and disconnection cleanup. Work permissions
+include a browser-session identity to prevent reused tab IDs inheriting a
+previous browser session's permissions.
+
+Local unit, focus-browser, overlay-browser, quote-browser, new focus-panel and
+18 native virtual-display checks passed. The panel check covers presets,
+independent preferences, a silent visible monkey, a fully hidden timer bar,
+session-only click-through amber edges, website validation, restart persistence
+and widths of 320, 390 and 768 pixels. The cloud's managed system browser does
+not permit unpacked extensions, and its Playwright CDN download was denied;
+Windows CI supplied and verified that runtime instead. Linux native checks
+retain the pointer-cache accommodation described in the older records below.
+
+The public ZIP was downloaded back and verified:
+
+- Size: **163,559,946 bytes**.
+- SHA-256: `25820b81b9fda578e405e67186ad7b723300e4d2cd6e667f6bfcbb24cf187e9a`.
+- ZIP CRCs passed. The application version and root instructions are 0.7.0.
+- All **24 tracked desktop files** in `app.asar` match the tested source,
+  normalizing only Windows text line endings. Binary assets match exactly.
+- All ten included FocusShield files match the extension source. The quotation
+  references and additional source notes are present.
+
+The live Pages deployment `7a15f9a892a0d37c1c65ff953156984f34e7ca5c` matches
+all **19 checked website/preview assets**, including the new shared policy,
+focus panel, renderer, quote bank, HUD and sound. The website clearly labels
+blocking as an app-and-extension feature; it demonstrates settings and visuals.
+
+The extension supports voluntary restrictions in installed/paired Chrome/Edge
+profiles. Chrome internal/protected pages cannot be covered. Website feature
+selectors may need maintenance as those sites change; controlled fixtures do
+not establish current live-site DOM compatibility. Perceived audio, motion and
+edge glow still require a physical-computer check.
+
+---
+
 # Balanced quote bank and cadence validation — 0.6.1
 
 Release: [desktop-preview-8](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-8)
