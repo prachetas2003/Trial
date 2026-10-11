@@ -104,7 +104,8 @@ backend on the isolated virtual display; this flag is not used in shipping.
 Linux virtual-display tests use the coordinates of real XTest pointer moves
 to supplement Electron’s cached cursor API. They verify rendering, real mouse
 clicks, dragging and click-through; only Windows checks use the unmodified
-global cursor API. Tests check the audio playback promise, but perceived
+global cursor API and verify body capture over another focused window. Tests
+check the audio playback promise, but perceived
 volume and smoothness still need testing on your physical computer.
 
 The [Windows workflow](.github/workflows/desktop.yml) runs motion and native
