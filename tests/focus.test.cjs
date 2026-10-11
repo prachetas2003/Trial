@@ -55,3 +55,40 @@ test('invalid saved preferences cannot create unbounded clocks or inject unknown
   assert.equal(f.preferences.focusMinutes, 25); assert.equal(f.preferences.breakMinutes, 1); assert.equal(f.preferences.presence, 'wander'); assert.equal(f.notes.length, 1);
   assert.equal(f.quote('hard').id, 'H001'); assert.throws(() => f.dispatch({ type: 'note-add', text: ' ' }), /Write/);
 });
+test('retrieving during focus overrides only this session; the next session still tucks away', () => {
+  const f = make(); f.dispatch({ type: 'start' }, 1000); assert.equal(f.presence(), 'peek');
+  f.dispatch({ type: 'presence', value: 'wander' }, 2000); assert.equal(f.presence(), 'wander'); assert.equal(f.preferences.peekDuringFocus, true);
+  const restored = make(f.export(3000)); assert.equal(restored.presence(), 'wander');
+  f.dispatch({ type: 'end' }, 4000); assert.equal(f.presence(), 'wander');
+  f.dispatch({ type: 'start' }, 5000); assert.equal(f.presence(), 'peek');
+});
+test('explicit tuck returns after focus while complete hiding and opt-out remain respected', () => {
+  for (const end of ['end', 'tick']) {
+    const f = make(); f.dispatch({ type: 'preferences', values: { focusMinutes: 1 } }, 1000);
+    f.dispatch({ type: 'presence', value: 'peek' }, 1000); f.dispatch({ type: 'start' }, 1000);
+    if (end === 'end') f.dispatch({ type: 'end' }, 2000); else f.tick(61000);
+    assert.equal(f.presence(), 'wander');
+  }
+  const f = make(); f.dispatch({ type: 'start' }, 1000); f.dispatch({ type: 'presence', value: 'hidden' }, 2000); f.dispatch({ type: 'end' }, 3000);
+  assert.equal(f.presence(), 'hidden');
+  f.dispatch({ type: 'preferences', values: { returnAfterSession: false, presence: 'wander' } }, 4000); f.dispatch({ type: 'start' }, 4000); f.dispatch({ type: 'end' }, 5000); assert.equal(f.presence(), 'peek');
+});
+test('continuous chase persists through restart and session completion; explicit tuck turns it off', () => {
+  const f = make(); f.dispatch({ type: 'start' }, 1000); f.dispatch({ type: 'chase' }, 2000);
+  assert.equal(f.presence(), 'wander'); assert.equal(f.preferences.chaseCursor, true);
+  const restored = make(f.export(3000)); assert.equal(restored.preferences.chaseCursor, true); assert.equal(restored.presence(), 'wander');
+  f.dispatch({ type: 'end' }, 4000); assert.equal(f.preferences.chaseCursor, true);
+  f.dispatch({ type: 'presence', value: 'peek' }, 5000); assert.equal(f.preferences.chaseCursor, false); assert.equal(f.presence(), 'peek');
+});
+test('quote frequency, edge location and interactive preferences reject invalid saved values', () => {
+  const f = make({ preferences: { quoteSeconds: -40, edge: 'unknown', edgePosition: 20, dragEnabled: 'yes', completionSound: false } });
+  assert.equal(f.preferences.quoteSeconds, 15); assert.equal(f.preferences.edge, 'right'); assert.equal(f.preferences.edgePosition, 1); assert.equal(f.preferences.dragEnabled, true); assert.equal(f.preferences.completionSound, false);
+  f.dispatch({ type: 'preferences', values: { quoteSeconds: Infinity, edgePosition: -20 } }, 1000); assert.equal(f.preferences.quoteSeconds, 45); assert.equal(f.preferences.edgePosition, 0);
+});
+test('break expiry and early ending have distinct completion events for sound', () => {
+  const f = make(); f.dispatch({ type: 'preferences', values: { breakMinutes: 1 } }, 1000);
+  f.dispatch({ type: 'start', kind: 'break' }, 1000); f.dispatch({ type: 'end' }, 2000);
+  assert.equal(f.drainEvents().find(e => e.type === 'break-finished').completed, false);
+  f.dispatch({ type: 'start', kind: 'break' }, 3000); f.tick(63000); f.tick(64000);
+  const events = f.drainEvents().filter(e => e.type === 'break-finished'); assert.equal(events.length, 1); assert.equal(events[0].completed, true); assert.ok(events[0].id);
+});

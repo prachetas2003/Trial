@@ -56,6 +56,7 @@ const { chromium } = require('playwright');
     await page.screenshot({ path: path.join(output, 'monkey-petting.png') });
     console.log('PASS cursor strokes blend into happy eyes, expressive pose, and drawn marker sparkles');
 
+    await page.evaluate(() => window.companion.focusAction({ type: 'preferences', values: { dragEnabled: false } }));
     assert.equal(await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y - 94)?.closest('#companion-host'), fixed), false);
     assert.equal(await page.locator('#companion-host').evaluate(e => getComputedStyle(e).backgroundColor), 'rgba(0, 0, 0, 0)');
     assert.equal(await page.locator('#companion-host').evaluate(e => getComputedStyle(e).pointerEvents), 'none');
@@ -99,7 +100,8 @@ const { chromium } = require('playwright');
     assert.ok(await page.evaluate(() => window.__buildlingsFrame.scaleY) < 1);
     await page.clock.runFor(340); assert.ok(await page.evaluate(() => window.__buildlingsFrame.hop) > 35);
     await page.screenshot({ path: path.join(output, 'monkey-jump.png') });
-    await page.clock.runFor(420); assert.equal(await page.evaluate(() => window.__buildlingsFrame.jumpPhase), 'landing');
+    const landingTime = await page.evaluate(() => window.__buildlingsEngine.hopStart + window.__buildlingsEngine.hopDuration * .9 - performance.now());
+    await page.clock.runFor(Math.max(0, landingTime)); assert.equal(await page.evaluate(() => window.__buildlingsFrame.jumpPhase), 'landing');
     await page.clock.runFor(400); assert.equal(await page.evaluate(() => window.__buildlingsFrame.hop), 0);
     console.log('PASS jump has anticipation, an airborne arc, landing compression, and recovery');
 

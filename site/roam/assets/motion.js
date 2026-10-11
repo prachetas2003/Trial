@@ -34,7 +34,8 @@
       this.areaId = areas.some(a => a.id === activeId) ? activeId : areas[0].id;
       const b = this.bounds(); this.x = (b.left + b.right) / 2; this.y = Math.max(b.top, b.bottom - 70);
       this.target = { x: this.x, y: this.y }; this.vx = 0; this.vy = 0;
-      this.mode = 'idle'; this.paused = false; this.chaseEnabled = true; this.hopsEnabled = true; this.presence = 'wander'; this.returning = false;
+      this.mode = 'idle'; this.paused = false; this.chaseEnabled = true; this.hopsEnabled = true; this.presence = 'wander'; this.returning = false; this.chaseLocked = false; this.dragging = false; this.edge = 'right'; this.edgePosition = .85; this.dragCursor = null; this.dragOffset = { x: 0, y: 0 };
+      this.dragWeight = { value: 0, velocity: 0 }; this.bodySwing = { value: 0, velocity: 0 }; this.legSwing = { value: 0, velocity: 0 };
       this.lastTime = now; this.simTime = now; this.accumulator = 0; this.actionUntil = now + 1800;
       this.nextChase = now + 7000; this.nextHop = now + 6500; this.nextReach = now + 10000;
       this.hopStart = null; this.hopDuration = 920; this.hopPeak = 55; this.landedAt = -Infinity;
@@ -49,21 +50,77 @@
     snapshot() {
       return { x: this.x, y: this.y, walkPhase: this.walkPhase, vx: this.vx, vy: this.vy,
         walk: this.visual.walk.value, pet: this.visual.pet.value, lean: this.visual.lean.value,
-        lookX: this.look.x.value, lookY: this.look.y.value };
+        lookX: this.look.x.value, lookY: this.look.y.value, dragWeight: this.dragWeight.value, bodySwing: this.bodySwing.value, legSwing: this.legSwing.value };
     }
     bounds() {
-      const b = safeArea(this.area());
-      if (this.presence === 'peek' || this.returning) b.right = this.area().x + this.area().width + 25;
+      const b = safeArea(this.area()), a = this.area();
+      if (this.presence === 'peek' || this.returning) {
+        b.left = a.x + 18; b.right = a.x + a.width - 18;
+        b.top = a.y + 150; b.bottom = a.y + a.height + 118;
+      }
       return b;
+    }
+    peekTarget() {
+      const a = this.area(), b = safeArea(a), p = this.edgePosition;
+      if (this.edge === 'top' || this.edge === 'bottom') return { x: lerp(a.x + 70, a.x + a.width - 70, p), y: this.edge === 'top' ? a.y + 154 : a.y + a.height + 118 };
+      return { x: this.edge === 'left' ? a.x + 18 : a.x + a.width - 18, y: lerp(b.top, b.bottom, p) };
+    }
+    setEdge(edge, position) {
+      if (['left', 'right', 'top', 'bottom'].includes(edge)) this.edge = edge;
+      if (Number.isFinite(position)) this.edgePosition = clamp(position, 0, 1);
+      if (this.presence === 'peek') this.target = this.peekTarget();
     }
     setPresence(value, now) {
       if (value === this.presence) return;
       this.presence = value; this.hopStart = null; this.reachStart = null; this.wanderPath = null;
-      const area = this.area(), b = safeArea(area);
-      this.returning = value !== 'peek' && this.x > b.right;
+      const b = safeArea(this.area());
+      this.returning = value !== 'peek' && (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom);
       this.mode = value === 'peek' ? 'peek' : this.returning ? 'return' : 'idle';
-      this.target = value === 'peek' ? { x: area.x + area.width - 18, y: b.bottom - 25 } : { x: clamp(this.x, b.left, b.right), y: clamp(this.y, b.top, b.bottom) };
+      this.target = value === 'peek' ? this.peekTarget() : { x: clamp(this.x, b.left, b.right), y: clamp(this.y, b.top, b.bottom) };
       this.actionUntil = now + 1800;
+    }
+    setChasing(value, now) {
+      if (this.chaseLocked === value) return;
+      this.chaseLocked = value; this.wanderPath = null; this.reachStart = null;
+      this.mode = this.returning ? 'return' : value ? 'chase' : 'idle'; this.actionUntil = value ? Infinity : now + 1800;
+      if (!value && !this.returning) this.target = { x: this.x, y: this.y };
+    }
+    beginDrag(cursor, now) {
+      this.dragging = true; this.dragOffset = { x: this.x - cursor.x, y: this.y - cursor.y };
+      this.dragCursor = { ...cursor }; this.hopStart = null; this.reachStart = null; this.pettedUntil = 0;
+      this.wanderPath = null; this.mode = 'drag'; this.lastTime = now;
+      this.vx = this.vy = 0;
+    }
+    dragTo(cursor) { if (this.dragging) this.dragCursor = { ...cursor }; }
+    endDrag(now) {
+      if (!this.dragging) return null;
+      this.dragging = false; this.actionUntil = now + 1300;
+      this.vx = clamp(this.vx, -120, 120); this.vy = clamp(this.vy, -120, 120);
+      this.mode = this.presence === 'peek' ? 'peek' : this.chaseLocked ? 'chase' : 'idle';
+      this.target = this.presence === 'peek' ? this.peekTarget() : { x: this.x, y: this.y };
+      const b = safeArea(this.area()); this.returning = this.presence !== 'peek' && (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom);
+      if (this.returning) this.target = { x: clamp(this.x, b.left, b.right), y: clamp(this.y, b.top, b.bottom) };
+      return { edge: this.edge, edgePosition: this.edgePosition };
+    }
+    updateHeld(dt) {
+      const a = this.area(), c = this.dragCursor, b = safeArea(a);
+      let x = c.x + this.dragOffset.x, y = c.y + this.dragOffset.y;
+      if (this.presence === 'peek') {
+        const distances = [ ['left', Math.abs(c.x - a.x)], ['right', Math.abs(c.x - a.x - a.width)], ['top', Math.abs(c.y - a.y)], ['bottom', Math.abs(c.y - a.y - a.height)] ];
+        distances.sort((p, q) => p[1] - q[1]); this.edge = distances[0][0];
+        this.edgePosition = ['top', 'bottom'].includes(this.edge) ? clamp((c.x - a.x - 70) / Math.max(1, a.width - 140), 0, 1) : clamp((y - b.top) / Math.max(1, b.bottom - b.top), 0, 1);
+        ({ x, y } = this.peekTarget());
+      } else { x = clamp(x, b.left, b.right); y = clamp(y, b.top, b.bottom); }
+      this.vx = clamp((x - this.x) / dt, -1600, 1600); this.vy = clamp((y - this.y) / dt, -1600, 1600);
+      this.x = x; this.y = y; this.target = { x, y }; this.mode = 'drag';
+    }
+    heldPose(dt) {
+      spring(this.dragWeight, this.dragging ? 1 : 0, 15, dt);
+      // Damped pendulums retain momentum through turns and settle after release.
+      for (const [s, goal, stiffness, damping] of [[this.bodySwing, this.dragging ? clamp(-this.vx / 4200, -.28, .28) : 0, 80, 7], [this.legSwing, this.dragging ? clamp(-this.vx / 1800, -.7, .7) : 0, 55, 5]]) {
+        s.velocity += ((goal - s.value) * stiffness - s.velocity * damping) * dt;
+        s.value = clamp(s.value + s.velocity * dt, -1, 1);
+      }
     }
     setAreas(areas) {
       const valid = areas.filter(a => Number.isFinite(a.x) && Number.isFinite(a.y) && a.width > 0 && a.height > 0);
@@ -76,7 +133,9 @@
     }
     pause(value, now) {
       this.paused = value; this.hopStart = null; this.reachStart = null;
-      this.vx = 0; this.vy = 0; this.mode = 'idle'; this.wanderPath = null;
+      this.vx = 0; this.vy = 0;
+      if (this.presence === 'peek' || this.returning) { this.previous = this.snapshot(); return; }
+      this.mode = 'idle'; this.wanderPath = null;
       this.target = { x: this.x, y: this.y }; this.actionUntil = now + 1800;
       this.previous = this.snapshot();
     }
@@ -136,15 +195,18 @@
     }
     step(dt, now, cursor, hovering, pose) {
       this.previous = this.snapshot();
+      if (this.dragging) { this.updateHeld(dt); this.heldPose(dt); spring(this.visual.walk, 0, 14, dt); spring(this.visual.pet, 0, 10, dt); return; }
+      this.heldPose(dt);
       const edgeTravel = this.presence === 'peek' || this.returning;
       const occupied = (!edgeTravel && this.paused) || hovering || now < this.pettedUntil || this.reachStart !== null;
       if (this.presence === 'peek') {
-        const area = this.area(); this.target = { x: area.x + area.width - 18, y: safeArea(area).bottom - 25 };
+        this.target = this.peekTarget();
         if (now >= this.pettedUntil && this.reachStart === null) this.mode = 'peek';
       }
+      if (this.chaseLocked && !edgeTravel && !this.paused && !occupied) { this.mode = 'chase'; this.actionUntil = Infinity; }
       if (!occupied) {
         if (this.mode === 'pet') this.actionUntil = now;
-        if (!edgeTravel && now >= this.actionUntil) this.chooseBehavior(now, cursor);
+        if (!edgeTravel && !this.chaseLocked && now >= this.actionUntil) this.chooseBehavior(now, cursor);
         if (this.mode === 'chase') {
           const b = this.bounds(), dx = cursor.x - this.x, dy = cursor.y - this.y + 94, d = Math.hypot(dx, dy) || 1;
           this.target = { x: clamp(cursor.x - dx / d * 92, b.left, b.right), y: clamp(cursor.y + 94 - dy / d * 62, b.top, b.bottom) };
@@ -183,7 +245,7 @@
       const hovering = hitsPet(cursor, this.x, this.y, pose.hop);
       const cursorMotion = this.lastCursor ? Math.hypot(cursor.x - this.lastCursor.x, cursor.y - this.lastCursor.y) : 0;
       this.strokeEnergy = Math.max(0, this.strokeEnergy - elapsed * 12);
-      if (hovering && cursorMotion >= .5 && cursorMotion < 180) {
+      if (!this.dragging && hovering && cursorMotion >= .5 && cursorMotion < 180) {
         this.strokeEnergy += Math.min(30, cursorMotion);
         if (this.strokeEnergy >= 22 && now >= this.nextSparkle) {
           this.sparkleId++; this.strokeEnergy = 0; this.nextSparkle = now + 330;
@@ -202,12 +264,13 @@
       pose = this.pose(now);
       const alpha = clamp(this.accumulator / step, 0, 1);
       const x = lerp(this.previous.x, this.x, alpha), y = lerp(this.previous.y, this.y, alpha);
-      const mode = now < this.pettedUntil ? 'pet' : this.reachStart !== null ? 'reach' : this.paused ? 'rest' : hovering ? 'curious' : this.mode;
+      const mode = this.dragging ? 'drag' : now < this.pettedUntil ? 'pet' : this.reachStart !== null ? 'reach' : this.paused ? 'rest' : hovering ? 'curious' : this.mode;
       return { x, y, hop: pose.hop, vx: lerp(this.previous.vx, this.vx, alpha), vy: lerp(this.previous.vy, this.vy, alpha), mode, ...pose,
         areaId: this.areaId, walkPhase: lerp(this.previous.walkPhase, this.walkPhase, alpha), walkWeight: lerp(this.previous.walk, this.visual.walk.value, alpha), petWeight: lerp(this.previous.pet, this.visual.pet.value, alpha),
         moving: Math.hypot(this.vx, this.vy) > 5, lookX: lerp(this.previous.lookX, this.look.x.value, alpha), lookY: lerp(this.previous.lookY, this.look.y.value, alpha), lean: lerp(this.previous.lean, this.visual.lean.value, alpha),
         scaleX: 1 + pose.anticipation * .09 + pose.landing * .14 - (pose.hop > 1 ? .035 : 0),
         scaleY: 1 - pose.anticipation * .11 - pose.landing * .16 + (pose.hop > 1 ? .055 : 0),
+        dragging: this.dragging, edge: this.edge, dragWeight: lerp(this.previous.dragWeight, this.dragWeight.value, alpha), bodySwing: lerp(this.previous.bodySwing, this.bodySwing.value, alpha), legSwing: lerp(this.previous.legSwing, this.legSwing.value, alpha),
         sparkleId: this.sparkleId, cursorX: cursor.x, cursorY: cursor.y,
         windowX: x - WINDOW.footX, windowY: y - WINDOW.footY };
     }

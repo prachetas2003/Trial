@@ -6,6 +6,9 @@ contextBridge.exposeInMainWorld('companion', {
     ipcRenderer.on('companion:input', listener);
     return () => ipcRenderer.removeListener('companion:input', listener);
   },
+  setDragging: value => ipcRenderer.send('companion:dragging', value),
+  setInteractive: value => ipcRenderer.send('companion:interactive', value),
+  openFocus: view => ipcRenderer.send('companion:open-focus', view),
   report: frame => ipcRenderer.send('companion:report', frame),
   getFocusState: () => ipcRenderer.invoke('companion:focus-state'),
   focusAction: action => ipcRenderer.invoke('companion:focus-action', action),

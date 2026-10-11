@@ -8,8 +8,19 @@ const root = path.resolve(__dirname, '..');
 
 async function pointer(app, x, y, click = false) {
   if (process.platform === 'win32') ({ x, y } = await app.evaluate(({ screen }, point) => screen.dipToScreenPoint(point), { x: Math.round(x), y: Math.round(y) }));
-  const result = spawnSync(process.platform === 'win32' ? 'python' : 'python3', [path.join(root, 'scripts/test-pointer.py'), String(Math.round(x)), String(Math.round(y)), ...(click ? ['click'] : [])], { encoding: 'utf8', env: process.env });
+  const result = spawnSync(process.platform === 'win32' ? 'python' : 'python3', [path.join(root, 'scripts/test-pointer.py'), String(Math.round(x)), String(Math.round(y)), ...(click ? [typeof click === 'string' ? click : 'click'] : [])], { encoding: 'utf8', env: process.env });
+  if (process.platform === 'linux') await app.evaluate(({ app, screen }, point) => {
+    // X11 caches global coordinates in Electron. Supply the coordinates of
+    // this real XTest operation; Windows uses the unmodified native API.
+    app.__linuxTestCursor = point; screen.getCursorScreenPoint = () => app.__linuxTestCursor;
+  }, { x, y });
   if (result.status !== 0) throw new Error(result.stderr || 'Pointer operation failed.');
+}
+async function clickOverlay(app, page, selector) {
+  const point = await page.locator(selector).evaluate(element => { const r = element.getBoundingClientRect(), a = window.__buildlingsEngine.area(); return { x: a.x + r.x + r.width / 2, y: a.y + r.y + r.height / 2 }; });
+  await pointer(app, point.x, point.y); await page.waitForTimeout(150);
+  if (process.platform === 'linux') await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.setIgnoreMouseEvents(false));
+  await pointer(app, point.x, point.y, true); await page.waitForTimeout(180);
 }
 (async () => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'buildlings-native-test-'));
@@ -30,6 +41,7 @@ async function pointer(app, x, y, click = false) {
     assert.match(config.background, /^#000000(?:00)?$/); assert.equal(config.top, true);
     assert.equal(config.focusable, false); assert.equal(config.resizable, false); assert.equal(config.shadow, false); assert.equal(config.focused, false);
     console.log('PASS native window is transparent, always on top, unfocusable, and shadowless');
+    await app.evaluate(({ app }) => app.__buildlingsRuntime.applyFocus({ type: 'preferences', values: { dragEnabled: false } }));
     await page.evaluate(() => { window.__buildlingsEngine.random = () => .5; });
     const renderer = await page.evaluate(() => window.__buildlingsRenderer);
     assert.equal(renderer.type, 'canvas2d', JSON.stringify(renderer)); assert.ok(renderer.strokes > 30); assert.equal(renderer.rigged, true); assert.equal(renderer.art, 'original-marker-monkey');
@@ -60,6 +72,7 @@ async function pointer(app, x, y, click = false) {
     if (process.platform === 'linux') await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.setIgnoreMouseEvents(false));
     await pointer(app, fixed.x - 24, fixed.y - 94); await page.waitForTimeout(70);
     for (let i = 0; i < 10; i++) { await pointer(app, fixed.x + (i % 2 ? 24 : -24), fixed.y - 94); await page.waitForTimeout(80); }
+    await page.waitForFunction(() => window.__buildlingsRenderer.petWeight > .7 && window.__buildlingsRenderer.particles > 0, null, { timeout: 3000 });
     const petted = await page.evaluate(() => ({ sparkle: window.__buildlingsFrame.sparkleId, mode: window.__buildlingsFrame.mode, particles: window.__buildlingsRenderer.particles, happy: window.__buildlingsRenderer.petWeight }));
     assert.ok(petted.sparkle >= 1); assert.equal(petted.mode, 'pet'); assert.ok(petted.particles > 0); assert.ok(petted.happy > .7);
     console.log(process.platform === 'win32' ? 'PASS global cursor strokes work while Windows clicks pass through' : 'PASS native renderer reacts to cursor strokes (Linux mouse events enabled for this check)');
@@ -73,6 +86,7 @@ async function pointer(app, x, y, click = false) {
       await behind.loadURL('data:text/html,' + encodeURIComponent('<html><body style="margin:0;background:#f6f4ed;width:100vw;height:100vh"><button id="target" style="width:100%;height:100%;border:0;background:transparent">Underlying test window</button><script>document.body.dataset.clicks="0";document.querySelector("#target").addEventListener("click",()=>document.body.dataset.clicks=String(Number(document.body.dataset.clicks)+1));</script></body></html>'));
       behind.show();
       app.__behindTest = behind;
+      if (process.platform === 'linux') app.__buildlingsRuntime.getRuntime().win.moveTop();
     });
     await pointer(app, fixed.x, fixed.y - 94, true); await page.waitForTimeout(250);
     const clicked = await app.evaluate(async ({ app }) => app.__behindTest.webContents.executeJavaScript('document.body.dataset.clicks'));
@@ -88,18 +102,18 @@ async function pointer(app, x, y, click = false) {
     assert.ok(await page.evaluate(() => window.__buildlingsFrame.hop > 1));
     assert.equal(await page.evaluate(() => window.__buildlingsFrame.mode), 'chase');
     console.log('PASS native chasing and hopping produce live renderer frames');
-    await page.waitForTimeout(900);
+    await page.waitForFunction(() => window.__buildlingsEngine.hopStart === null, null, { timeout: 5000 });
     // Keep the cursor away so petting cannot interrupt this deliberate gesture.
     await pointer(app, config.bounds.x + 30, config.bounds.y + 30); await page.waitForTimeout(150);
     await app.evaluate(({ app }) => app.__buildlingsRuntime.togglePause());
     await app.evaluate(({ app }) => app.__buildlingsRuntime.command('reach'));
-    await page.waitForFunction(() => window.__buildlingsRenderer.reachWeight > .95, null, { timeout: 5000 });
+    await page.waitForFunction(() => window.__buildlingsRenderer.reachWeight > .95, null, { timeout: 5000 }).catch(async error => { console.log('Reach diagnostics', await page.evaluate(() => ({ frame: window.__buildlingsFrame, reachStart: window.__buildlingsEngine.reachStart, hopStart: window.__buildlingsEngine.hopStart, pettedUntil: window.__buildlingsEngine.pettedUntil, now: performance.now() }))); throw error; });
     assert.ok(await page.evaluate(() => window.__buildlingsRenderer.reachWeight) > .85);
     assert.ok(await page.evaluate(() => window.__buildlingsRenderer.handScale) > 1.6);
     await page.screenshot({ path: path.join(output, 'native-monkey-reach.png'), omitBackground: true });
     console.log('PASS tray command drives an enlarged reaching hand with foreshortening');
     const focusPagePromise = app.waitForEvent('window');
-    await app.evaluate(async ({ app }) => app.__buildlingsRuntime.showFocus());
+    await clickOverlay(app, page, '#bar-timer');
     const focusPage = await focusPagePromise; focusPage.on('pageerror', error => errors.push(error.message));
     await focusPage.locator('#start-form').waitFor({ state: 'visible' });
     await focusPage.locator('#intention').fill('Finish my own project');
@@ -134,6 +148,74 @@ async function pointer(app, x, y, click = false) {
     assert.equal(finished.session, null); assert.equal(finished.history.length, 1); assert.equal(finished.history[0].choices, 1); assert.equal(finished.history[0].completed, true);
     console.log('PASS native disk recovery restores paused timer/notes and records exactly one completed session');
     assert.deepEqual(errors, []);
-    console.log('10 native desktop checks passed. Windows results apply only when this script runs on Windows.');
+    await restored.waitForFunction(() => window.__completionSound?.status === 'played');
+    assert.equal(await restored.evaluate(() => window.__completionSound.attempts), 1);
+    assert.equal(await restored.locator('#timer-bar').evaluate(e => e.classList.contains('has-highlight')), true);
+    assert.equal(await restored.evaluate(() => window.__buildlingsEngine.presence), 'wander');
+    const summaryPromise = app.waitForEvent('window'); await clickOverlay(app, restored, '#bar-timer');
+    const summaryPage = await summaryPromise; await summaryPage.locator('#session-summary').waitFor({ state: 'visible' });
+    assert.equal(await summaryPage.locator('#summary-choices').textContent(), '1');
+    assert.equal(await restored.locator('#timer-bar').evaluate(e => e.classList.contains('has-highlight')), false);
+    await summaryPage.locator('.close-desk').click();
+    console.log('PASS native completion audio starts once, highlights glow and real top-bar click opens session summary');
+    await app.evaluate(({ app }) => { const r = app.__buildlingsRuntime; r.applyFocus({ type: 'preferences', values: { dragEnabled: true } }); if (!r.getRuntime().paused) r.togglePause(); });
+    await restored.waitForFunction(() => !window.__buildlingsEngine.returning);
+    await pointer(app, config.bounds.x + 30, config.bounds.y + 110); await restored.waitForTimeout(1800);
+    const pet = await restored.evaluate(() => window.__buildlingsFrame);
+    await pointer(app, pet.x, pet.y - 94); await restored.waitForTimeout(180);
+    if (process.platform === 'linux') await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.setIgnoreMouseEvents(false));
+    await pointer(app, pet.x, pet.y - 94, 'down');
+    await restored.waitForFunction(() => window.__buildlingsEngine.dragging, null, { timeout: 4000 });
+    for (let i = 1; i <= 10; i++) { await pointer(app, pet.x - i * 14, pet.y - 94 - i * 4); await restored.waitForTimeout(35); }
+    const held = await restored.evaluate(() => ({ frame: window.__buildlingsFrame, art: window.__buildlingsRenderer }));
+    assert.ok(held.frame.x < pet.x - 110); assert.ok(held.frame.y < pet.y - 30); assert.ok(held.art.dragWeight > .9); assert.ok(Math.abs(held.art.legSwing) > .05);
+    await restored.screenshot({ path: path.join(output, 'native-monkey-drag.png'), omitBackground: true });
+    await pointer(app, pet.x - 140, pet.y - 134, 'up'); await restored.waitForFunction(() => !window.__buildlingsEngine.dragging);
+    assert.equal(await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.isFocused()), false);
+    await restored.waitForTimeout(1800); assert.ok(await restored.evaluate(() => Math.abs(window.__buildlingsRenderer.legSwing)) < .04);
+    console.log('PASS real native drag captures pointer, moves monkey, swings legs, releases and settles without keyboard focus');
+    await app.evaluate(async ({ BrowserWindow, app }) => {
+      const bounds = app.__buildlingsRuntime.getRuntime().win.getBounds();
+      const behind = new BrowserWindow({ ...bounds, show: true, frame: false, webPreferences: { contextIsolation: true, nodeIntegration: false } });
+      await behind.loadURL('data:text/html,' + encodeURIComponent('<body style="margin:0;width:100vw;height:100vh;background:#f6f4ed"><script>document.body.dataset.clicks="0";document.body.addEventListener("click",()=>document.body.dataset.clicks=String(Number(document.body.dataset.clicks)+1));</script>'));
+      behind.show(); app.__behindTest = behind;
+      // The virtual X11 desktop has no window manager to enforce ABOVE.
+      if (process.platform === 'linux') app.__buildlingsRuntime.getRuntime().win.moveTop();
+    });
+    await pointer(app, config.bounds.x + 40, config.bounds.y + 120); await restored.waitForTimeout(180);
+    await pointer(app, config.bounds.x + 40, config.bounds.y + 120, true); await restored.waitForTimeout(180);
+    assert.equal(await app.evaluate(async ({ app }) => app.__behindTest.webContents.executeJavaScript('document.body.dataset.clicks')), '1');
+    if (process.platform === 'win32') {
+      const body = await restored.evaluate(() => window.__buildlingsFrame);
+      await pointer(app, body.x, body.y - 94); await restored.waitForTimeout(180);
+      await pointer(app, body.x, body.y - 94, true); await restored.waitForTimeout(180);
+      assert.equal(await app.evaluate(async ({ app }) => app.__behindTest.webContents.executeJavaScript('document.body.dataset.clicks')), '1');
+      assert.equal(await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.isFocused()), false);
+    }
+    await app.evaluate(({ app }) => app.__behindTest.close());
+    console.log(process.platform === 'win32' ? 'PASS default draggable monkey captures only its body; blank overlay areas click through to another window' : 'PASS Linux blank-space click-through; body capture over another focused window is checked on Windows');
+    await clickOverlay(app, restored, '#bar-tuck'); await restored.waitForFunction(() => window.__buildlingsFrame.x > innerWidth - 25);
+    const peek = await restored.evaluate(() => window.__buildlingsFrame);
+    await pointer(app, Math.min(config.bounds.x + config.bounds.width - 8, peek.x), peek.y - 94); await restored.waitForTimeout(180);
+    if (process.platform === 'linux') await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.setIgnoreMouseEvents(false));
+    await pointer(app, peek.x, peek.y - 94, 'down'); await restored.waitForFunction(() => window.__buildlingsEngine.dragging);
+    await pointer(app, config.bounds.x + 8, config.bounds.y + 520); await restored.waitForTimeout(350);
+    await pointer(app, config.bounds.x + 8, config.bounds.y + 520, 'up'); await restored.waitForFunction(() => !window.__buildlingsEngine.dragging);
+    assert.equal(await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().focus.preferences.edge), 'left');
+    assert.ok(await restored.evaluate(() => window.__buildlingsFrame.x) < config.bounds.x + 25);
+    await clickOverlay(app, restored, '#bar-tuck'); await restored.waitForFunction(() => !window.__buildlingsEngine.returning);
+    await clickOverlay(app, restored, '#bar-chase'); await pointer(app, config.bounds.x + 1050, config.bounds.y + 450); await restored.waitForTimeout(5500);
+    assert.equal(await restored.locator('#bar-chase').getAttribute('aria-pressed'), 'true');
+    assert.equal(await restored.evaluate(() => window.__buildlingsFrame.mode), 'chase');
+    await clickOverlay(app, restored, '#bar-chase'); assert.equal(await restored.locator('#bar-chase').getAttribute('aria-pressed'), 'false');
+    console.log('PASS native edge dragging and retrieval, persistent cursor chase past timeout, and toggle off');
+    await app.evaluate(({ app }) => app.__buildlingsRuntime.applyFocus({ type: 'start' }));
+    await clickOverlay(app, restored, '#bar-stay');
+    assert.equal(await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().focus.session.choices), 1);
+    await app.evaluate(({ app }) => app.__buildlingsRuntime.applyFocus({ type: 'presence', value: 'hidden' }));
+    assert.equal(await restored.locator('#companion-host').isVisible(), false); assert.equal(await restored.locator('#timer-bar').isVisible(), true);
+    await clickOverlay(app, restored, '#bar-tuck'); assert.equal(await restored.locator('#companion-host').isVisible(), true);
+    console.log('PASS top distraction button records a choice and top controls retrieve a completely hidden monkey');
+    console.log('15 native desktop checks passed. Windows results apply only when this script runs on Windows.');
   } finally { await app.close(); await fs.rm(temp, { recursive: true, force: true }); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

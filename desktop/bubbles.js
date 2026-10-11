@@ -34,7 +34,7 @@ export class SpeechBubble {
     }
     const headX = frame.x, headY = frame.y - 145 - frame.hop;
     const left = Math.max(12, Math.min(innerWidth - this.width - 12, headX - this.width * .6));
-    const top = Math.max(12, Math.min(innerHeight - this.height - 18, headY - this.height - 25));
+    const top = Math.max((document.querySelector('#timer-bar')?.getBoundingClientRect().bottom || 0) + 12, Math.min(innerHeight - this.height - 18, headY - this.height - 25));
     this.element.style.transform = `translate3d(${left}px,${top}px,0)`;
     this.element.style.setProperty('--tail-x', `${Math.max(22, Math.min(this.width - 25, headX - left))}px`);
     this.element.classList.toggle('bubble-exit', !reducedMotion && now > this.until - 350);

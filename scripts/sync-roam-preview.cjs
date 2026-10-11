@@ -12,6 +12,7 @@ for (const [source, name] of [
   ['desktop/motion.js', 'motion.js'], ['desktop/art.js', 'art.js'], ['desktop/sprout3d.js', 'sprout3d.js'], ['desktop/monkey.js', 'monkey.js'],
   ['desktop/renderer.js', 'renderer.js'], ['desktop/renderer.css', 'renderer.css'], ['site/core.js', 'core.js'],
   ['desktop/focus.js', 'focus.js'], ['desktop/quotes.js', 'quotes.js'], ['desktop/bubbles.js', 'bubbles.js'],
+  ['desktop/hud.js', 'hud.js'], ['desktop/hud.css', 'hud.css'], ['desktop/completion.wav', 'completion.wav'],
   ['desktop/focus-ui.js', 'focus-ui.js'], ['desktop/focus-ui.css', 'focus-ui.css']
 ]) fs.copyFileSync(path.join(root, source), path.join(target, name));
 fs.cpSync(vendor, path.join(target, 'vendor'), { recursive: true });

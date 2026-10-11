@@ -66,6 +66,7 @@ const path = require('node:path');
     await page.clock.runFor(2000);
     const b = await page.locator('#speech-bubble').boundingBox(); assert.ok(b.x >= 0 && b.x + b.width <= 1440 && b.y >= 0);
     await page.screenshot({ path: path.resolve('test-results/monkey-peek-quote.png') });
+    await page.evaluate(() => window.companion.focusAction({ type: 'preferences', values: { dragEnabled: false } }));
     assert.equal(await page.evaluate(() => !!document.elementFromPoint(1420, window.__buildlingsFrame.y - 145)?.closest('#companion-host')), false);
     await page.locator('#focus-open').click(); await page.locator('#presence').selectOption('hidden');
     await page.clock.runFor(100);

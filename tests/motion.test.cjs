@@ -177,3 +177,34 @@ test('edge-peeking glides to the screen edge and returns without a position jump
   for (let t = 10016; t < 14000; t += 16) f = m.advance(t, cursor);
   assert.ok(f.x <= safeArea(areas[0]).right + 3);
 });
+test('drag tracks the grab point, animates physical swing, and settles after release', () => {
+  const m = make(); m.pause(true, 0); const cursor = { x: m.x, y: m.y - 100 }; m.beginDrag(cursor, 0);
+  let f;
+  for (let t = 16; t <= 480; t += 16) { m.dragTo({ x: cursor.x + t * .5, y: cursor.y - t * .1 }); f = m.advance(t, cursor); }
+  assert.equal(f.mode, 'drag'); assert.ok(Math.abs(m.x - cursor.x - 240) < 1); assert.ok(Math.abs(m.y - cursor.y - 100 + 48) < 1);
+  assert.ok(f.dragWeight > .9); assert.ok(Math.abs(f.legSwing) > .1); assert.ok(Math.abs(f.bodySwing) > .04); assert.equal(f.sparkleId, 0);
+  m.endDrag(480); const release = m.x;
+  for (let t = 496; t < 4000; t += 16) f = m.advance(t, { x: 0, y: 0 });
+  assert.ok(Math.abs(m.x - release) < 15); assert.ok(f.dragWeight < .001); assert.ok(Math.abs(f.legSwing) < .003); assert.ok(Math.abs(f.bodySwing) < .003);
+});
+test('peek dragging follows all four margins and retrieval glides back into safe bounds', () => {
+  const m = make(), a = areas[0]; m.setPresence('peek', 0);
+  for (let t = 0; t < 10000; t += 16) m.advance(t, { x: 0, y: 0 });
+  m.beginDrag({ x: m.x - 15, y: m.y - 100 }, 10000);
+  let t = 10000;
+  for (const [edge, cursor] of [['left', { x: 4, y: 550 }], ['top', { x: 700, y: 4 }], ['bottom', { x: 800, y: 896 }], ['right', { x: 1436, y: 400 }]]) {
+    m.dragTo(cursor); t += 32; m.advance(t, cursor); assert.equal(m.edge, edge);
+    assert.ok(Number.isFinite(m.x) && Number.isFinite(m.y));
+    if (edge === 'left') assert.equal(m.x, a.x + 18); if (edge === 'right') assert.equal(m.x, a.width - 18);
+  }
+  m.endDrag(t); const held = m.x; m.setPresence('wander', t); assert.equal(m.x, held);
+  const b = safeArea(a);
+  for (let end = t + 8000; t < end; t += 16) m.advance(t, { x: 10, y: 10 });
+  assert.ok(m.x >= b.left && m.x <= b.right + 2); assert.ok(m.y >= b.top && m.y <= b.bottom + 2);
+});
+test('continuous chase remains enabled after the occasional chase timeout and stops when toggled', () => {
+  const m = make(); m.hopsEnabled = false; m.setChasing(true, 0);
+  for (let t = 0; t <= 12000; t += 16) { const f = m.advance(t, { x: 1150, y: 400 }); if (t > 5000) assert.equal(f.mode, 'chase'); }
+  const x = m.x; for (let t = 12016; t < 14000; t += 16) m.advance(t, { x: 300, y: 400 }); assert.ok(m.x < x - 80);
+  m.setChasing(false, 14000); assert.equal(m.chaseLocked, false); const f = m.advance(14016, { x: 300, y: 400 }); assert.notEqual(f.mode, 'chase');
+});

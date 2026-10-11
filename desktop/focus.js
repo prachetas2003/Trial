@@ -1,7 +1,7 @@
 (function (root) {
   'use strict';
   const MINUTE = 60000;
-  const defaults = { focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, presence: 'wander', peekDuringFocus: true, autoQuotes: true, quietFocus: true };
+  const defaults = { focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, presence: 'wander', peekDuringFocus: true, autoQuotes: true, quietFocus: false, quoteSeconds: 45, dragEnabled: true, chaseCursor: false, completionSound: true, returnAfterSession: true, edge: 'right', edgePosition: .85 };
   const integer = (value, lo, hi, fallback) => Number.isFinite(value) ? Math.max(lo, Math.min(hi, Math.round(value))) : fallback;
   const line = (value, length) => typeof value === 'string' ? value.trim().slice(0, length) : '';
   const copy = value => JSON.parse(JSON.stringify(value));
@@ -10,6 +10,10 @@
     for (const key of ['focusMinutes', 'breakMinutes', 'longBreakMinutes']) out[key] = integer(saved[key], 1, key === 'focusMinutes' ? 180 : 60, out[key]);
     if (['wander', 'peek', 'hidden'].includes(saved.presence)) out.presence = saved.presence;
     for (const key of ['peekDuringFocus', 'autoQuotes', 'quietFocus']) if (typeof saved[key] === 'boolean') out[key] = saved[key];
+    out.quoteSeconds = integer(saved.quoteSeconds, 15, 180, out.quoteSeconds);
+    if (['left', 'right', 'top', 'bottom'].includes(saved.edge)) out.edge = saved.edge;
+    if (Number.isFinite(saved.edgePosition)) out.edgePosition = Math.max(0, Math.min(1, saved.edgePosition));
+    for (const key of ['dragEnabled', 'chaseCursor', 'completionSound', 'returnAfterSession']) if (typeof saved[key] === 'boolean') out[key] = saved[key];
     return out;
   }
   class FocusCompanion {
@@ -28,10 +32,17 @@
       this.session = null; this.recovered = false;
       const s = saved.session;
       if (s && ['focus', 'break'].includes(s.kind) && Number.isFinite(s.planMs) && typeof s.id === 'string') {
-        this.session = { id: line(s.id, 100), kind: s.kind, planMs: integer(s.planMs, MINUTE, 180 * MINUTE, 25 * MINUTE), elapsedMs: integer(s.elapsedMs, 0, 180 * MINUTE, 0), running: false, segmentStartedAt: now, startedAt: integer(s.startedAt, 0, Number.MAX_SAFE_INTEGER, now), intention: line(s.intention, 160), choices: integer(s.choices, 0, 99999, 0), lastChoiceAt: null };
+        this.session = { id: line(s.id, 100), kind: s.kind, planMs: integer(s.planMs, MINUTE, 180 * MINUTE, 25 * MINUTE), elapsedMs: integer(s.elapsedMs, 0, 180 * MINUTE, 0), running: false, segmentStartedAt: now, startedAt: integer(s.startedAt, 0, Number.MAX_SAFE_INTEGER, now), intention: line(s.intention, 160), choices: integer(s.choices, 0, 99999, 0), lastChoiceAt: null, presenceOverride: ['wander', 'peek'].includes(s.presenceOverride) ? s.presenceOverride : null };
         this.session.elapsedMs = Math.min(this.session.elapsedMs, this.session.planMs);
         this.recovered = true;
       }
+    }
+    presence() {
+      const p = this.preferences;
+      if (p.presence === 'hidden') return 'hidden';
+      if (this.session?.kind === 'focus' && this.session.presenceOverride) return this.session.presenceOverride;
+      if (p.chaseCursor) return 'wander';
+      return p.presence === 'peek' || (p.peekDuringFocus && this.session?.kind === 'focus') ? 'peek' : 'wander';
     }
     id(now) { return `${now.toString(36)}-${(++this.serial).toString(36)}-${Math.floor(this.random() * 1e9).toString(36)}`; }
     elapsed(now) { const s = this.session; return s ? Math.min(s.planMs, s.elapsedMs + (s.running ? Math.max(0, now - s.segmentStartedAt) : 0)) : 0; }
@@ -55,7 +66,11 @@
         this.history.unshift(record); this.history = this.history.slice(0, 50);
         if (completed) this.completedSessions++;
         this.events.push({ type: 'finished', summary: record });
-      } else this.events.push({ type: 'break-finished' });
+      } else this.events.push({ type: 'break-finished', id: s.id, completed });
+      if (s.kind === 'focus') {
+        if (this.preferences.returnAfterSession && this.preferences.presence === 'peek') this.preferences.presence = 'wander';
+        else if (!this.preferences.returnAfterSession && this.presence() === 'peek') this.preferences.presence = 'peek';
+      }
       this.session = null; this.recovered = false;
       this.quote('everyday', now);
     }
@@ -68,7 +83,7 @@
           if (this.session) throw new Error('Finish the current timer before starting another.');
           const kind = action.kind === 'break' ? 'break' : 'focus';
           const minutes = kind === 'focus' ? this.preferences.focusMinutes : this.completedSessions > 0 && this.completedSessions % 4 === 0 ? this.preferences.longBreakMinutes : this.preferences.breakMinutes;
-          this.session = { id: this.id(now), kind, planMs: minutes * MINUTE, elapsedMs: 0, running: true, segmentStartedAt: now, startedAt: now, intention: line(action.intention, 160), choices: 0, lastChoiceAt: null };
+          this.session = { id: this.id(now), kind, planMs: minutes * MINUTE, elapsedMs: 0, running: true, segmentStartedAt: now, startedAt: now, intention: line(action.intention, 160), choices: 0, lastChoiceAt: null, presenceOverride: null };
           this.recovered = false;
           this.events.push({ type: 'started', kind });
           break;
@@ -88,6 +103,23 @@
           this.events.push({ type: 'stayed', choices: s.choices }); this.quote('hard', now); break;
         }
         case 'quote': this.quote(action.category === 'hard' ? 'hard' : 'everyday', now); break;
+        case 'presence': {
+          if (!['wander', 'peek', 'hidden'].includes(action.value)) throw new Error('Choose how the monkey appears.');
+          if (action.value !== 'wander') this.preferences.chaseCursor = false;
+          if (action.value !== 'hidden' && this.session?.kind === 'focus') {
+            if (this.preferences.presence === 'hidden') this.preferences.presence = 'wander';
+            this.session.presenceOverride = action.value;
+          } else this.preferences.presence = action.value;
+          break;
+        }
+        case 'chase': {
+          this.preferences.chaseCursor = typeof action.enabled === 'boolean' ? action.enabled : !this.preferences.chaseCursor;
+          if (this.preferences.chaseCursor) {
+            this.preferences.presence = 'wander';
+            if (this.session?.kind === 'focus') this.session.presenceOverride = 'wander';
+          }
+          break;
+        }
         case 'preferences': this.preferences = preferences({ ...this.preferences, ...action.values }); break;
         case 'note-add': {
           const text = line(action.text, 1000);
@@ -102,7 +134,7 @@
     }
     drainEvents() { return this.events.splice(0); }
     snapshot(now = Date.now()) {
-      return copy({ preferences: this.preferences, notes: this.notes, history: this.history, recovered: this.recovered, session: this.session ? { ...this.session, elapsedMs: this.elapsed(now), remainingMs: Math.max(0, this.session.planMs - this.elapsed(now)) } : null });
+      return copy({ presence: this.presence(), preferences: this.preferences, notes: this.notes, history: this.history, recovered: this.recovered, session: this.session ? { ...this.session, elapsedMs: this.elapsed(now), remainingMs: Math.max(0, this.session.planMs - this.elapsed(now)) } : null });
     }
     export(now = Date.now()) {
       return copy({ version: 1, preferences: this.preferences, notes: this.notes, history: this.history, completedSessions: this.completedSessions, decks: this.decks, lastQuotes: this.lastQuotes, session: this.session ? { ...this.session, elapsedMs: this.elapsed(now), segmentStartedAt: now } : null });

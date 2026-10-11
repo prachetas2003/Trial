@@ -10,7 +10,7 @@ module.exports = function windowOptions(x, y, width = 1440, height = 900) {
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true, sandbox: true, nodeIntegration: false,
-      backgroundThrottling: false, webSecurity: true
+      backgroundThrottling: false, webSecurity: true, autoplayPolicy: 'no-user-gesture-required'
     }
   };
 };

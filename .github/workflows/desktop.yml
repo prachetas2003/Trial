@@ -48,7 +48,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.5.0 — Mischief focus companion' --notes-file product/DESKTOP_RELEASE.md
+          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.6.0 — grab, chase and focus' --notes-file product/DESKTOP_RELEASE.md
       - name: Save native test evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -6,16 +6,26 @@ a scribbled orange shirt, and an expressive curled tail keep it looking drawn
 on the screen. The face and spaces between strokes remain transparent.
 White-marker mode works over dark editors. The monkey walks, chases, jumps,
 leans into cursor strokes, and reaches a larger hand toward you.
-Mouse clicks pass through; controls live in the Windows notification area.
+Drag the monkey by its head or body. Empty screen areas and speech bubbles
+let clicks through; a compact timer bar stays at the top of the screen.
 This release contains one doodle character.
 
-Version 0.5.0 adds a focus corner: configurable Pomodoro sessions, breaks,
-90 warm lines and 35 sourced quotations, a hide-and-peek mode, saved thoughts,
-and an “I’m staying” button with a session summary. Double-click the tray icon
-or press **Ctrl+Alt+F** to open it. **Ctrl+Alt+T** captures a thought;
-**Ctrl+Alt+S** records a choice during a running focus session. The focus corner
-can be closed while the timer continues. By default, Mischief peeks from the
-edge during focus and ordinary quotes stay quiet.
+Version 0.6.0 adds click-and-drag with body and leg momentum, dragging along
+all four screen margins while peeking, and a continuous cursor-chase toggle.
+The top bar shows the timer, an “I’m staying” button, thought capture, tuck/bring
+back, and chase controls. Click the timer to open the focus corner. Completion
+plays a soft offline chime and lights up clickable session highlights. The
+monkey returns after focus by default; retrieving it during focus overrides
+only that session, preserving automatic tucking for the next one.
+
+Warm quotes appear roughly every 45 seconds, with 25/45/90-second frequency
+options. Quiet ordinary quotes during focus and completion sound are optional.
+You can turn dragging off for clicks to pass through the monkey too. The bar
+remains usable even when you completely hide the monkey. Pomodoro sessions,
+breaks, 90 warm lines, 35 sourced quotations, saved thoughts, and session
+summaries remain local. Double-click the tray icon or press **Ctrl+Alt+F** to
+open the focus corner. **Ctrl+Alt+T** captures a thought; **Ctrl+Alt+S** records
+a choice during a running focus session.
 
 Try the [movement playground](https://prachetas2003.github.io/Trial/roam/).
 The browser preview stays within its page. The desktop application moves
@@ -80,6 +90,7 @@ npm start
 npm run test:browser
 npm run test:roam
 npm run test:focus
+npm run test:overlay
 # On a graphical Windows desktop:
 npm run test:desktop
 npm run package:desktop
@@ -90,9 +101,11 @@ Native checks use a temporary application-data directory and move/click the
 real cursor, so run them on an isolated test desktop. Python is required by
 the pointer test helper. Linux tests explicitly select a software graphics
 backend on the isolated virtual display; this flag is not used in shipping.
-Linux virtual-display tests verify native movement,
-transparency, renderer reactions, and click-through separately; only Windows
-checks verify global cursor stroking while click-through remains enabled.
+Linux virtual-display tests use the coordinates of real XTest pointer moves
+to supplement Electron’s cached cursor API. They verify rendering, real mouse
+clicks, dragging and click-through; only Windows checks use the unmodified
+global cursor API. Tests check the audio playback promise, but perceived
+volume and smoothness still need testing on your physical computer.
 
 The [Windows workflow](.github/workflows/desktop.yml) runs motion and native
 Windows checks, packages the app, uploads an artifact, and creates a public

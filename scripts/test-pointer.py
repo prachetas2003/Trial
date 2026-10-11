@@ -5,13 +5,12 @@ import os
 import sys
 
 x, y = int(sys.argv[1]), int(sys.argv[2])
-click = len(sys.argv) > 3 and sys.argv[3] == 'click'
+operation = sys.argv[3] if len(sys.argv) > 3 else 'move'
 if sys.platform == 'win32':
     user = ctypes.windll.user32
     user.SetCursorPos(x, y)
-    if click:
-        user.mouse_event(0x0002, 0, 0, 0, 0)
-        user.mouse_event(0x0004, 0, 0, 0, 0)
+    if operation in ('click', 'down'): user.mouse_event(0x0002, 0, 0, 0, 0)
+    if operation in ('click', 'up'): user.mouse_event(0x0004, 0, 0, 0, 0)
 elif sys.platform.startswith('linux'):
     xlib = ctypes.CDLL(ctypes.util.find_library('X11'))
     xtst = ctypes.CDLL(ctypes.util.find_library('Xtst'))
@@ -27,9 +26,8 @@ elif sys.platform.startswith('linux'):
         raise SystemExit('No isolated test display is available.')
     try:
         xtst.XTestFakeMotionEvent(display, -1, x, y, 0)
-        if click:
-            xtst.XTestFakeButtonEvent(display, 1, 1, 0)
-            xtst.XTestFakeButtonEvent(display, 1, 0, 0)
+        if operation in ('click', 'down'): xtst.XTestFakeButtonEvent(display, 1, 1, 0)
+        if operation in ('click', 'up'): xtst.XTestFakeButtonEvent(display, 1, 0, 0)
         # Flush alone can lose queued XTest requests when a short-lived client
         # disconnects. Wait until the X server has processed the stroke.
         xlib.XSync(display, 0)

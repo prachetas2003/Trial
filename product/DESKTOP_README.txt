@@ -1,10 +1,10 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.5.0
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.6.0
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
 2. Extract the entire ZIP into a folder. Keep all its files together.
 3. Open Buildlings.exe. No Node.js, account, or API key is needed.
-4. Double-click the monkey icon in the Windows notification area to open
+4. Click the timer bar at the top, or double-click the monkey icon in the Windows notification area to open
    your focus corner. It may be under the hidden-icons arrow.
 5. Write one intention, choose your focus/break lengths, and start.
    Use the arrow in the focus corner to return to your work. The timer continues.
@@ -22,12 +22,29 @@ YOUR LITTLE CORNER
   when ready. A sudden shutdown restores the last saved paused checkpoint
   (checkpoints are saved every 10 seconds during a running timer).
 
+THE TOP BAR
+- Click the clock to open the focus corner.
+- Click "I'm staying" when you choose to stay despite a distraction.
+- The pencil saves a thought. The diagonal arrow tucks / brings back the monkey.
+- Chase keeps following your cursor until switched off. Tucking turns chase off.
+- When a timer expires, a soft bell plays and the bar glows. Click Highlights
+  to see the session intention, time and choices. Sound can be turned off.
+- The top bar remains visible when the monkey is hidden.
+
 THE MONKEY
+Click and hold the monkey's head/body to drag him. His body and legs swing
+with momentum and settle after release. While peeking, drag along the margins
+or onto another edge. You can disable dragging in "Make this corner yours"
+for clicks to pass through the monkey as well.
 Move your cursor gently across Mischief to pet it. Right-click the tray icon
 for motion, marker ink, quotes, hiding, and timer controls. White marker works
 well over dark editors. The monkey can wander freely, peek from the edge,
 or be hidden completely. It tucks to the edge during focus by default.
-Ordinary warm quotes are quiet during focus by default; you can change this.
+Warm quotes appear about every 45 seconds by default. Choose 25, 45 or 90
+seconds in the focus corner; you can keep ordinary quotes quiet during focus.
+Existing preferences are preserved. Bringing him back during focus affects
+only this session; the next one can still tuck automatically. By default he
+comes back when the focus session ends.
 
 KEYBOARD SHORTCUTS
 Ctrl+Alt+F  Open focus corner
@@ -39,8 +56,9 @@ Ctrl+Alt+Q  Quit
 If a shortcut is used by another app, use the notification-area menu.
 
 YOUR DATA
-The monkey and its bubbles let clicks pass through without keyboard focus.
-Only the focus corner accepts clicks and typing when you open it. It does
+Empty areas and speech bubbles let clicks pass through. Only the timer bar
+and monkey grab region accept mouse input; they do not take keyboard focus.
+The focus corner accepts typing when you open it. It does
 not read your editor, record keystrokes elsewhere, use AI credits, sample your
 screen, block websites, send cursor positions, or run on startup. The app
 makes no network requests. Preferences, thoughts, sessions, and timer
@@ -60,4 +78,4 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.5.0
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.6.0
