@@ -1,3 +1,58 @@
+# Mischief movement and top-bar validation — 0.6.0
+
+Release: [desktop-preview-7](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-7)
+
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38115534453)
+passed for source commit `90b7849`: fresh installation, 54 unit/server checks,
+15 native desktop checks, packaging, archive creation, checksum generation,
+and public release upload all succeeded.
+
+New native Windows checks use real pointer moves, presses and releases. They
+verify dragging with body/leg swing, settling after release, no keyboard-focus
+stealing, default body capture over another focused window, and clicks passing
+through empty overlay areas. They also verify edge dragging and saved margin
+position, retrieval, continuous chase beyond the occasional-chase timeout,
+toggling chase off, opening the focus corner from the top timer, the top
+“I’m staying” button, controls remaining visible while the monkey is completely
+hidden, one completion audio playback, glowing clickable highlights, and the
+saved session summary. Existing transparency, art, petting, gestures, timer,
+thought capture and disk-recovery checks also pass.
+
+Local validation passed the same 54 unit/server checks, 16 original browser
+checks, 11 marker-monkey playground checks, the focus browser suite, and seven
+new overlay browser flows. These cover more frequent automatic quotes, timer
+updates, choice-button cooldown, temporary retrieval during focus, real DOM
+pointer capture and drag, physical swing, margin switching, persistent chase,
+hiding, one completion sound, highlight acknowledgement, preserved session
+choices, and layouts at 320, 390 and 768 pixels. Unit checks cover session-only
+presence overrides, return/hiding preferences, persistent chase and restart,
+invalid preferences, completion versus early ending, drag bounds and settling,
+all four margins, and chase persistence beyond its former timeout.
+
+Fifteen checks also passed on an isolated Linux display. The Linux test supplies
+the coordinates of real XTest moves to supplement Electron’s cached global
+cursor API; it does not establish Windows behavior. Body capture over another
+focused window is asserted on Windows. Linux remains an unsupported release.
+
+The public ZIP was downloaded back and verified against its published SHA-256,
+archive CRCs, versioned README and quote references. Application version is
+0.6.0. All 22 tracked packaged desktop files match the tested source, including
+the local completion WAV; text comparisons normalize Windows line endings.
+All 18 checked live website/preview assets match the tested local files.
+Pages commit: `adfd7542d7bdf4f47c10d7258845433d3a90b48a`.
+
+Archive: `Buildlings-Windows-x64.zip` — 163,537,917 bytes.
+
+SHA-256: `edcf1b95392b247cc7f13dea122359fd87ed6b0da9e24512c1824bd2d557e04c`
+
+The automated audio check verifies that local playback starts once; perceived
+volume depends on the computer’s audio settings. Physical-PC smoothness,
+battery use, and mixed-DPI monitor transitions still need manual profiling.
+This is an unsigned Windows 10/11 x64 preview. Sessions, thoughts and preferences
+remain local. The browser preview keeps a separate browser copy of data.
+
+---
+
 # Mischief focus companion validation — 0.5.0
 
 Release: [desktop-preview-6](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-6)
