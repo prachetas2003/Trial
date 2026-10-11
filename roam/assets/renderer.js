@@ -1,6 +1,6 @@
-import { MonkeyScene } from './monkey.js?v=0.6.0';
-import { SpeechBubble } from './bubbles.js?v=0.6.0';
-import { OverlayBar } from './hud.js?v=0.6.0';
+import { MonkeyScene } from './monkey.js?v=0.6.1';
+import { SpeechBubble } from './bubbles.js?v=0.6.1';
+import { OverlayBar } from './hud.js?v=0.6.1';
 const hud = new OverlayBar(window.companion);
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
