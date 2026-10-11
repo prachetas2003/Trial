@@ -74,8 +74,10 @@ Empty areas and speech bubbles let clicks pass through. Only the timer bar
 and monkey grab region accept mouse input; they do not take keyboard focus.
 The focus corner accepts typing when you open it. It does
 not read your editor, record keystrokes elsewhere, use AI credits, sample your
-screen, block websites, send cursor positions, or run on startup. The app
-makes no network requests. Preferences, thoughts, sessions, and timer
+screen, send cursor positions to a service, or run on startup. Optional Focus
+Shield blocks browser content through the paired extension. Open tab titles
+and URLs travel only to the local app at 127.0.0.1:43827 and stay in memory;
+selected tab IDs and blocking rules are saved locally. No data is uploaded. Preferences, thoughts, sessions, and timer
 checkpoints are stored locally in Electron's app-data folder. Quote sources
 are listed in QUOTE_SOURCES.md and QUOTE_SOURCES_ADDITIONS.md.
 There are 120 balanced everyday lines and 43 sourced quotations.

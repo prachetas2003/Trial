@@ -73,7 +73,8 @@ npm run desktop
 Electron is downloaded by the install script with its official checksum
 verification. Injected HTTPS proxies are supported without disabling TLS.
 The renderer is sandboxed with context isolation and no Node integration.
-The desktop application makes no network requests. Preferences, saved thoughts,
+The desktop app uses an authenticated loopback server at 127.0.0.1:43827
+for the optional browser extension. It sends no data to an external service. Preferences, saved thoughts,
 the last 50 focus sessions, choice counts, and a paused timer checkpoint stay in
 local app-data. Cursor positions are used locally for animation. Quit, sleep,
 and screen lock pause the timer; restarting restores the last saved checkpoint
@@ -101,12 +102,19 @@ npm run test:roam
 npm run test:focus
 npm run test:overlay
 npm run test:quotes
+npm run test:shield-ui
 # On a graphical Windows desktop:
 npm run test:desktop
+npx playwright install chromium
+npm run test:extension
 npm run package:desktop
 ```
 
-Browser checks use Playwright and `CHROMIUM_PATH` (default `/usr/bin/chromium`).
+Browser preview checks use Playwright and `CHROMIUM_PATH` (default `/usr/bin/chromium`).
+Extension checks require an unmanaged browser that allows unpacked extensions;
+on Windows they use Playwright's installed Chromium channel. A managed browser
+policy can prohibit unpacked extensions even when command-line loading is used.
+The Windows workflow tests the real extension before packaging.
 Native checks use a temporary application-data directory and move/click the
 real cursor, so run them on an isolated test desktop. Python is required by
 the pointer test helper. Linux tests explicitly select a software graphics
