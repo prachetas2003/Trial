@@ -1,3 +1,49 @@
+# Mischief focus companion validation — 0.5.0
+
+Release: [desktop-preview-6](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-6)
+
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38111841874)
+completed successfully for source commit `bc901e5`. Fresh dependency installation,
+46 core/focus/motion/server tests, 10 native desktop checks, packaging, archive
+creation, checksum generation, and public release upload passed.
+
+The native checks cover transparent pixels, click-through to an underlying
+window, absence of focus stealing by the pet, global Windows cursor stroking,
+chasing, jumping, reaching, focus-window controls, attributed speech bubbles,
+edge presence, thought capture, closing the focus window while retaining the
+session, disk persistence, paused restart recovery, and exactly one timer
+completion. The Windows test keeps click-through enabled during cursor strokes.
+
+Local checks passed the same 46 tests, 16 existing browser-companion checks,
+11 marker-monkey playground checks, the new focus browser flows, and 10 native
+checks on an isolated Linux display. Linux pointer-reaction checks enable mouse
+events temporarily; they do not establish Windows global-pointer behavior.
+
+Focus browser checks exercise configurable session lengths, the countdown,
+choice counting and duplicate-click cooldown, exact quote/name rendering,
+quote click-through, timer pause, safe thought text, reload recovery,
+completion summaries, break timers, edge peeking, bubble bounds, complete hiding,
+returning to wandering, thought review/removal, and layouts down to 320 pixels.
+Unit tests also verify nonrepeating quote decks across restarts and the
+four-session long-break cycle beyond the history retention limit.
+
+The public Windows ZIP was downloaded back and verified for SHA-256, archive
+CRCs, the versioned README, quote references, and application version 0.5.0.
+All 19 packaged desktop files match the tested source after normalizing Windows
+line endings. The 14 live browser preview files match the local tested files.
+
+Archive: `Buildlings-Windows-x64.zip` — 163,474,392 bytes.
+
+SHA-256: `560731940cbcea9741c5c7a9fa3d7b928519b65419e3ca449b7b31cfd06c7ef5`
+
+This is an unsigned Windows 10/11 x64 preview. Physical-PC frame rates,
+battery use, and mixed-DPI monitor transitions still need manual profiling.
+Timer time records a running session; recorded choices are not a measured
+attention or discipline score. Data stays locally in the app-data folder.
+The browser preview stores its own separate data and stays within its page.
+
+---
+
 # Marker-monkey preview validation — 0.4.0
 
 Release: [desktop-preview-5](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-5)
