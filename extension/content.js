@@ -18,7 +18,7 @@
       document.documentElement.append(shield);
       shield.focusState = shadow;
       shadow.querySelector('#return').onclick = async () => { const result = await send({ type: 'return' }); shadow.querySelector('#feedback').textContent = result.returned ? '' : 'Choose a work tab in Mischief, or pause your timer from the extension menu.'; };
-      shadow.querySelector('#save').onclick = async () => { const result = await send({ type: 'save' }); shadow.querySelector('#feedback').textContent = result.connected ? 'Saved in Keep my thoughts.' : 'Reconnect Mischief to save this page.'; };
+      shadow.querySelector('#save').onclick = async () => { const result = await send({ type: 'save' }); shadow.querySelector('#feedback').textContent = result.error ? result.error : result.connected ? 'Saved in Keep my thoughts.' : 'Reconnect Mischief to save this page.'; };
       shadow.querySelector('#return').focus();
     }
     if (!shield.isConnected) document.documentElement.append(shield);

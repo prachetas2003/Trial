@@ -41,8 +41,8 @@ async function restrictions(next, tabs) {
     chrome.tabs.sendMessage(tab.id, { type: 'state', state: next, tabKey: key(tab.id), lastGood }).catch(() => {});
   }
 }
-async function poll(action, url) {
-  if (pollBusy) return action ? new Promise(resolve => setTimeout(() => resolve(poll(action, url)), 100)) : state; pollBusy = true;
+async function poll(action, url, force = false) {
+  if (pollBusy) return action || force ? new Promise(resolve => setTimeout(() => resolve(poll(action, url, force)), 100)) : state; pollBusy = true;
   try {
     const saved = await chrome.storage.local.get(['pairingCode', 'clientId']);
     identity = saved.clientId || crypto.randomUUID(); paired = !!saved.pairingCode;
@@ -50,19 +50,19 @@ async function poll(action, url) {
     const tabs = await chrome.tabs.query({});
     if (!saved.pairingCode) { await restrictions({ active: false, connected: false }, tabs); return state; }
     const response = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Mischief-Key': saved.pairingCode }, body: JSON.stringify({ clientId: identity, browser: navigator.userAgent.includes('Edg/') ? 'Edge' : 'Chrome', tabs: tabs.map(t => ({ id: t.id, title: t.title, url: original(t) })), action, url, applied: { active: state.active, sessionId: state.sessionId, rules: JSON.stringify(MischiefShield.settings(state.shield)) } }), signal: AbortSignal.timeout(2000) });
-    if (!response.ok) throw new Error('Connection refused');
+    if (!response.ok) throw new Error(`Connection refused (${response.status})`);
     const next = await response.json(); lastGood = Date.now();
     await restrictions({ ...next, connected: true }, tabs);
-  } catch {
+  } catch (error) {
     // Failure releases restrictions; persisted session rules are also cleared at worker startup.
-    await restrictions({ active: false, connected: false }, await chrome.tabs.query({})).catch(() => {});
+    await restrictions({ active: false, connected: false, error: error.message }, await chrome.tabs.query({})).catch(() => {});
   } finally { pollBusy = false; }
   return state;
 }
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   (async () => {
     if (message.type === 'state') return { state, tabKey: key(sender.tab?.id), lastGood };
-    if (message.type === 'refresh') return poll();
+    if (message.type === 'refresh') return poll(undefined, undefined, true);
     if (message.type === 'stay' || message.type === 'pause') return poll(message.type);
     if (message.type === 'save') return poll('save', sender.tab ? original(sender.tab) : message.url);
     if (message.type === 'return') {
@@ -76,6 +76,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
   return true;
 });
 chrome.alarms.create('mischief-sync', { periodInMinutes: .5 });
+chrome.storage.onChanged.addListener((changes, area) => { if (area === 'local' && changes.pairingCode) poll(undefined, undefined, true); });
 chrome.alarms.onAlarm.addListener(() => poll());
 chrome.runtime.onStartup.addListener(() => poll());
 chrome.tabs.onCreated.addListener(() => poll());

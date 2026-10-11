@@ -8,7 +8,8 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
 (async () => {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'mischief-extension-'));
   const token = 'a'.repeat(43), focus = new FocusCompanion({ bank });
-  const bridge = createShieldBridge({ token, getState: () => focus.snapshot(), action: a => focus.dispatch(a) });
+  const rejections = [];
+  const bridge = createShieldBridge({ onReject: r => rejections.push(r), token, getState: () => focus.snapshot(), action: a => focus.dispatch(a) });
   await once(bridge.server, 'listening');
   const web = http.createServer((req, res) => { res.setHeader('Content-Type', 'text/html'); res.end(`<!doctype html><title>${req.url === '/work' ? 'My work' : 'Other page'}</title><body><input id="draft" value="unfinished work"><a id="shorts" href="/shorts/example">Shorts</a><a id="normal" href="/watch?v=lesson">Lesson</a><p>Preserve this page.</p></body>`); });
   web.listen(0, '127.0.0.1'); await once(web, 'listening');
@@ -27,7 +28,7 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     await distraction.goto(url('distraction.test', '/feed'));
     await worker.evaluate(async code => { await chrome.storage.local.set({ pairingCode: code }); await chrome.runtime.sendMessage({ type: 'refresh' }); }, token);
     await new Promise(resolve => setTimeout(resolve, 1600));
-    assert.equal(bridge.info().connected, true, 'real extension POST Origin and authentication succeed');
+    assert.equal(bridge.info().connected, true, JSON.stringify({ message: 'real extension pairing', rejections, state: await worker.evaluate(() => chrome.storage.session.get('shieldState')) }));
     console.log('PASS real Chrome extension pairing and live tab inventory');
     const tabs = bridge.info().tabs, workKey = tabs.find(t => t.url === url('work.test', '/work')).key, otherKey = tabs.find(t => t.url === url('distraction.test', '/feed')).key;
     focus.dispatch({ type: 'shield', values: { enabled: true, websites: ['distraction.test'] } }); focus.dispatch({ type: 'start' });
@@ -70,4 +71,4 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     assert.deepEqual(errors, []);
     await work.screenshot({ path: 'test-results/shield-work-tab.png' });
   } finally { if (context) await context.close(); bridge.close(); web.close(); fs.rmSync(profile, { recursive: true, force: true }); }
-})().catch(error => { console.error(error); process.exitCode = 1; });
+})().catch(error => { console.error(error); if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\nFocus Shield extension check failed:\n\n\`\`\`text\n${error.stack}\n\`\`\`\n`); process.exitCode = 1; });

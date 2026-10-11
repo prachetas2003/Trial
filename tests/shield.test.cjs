@@ -50,9 +50,11 @@ test('local bridge authenticates browser origins, exposes a running-session leas
   try {
     assert.equal((await request({ Origin:'https://evil.com', 'X-Mischief-Key':token })).status, 403);
     assert.equal((await request({ Origin:origin })).status, 401);
+    const noOrigin = await request({ 'X-Mischief-Key':token }, { clientId:'originless_browser' });
+    assert.equal(noOrigin.status, 200, 'permission-granted extension fetches may omit Origin; the secret and loopback host are still required');
     const valid = { Origin:origin, 'X-Mischief-Key':token };
     assert.equal((await (await request(valid)).json()).active, true); assert.equal(bridge.info().connected, true);
-    assert.equal(bridge.info().tabs[0].key, tab);
+    assert.ok(bridge.info().tabs.some(t => t.key === tab));
     await request(valid, { action:'end' }); assert.ok(f.session, 'browser cannot finish or reconfigure a session');
     assert.equal((await (await request(valid, { action:'pause' })).json()).active, false);
     assert.equal((await request({ ...valid, Origin:'chrome-extension://'+'b'.repeat(32) })).status, 400);
