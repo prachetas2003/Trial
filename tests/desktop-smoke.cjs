@@ -169,9 +169,18 @@ async function clickOverlay(app, page, selector) {
     if (process.platform === 'linux') await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.setIgnoreMouseEvents(false));
     await pointer(app, pet.x, pet.y - 94, 'down');
     await restored.waitForFunction(() => window.__buildlingsEngine.dragging, null, { timeout: 4000 });
+    await restored.evaluate(() => {
+      window.__nativeDragPeak = 0;
+      window.__nativeDragObserver = () => { window.__nativeDragPeak = Math.max(window.__nativeDragPeak, Math.abs(window.__buildlingsRenderer.legSwing)); };
+      window.addEventListener('companion-frame', window.__nativeDragObserver);
+    });
     for (let i = 1; i <= 10; i++) { await pointer(app, pet.x - i * 14, pet.y - 94 - i * 4); await restored.waitForTimeout(35); }
+    const legSwingPeak = await restored.evaluate(() => {
+      window.removeEventListener('companion-frame', window.__nativeDragObserver);
+      return window.__nativeDragPeak;
+    });
     const held = await restored.evaluate(() => ({ frame: window.__buildlingsFrame, art: window.__buildlingsRenderer }));
-    assert.ok(held.frame.x < pet.x - 110); assert.ok(held.frame.y < pet.y - 30); assert.ok(held.art.dragWeight > .9); assert.ok(Math.abs(held.art.legSwing) > .05);
+    assert.ok(held.frame.x < pet.x - 110); assert.ok(held.frame.y < pet.y - 30); assert.ok(held.art.dragWeight > .9); assert.ok(legSwingPeak > .05, `Legs must swing during the drag; peak was ${legSwingPeak}`);
     await restored.screenshot({ path: path.join(output, 'native-monkey-drag.png'), omitBackground: true });
     await pointer(app, pet.x - 140, pet.y - 134, 'up'); await restored.waitForFunction(() => !window.__buildlingsEngine.dragging);
     assert.equal(await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().win.isFocused()), false);
