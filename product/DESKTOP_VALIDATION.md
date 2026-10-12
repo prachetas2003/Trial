@@ -1,3 +1,48 @@
+# Calmer focus edges and repaired controls — 0.8.1
+
+Release: [desktop-preview-18](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-18)
+
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38220378898)
+passed for source `a7a9cc8`: fresh installation, **68 unit/server checks**,
+**20 native Windows checks**, **four panel/browser check groups**, **eight
+real-browser extension check groups**, packaging, checksum generation and
+release upload. Every workflow step passed.
+
+The panel regressions switch Quotes on after Deep Focus, observe automatic
+speech during the session, verify silence after switching off, check pause
+retrieval/resume tucking, exercise automatic Light/Dark and manual theme
+selection, and confirm there is no moving edge animation. They also verify
+unchanged Appearance controls receive no DOM mutations over five seconds of periodic state updates,
+and a 200-tab picker accepts wheel scrolling without resetting its position.
+The panel fits 320px, 390px and 768px. Existing timer-opacity, scaled dragging,
+visibility, notes, preset, saved-preference and blocking checks remain active.
+
+Native Windows checks additionally verify automatic speech after a silent
+preset and the tucked monkey's pause/resume transition. Real pointer dragging
+must move the body, produce a leg-swing peak above the same threshold across
+the gesture, release capture and settle. Sampling the whole pendulum motion
+replaces a timing-sensitive final-frame check without removing its assertion.
+
+Local checks passed: 68 unit/server checks, 20 native virtual-display checks,
+four panel/browser groups, five focus groups, seven overlay groups and two
+quote groups. Linux checks use the documented isolated test desktop; the
+Windows workflow supplies actual Windows interaction evidence.
+
+The public ZIP was downloaded back and verified against the published SHA256,
+including archive CRCs, versioned README, quote reference additions and all
+11 unchanged FocusShield files. The extracted ASAR reports version 0.8.1 and
+all 24 tracked desktop files match the tested source. FocusShield remains
+0.8.0 and does not need reinstallation when the user's existing copy is current.
+
+Archive size: **163,568,472 bytes**. SHA256:
+`94447b48208f91a11687a4918da73bc69c20db72dfa266c48b90088b97ee4cb0`.
+
+The live website and preview were verified after deployment: **all 19 checked
+assets match the tested source**. Pages commit: `eccca99`. Download links point
+to the verified release above.
+
+---
+
 # Confirmed tab locks and quick controls — 0.8.0
 
 Release: [desktop-preview-16](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-16)
