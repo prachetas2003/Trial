@@ -1,3 +1,70 @@
+# Native timer repair, recovery and Safe Mode — 0.8.2
+
+Release: [desktop-preview-19](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-19)
+
+The reported user machine froze immediately after startup; its screenshot
+background was black, but its desktop was not covered. The user also reported
+that Ctrl+Alt+F did not open controls. The complete startup freeze was not
+reproduced on the available machine. Its exact cause remains unconfirmed.
+
+A separate, concrete v0.8.1 regression was reproduced directly from the
+previously published and checksum-verified app ASAR: setting `showHud:false`
+produced `hidden:true`, but computed `display:flex` and actual visible native
+timer artwork. The native click-through gate correctly excluded a hidden HUD,
+leaving that visible bar unclickable. The 0.8.1 edge-CSS rewrite had removed
+`#timer-bar[hidden]` along with hover and compact-layout rules. These rules are
+restored. Native tests now wait for rendered invisibility rather than merely
+checking the hidden attribute. The screenshot alone does not establish that
+this preference was the user's setting or explain the failed keyboard shortcut.
+
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38320111876)
+passed for source `5fc401f`: fresh installation, **71 unit/server checks**,
+**20 native interaction checks**, **six native stability checks**, **four
+panel/browser check groups**, **eight extension check groups**, packaging,
+checksum generation and release upload. Every step passed.
+
+The stability suite restores a session matching the reported timer state
+(Paused, 22:31, five choices), hides/restores the timer, and uses actual OS mouse
+input to resume-and-count, pause and open controls. The focus shortcut must be
+registered and concurrent panel-open requests must render the requested view.
+It verifies that 150 preference changes coalesce into one atomic file write,
+checks the active native overlay centre is transparent, injects a paint failure
+and checks controls remain usable, then forcefully crashes the renderer and
+checks a fresh overlay and accessible controls. A new Safe Mode launch must
+report software GPU compositing, a 1x canvas, working real mouse controls,
+and preserved notes and session choices. These tests ran on Windows as well
+as the isolated Linux test desktop. Registration is checked; physical keyboard
+activation on the reported user's machine has not been verified.
+
+The repair uses asynchronous/coalesced atomic writes and flushes queued writes
+on quit. Timer bounds are refreshed without depending on ResizeObserver.
+Four 64px gradient strips replace the full-screen composited shadow, and the
+timer backdrop blur is removed. Direct Pause/Resume and Resume & stay controls
+and visible failure messages address silent controls. Paint failures preserve
+HUD reporting; renderer failure gets a new native surface and pauses focus.
+The tray includes manual restart and local diagnostics. Diagnostics contain
+technical events and graphics/screen information, not thoughts, quotes or URLs.
+
+Local checks also passed: 71 unit/server checks, 20 native checks, six native
+stability checks, four panel/browser groups, seven overlay groups and two
+quote groups. Safe Mode disables hardware acceleration before app readiness
+and limits character painting to 30 fps; physics remains independent of paint.
+
+The public ZIP was downloaded back. SHA256 and archive CRCs passed; the Safe
+Mode launcher exists and contains the expected launch flag, quote references
+match, and all 11 unchanged FocusShield files match source. ASAR version is
+0.8.2, and all 25 tracked desktop files match. The included extension stays
+0.8.0; existing updated copies remain compatible.
+
+Archive size: **163,571,493 bytes**. SHA256:
+`f5528401144d391a1c824bfc07e527f24b34e337eaccbc27e1145e802291ff02`.
+
+The live website and preview were verified after deployment: all 19 checked
+assets match source. Pages commit: `f652ff1`. Download links point to the verified
+replacement release.
+
+---
+
 # Calmer focus edges and repaired controls — 0.8.1
 
 Release: [desktop-preview-18](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-18)
