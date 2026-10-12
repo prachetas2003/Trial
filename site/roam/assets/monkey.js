@@ -86,7 +86,7 @@ export class MonkeyScene {
     this.ink='black';
   }
   resize() {
-    this.ratio=Math.min(window.devicePixelRatio||1,2);
+    this.ratio=(window.__mischiefSafeMode ? 1 : Math.min(window.devicePixelRatio||1,2));
     this.canvas.width=Math.round(WINDOW.width*this.ratio);this.canvas.height=Math.round(WINDOW.height*this.ratio);
     this.marker=new Marker(this.ctx);
     this.setInk(this.ink);
@@ -102,7 +102,7 @@ export class MonkeyScene {
     m.stroke(curves([-2,2],[0,0,3,-1,6,0]),1.9,INK,4,false);c.restore();
   }
   draw(frame,now) {
-    if(this.ratio!==Math.min(window.devicePixelRatio||1,2))this.resize();
+    if(this.ratio!==(window.__mischiefSafeMode ? 1 : Math.min(window.devicePixelRatio||1,2)))this.resize();
     const c=this.ctx,m=this.marker,dt=this.lastTime===null?1/60:clamp((now-this.lastTime)/1000,0,.06);this.lastTime=now;
     const happy=clamp(frame.petWeight,0,1),walk=clamp(frame.walkWeight,0,1),phase=frame.walkPhase;
     const reach=spring(this.reach,frame.reach,17,dt),head=spring(this.head,frame.lookX*.055+frame.lean*.06,12,dt);

@@ -1,10 +1,11 @@
-import { MonkeyScene } from './monkey.js?v=0.8.1';
-import { SpeechBubble } from './bubbles.js?v=0.8.1';
-import { OverlayBar } from './hud.js?v=0.8.1';
+import { MonkeyScene } from './monkey.js?v=0.8.2';
+import { SpeechBubble } from './bubbles.js?v=0.8.2';
+import { OverlayBar } from './hud.js?v=0.8.2';
 const hud = new OverlayBar(window.companion);
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
 let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true, grabZone, quotesEnabled = true, dragEnabled = true, heldPointer = null, lastInteractive = false, scale = 1;
+let lastPaint = 0, lastFrameTime = 0, frameFailures = 0, compatibility = false;
 let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const bubble = new SpeechBubble();
 function selectPet() {
@@ -30,6 +31,7 @@ function selectPet() {
   }
 }
 function onInput(input) {
+  if (typeof input.safeMode === 'boolean') { compatibility=input.safeMode; window.__mischiefSafeMode=compatibility; }
   if (input.cursor) cursor = { ...input.cursor };
   if (input.areas) {
     if (!motion) {
@@ -50,11 +52,12 @@ function onInput(input) {
   if (typeof input.visible === 'boolean') enabled = input.visible;
   host.style.visibility = enabled ? 'visible' : 'hidden';
   if (input.presence) motion.setPresence(input.presence === 'peek' ? 'peek' : 'wander', performance.now());
+  if (typeof input.safeMode === 'boolean') compatibility = input.safeMode;
   if (input.preferences) {
     scale = input.preferences.monkeyScale || 1; motion.setScale(scale);
     quotesEnabled = input.preferences.quotesEnabled !== false;
     if (!quotesEnabled) { bubble.quote = null; bubble.element.hidden = true; }
-    dragEnabled = input.preferences.dragEnabled !== false; if (!dragEnabled) stopDrag();
+    dragEnabled = input.preferences.dragEnabled !== false && !!scene; if (!dragEnabled) stopDrag();
     if (grabZone) grabZone.hidden = !dragEnabled;
     if (!motion.dragging) motion.setEdge(input.preferences.edge, input.preferences.edgePosition);
     motion.setChasing(input.preferences.chaseCursor === true, performance.now());
@@ -87,12 +90,20 @@ window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',
   reduceMotion = event.matches; if (motion && reduceMotion) { motion.hopsEnabled = false; motion.hopStart = null; }
 });
 function frame(now) {
+  // Schedule first: a failed paint must not permanently stop hit testing/HUD reports.
+  requestAnimationFrame(frame);
+  if (lastFrameTime && now-lastFrameTime > 1000) window.companion.diagnostic?.({type:'frame-stall',duration:now-lastFrameTime});
+  lastFrameTime=now;
+  try {
   if (motion) {
     if (motion.dragging) motion.dragTo(cursor);
     const next = motion.advance(now, cursor), area = motion.area(), bar = hud.rectangle(area);
     host.style.transform = `translate3d(${next.x - area.x - (scene?.footX ?? WINDOW.footX)}px,${next.y - area.y - (scene?.footY ?? WINDOW.footY)}px,0) scale(${scale})`;
     host.style.transformOrigin = `${scene?.footX ?? WINDOW.footX}px ${scene?.footY ?? WINDOW.footY}px`;
-    if (enabled) scene?.draw(next, now);
+    if (enabled && (!compatibility || now-lastPaint >= 1000/30)) {
+      try { scene?.draw(next, now); lastPaint=now; }
+      catch { scene=null; dragEnabled=false; if(grabZone)grabZone.hidden=true; window.companion.diagnostic?.({type:'renderer-error'}); hud.showMessage('The monkey drawing failed. The timer still works; restart the overlay from the tray.'); }
+    }
     if (grabZone) grabZone.style.transform = `translateY(${-next.hop}px)`;
     if (window.companion.native) {
       const overBar = bar.width > 0 && cursor.x >= bar.x && cursor.x <= bar.x + bar.width && cursor.y >= bar.y && cursor.y <= bar.y + bar.height;
@@ -108,7 +119,7 @@ function frame(now) {
       window.companion.report?.({ x: next.x, y: next.y, mode: next.mode, hop: next.hop * scale, scale, sparkleId: next.sparkleId, areaId: next.areaId, renderer: window.__buildlingsRenderer?.type, hudRect: bar });
     }
   }
-  requestAnimationFrame(frame);
+  } catch { if (frameFailures++ < 3) { window.companion.diagnostic?.({type:'renderer-error'}); hud.showMessage('The monkey drawing stopped. Restart desktop overlay from the tray.'); } }
 }
 requestAnimationFrame(frame);
 window.companion.ready();

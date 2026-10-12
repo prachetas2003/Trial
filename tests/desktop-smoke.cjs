@@ -292,9 +292,10 @@ async function clickOverlay(app, page, selector) {
     await focusPanel.locator('#appearance-view').waitFor({state:'visible'});
     assert.equal(await focusPanel.locator('#monkey-size').inputValue(),'60');
     await app.evaluate(({app})=>{const r=app.__buildlingsRuntime;r.getRuntime().trayMenu.items.find(i=>i.label==='Hide timer bar').click();});
-    await restored.waitForFunction(()=>document.querySelector('#timer-bar').hidden);
+    await restored.locator('#timer-bar').waitFor({state:'hidden'});
+    assert.equal(await restored.locator('#timer-bar').isVisible(),false);
     await app.evaluate(({app})=>{const r=app.__buildlingsRuntime;r.getRuntime().trayMenu.items.find(i=>i.label==='Show timer bar').click();});
-    await restored.waitForFunction(()=>!document.querySelector('#timer-bar').hidden);
+    await restored.locator('#timer-bar').waitFor({state:'visible'});
     await focusPanel.locator('#screen-style').selectOption('light');
     await restored.waitForFunction(()=>document.body.style.getPropertyValue('--glow-rgb')==='40 40 40');
     await focusPanel.screenshot({path:path.join(output,'native-quick-appearance.png')});

@@ -26,6 +26,8 @@ jobs:
       - run: npm test
       - name: Verify native Windows interaction
         run: npm run test:desktop
+      - name: Verify desktop recovery and Safe Mode
+        run: npm run test:stability
       - name: Install browser test runtime
         run: npx playwright install chromium
       - name: Verify focus controls and scrolling
@@ -55,7 +57,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.8.1 — calmer edges and smoother controls' --notes-file product/DESKTOP_RELEASE.md
+          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.8.2 — desktop recovery and Safe Mode' --notes-file product/DESKTOP_RELEASE.md
       - name: Save native test evidence
         if: always()
         uses: actions/upload-artifact@v4

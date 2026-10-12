@@ -28,5 +28,6 @@ require('./compile-quotes.cjs');
     win32metadata: { CompanyName: 'Buildlings', FileDescription: 'Buildlings desktop companion', ProductName: 'Buildlings' }
   });
   for (const folder of output) await fs.cp(path.join(root, 'extension'), path.join(folder, 'FocusShield'), { recursive: true });
+  if (platform === 'win32') for (const folder of output) await fs.writeFile(path.join(folder, 'Start-Safe-Mode.cmd'), '@echo off\r\ncd /d "%~dp0"\r\nstart "" "%~dp0Buildlings.exe" --safe-mode\r\n');
   console.log('Desktop application packaged:', output.join(', '));
 })().catch(error => { console.error(error); process.exitCode = 1; });

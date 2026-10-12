@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('companion', {
   setDragging: value => ipcRenderer.send('companion:dragging', value),
   setInteractive: value => ipcRenderer.send('companion:interactive', value),
   openFocus: view => ipcRenderer.send('companion:open-focus', view),
+  diagnostic: value => ipcRenderer.send('companion:diagnostic', value),
   report: frame => ipcRenderer.send('companion:report', frame),
   getFocusState: () => ipcRenderer.invoke('companion:focus-state'),
   focusAction: action => ipcRenderer.invoke('companion:focus-action', action),

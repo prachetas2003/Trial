@@ -1,6 +1,6 @@
 {
   "name": "buildlings",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "main": "desktop/main.cjs",
   "description": "Mischief: a transparent marker monkey with focus sessions, saved thoughts, and encouragement.",
@@ -18,7 +18,8 @@
     "test:overlay": "node tests/overlay-browser.cjs",
     "test:quotes": "node tests/quotes-browser.cjs",
     "test:shield-ui": "node tests/shield-ui.cjs",
-    "test:extension": "node tests/shield-extension.cjs"
+    "test:extension": "node tests/shield-extension.cjs",
+    "test:stability": "node tests/desktop-stability.cjs"
   },
   "devDependencies": {
     "@electron/packager": "20.3.0",

@@ -10,7 +10,7 @@ Drag the monkey by its head or body. Empty screen areas and speech bubbles
 let clicks through; a compact timer bar stays at the top of the screen.
 This release contains one doodle character.
 
-Version 0.8.1 includes click-and-drag with body and leg momentum, dragging along
+Version 0.8.2 includes click-and-drag with body and leg momentum, dragging along
 all four screen margins while peeking, and a continuous cursor-chase toggle.
 The top bar shows the timer, an “I’m staying” button, thought capture, tuck/bring
 back, and chase controls. Click the timer to open the focus corner. Completion
@@ -57,6 +57,15 @@ bounds reduce rendering work during scrolling.
 Try the [movement playground](https://prachetas2003.github.io/Trial/roam/).
 The browser preview stays within its page. The desktop application moves
 over other applications without a visible rectangular background.
+
+The 0.8.2 stability repair restores native timer hiding, adds direct Pause/Resume
+and Resume & stay, and removes the full-screen shadow layer and timer blur.
+Preference saves are asynchronous and atomic. Renderer crashes recreate the
+overlay; the tray offers a manual restart and local diagnostics. For a startup
+freeze, end the old app in Task Manager and launch **Start-Safe-Mode.cmd** from
+the newly extracted ZIP. Safe Mode uses software graphics and lighter painting;
+saved notes, history and browser pairing stay shared. The exact cause of the
+reported Windows machine's startup freeze is still unconfirmed.
 
 ## Windows download
 

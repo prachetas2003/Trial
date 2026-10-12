@@ -1,4 +1,4 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.8.1
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.8.2
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
@@ -128,4 +128,13 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.1
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.2
+
+IF THE APP FREEZES ON STARTUP
+End Buildlings.exe in Windows Task Manager, then run Start-Safe-Mode.cmd
+from the extracted folder. It uses software graphics and lighter monkey
+painting while preserving your saved notes, sessions and pairing.
+The timer now has a direct Pause/Resume control. Resume & stay resumes a
+paused focus session and records one choice. Failed controls show a message.
+The tray offers Restart desktop overlay and Open local diagnostics.
+Diagnostics stay local and contain technical events, not notes or tab URLs.

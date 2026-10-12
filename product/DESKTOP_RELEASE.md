@@ -1,29 +1,32 @@
-Buildlings 0.8.1 makes the focus edges calmer and fixes controls after changing modes.
+Buildlings 0.8.2 adds desktop recovery and a Safe Mode startup path after a reported v0.8.1 freeze.
 
-- Focus edges use a still neutral shadow: faint grey on light workspaces and
-  black on dark workspaces. Choose Auto (system theme), Light or Dark, and
-  adjust Edge strength. Edges gently fade in/out; the coloured arrival
-  animation and colour picker are removed. Edges turn off on pause/end.
-- Pausing brings a tucked monkey back. Resuming restores the focus tuck.
-  A monkey you explicitly hid, including Blocker Only, remains hidden.
-- Turning Quotes on restores automatic speech even after a silent mode and
-  clears the preset's quiet-during-focus setting. Speech resumes shortly,
-  then follows the saved frequency (12 seconds by default). Advanced quiet
-  and automatic-quote options remain available; the panel explains their state.
-- Timer ticks no longer rewrite unchanged appearance controls or browser-tab
-  rows. Offscreen tab rows render only when needed, tab status lookup is linear,
-  and overlay hit testing/speech reuse measured timer bounds instead of forcing
-  layout every animation frame. Large tab lists retain their scroll position.
-- Notes, session history, blocking rules, size and timer opacity are preserved.
-  Existing colour choices migrate to neutral edges. No screen capture is used
-  to infer theme; Auto follows the system theme and manual overrides stay saved.
+- Start-Safe-Mode.cmd launches with hardware acceleration disabled, a 1x monkey
+  canvas and 30 fps character painting. Saved notes, sessions and browser pairing
+  are shared with the normal launcher.
+- Restores the native timer hide rule removed in 0.8.1. A hidden timer no longer
+  stays visibly drawn while its clicks pass through. Visibility is tested from
+  the rendered native window, not just the hidden attribute.
+- Timer hit bounds are refreshed even if an initial hidden-window measurement
+  was empty. Controls no longer depend on a ResizeObserver callback to recover.
+- A direct Pause/Resume button is on the timer. During a paused focus session,
+  Resume & stay resumes first and then counts one choice. Resume failures show
+  a visible message, including disconnected-browser or work-tab requirements.
+- Four narrow gradient strips replace the full-screen composited edge shadow.
+  The timer's backdrop blur is removed. Neutral themes/strength remain available.
+- Preference saves are asynchronous, coalesced and atomic. Quit waits for queued
+  writes; changing a slider no longer performs synchronous disk work on every
+  input event.
+- A failed character paint leaves timer hit testing running. A crashed renderer
+  gets a fresh transparent window and its focus session is paused. The tray also
+  offers Restart desktop overlay and Open local diagnostics.
+- Local diagnostics contain technical events, graphics-feature status and screen
+  dimensions. They contain no saved thoughts, quotations, tab titles or URLs.
 
-Quit the old app with Ctrl+Alt+Q, extract the whole ZIP and run Buildlings.exe.
-FocusShield remains version 0.8.0: if you already updated it for Buildlings 0.8.0,
-no extension update or re-pairing is needed. Older copies still need the included
-FocusShield files and Reload at chrome://extensions or edge://extensions.
+The exact cause of the reported machine's startup freeze is not confirmed.
+The release includes recovery tests and a software-rendering launch path; passing
+CI does not establish compatibility with every Windows graphics driver.
 
-Windows 10/11 x64 unsigned preview. SHA256SUMS.txt accompanies the archive.
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.1
-The website demonstrates controls and visuals; real browser blocking needs the
-app and paired extension. Blocking releases on pause, finish, break or disconnect.
+Quit or end the old Buildlings.exe first. Extract the entire ZIP into a new
+folder. For the reported startup freeze, run Start-Safe-Mode.cmd first.
+FocusShield remains 0.8.0; an already updated extension needs no changes.
+Windows 10/11 x64 preview. SHA256SUMS.txt accompanies the ZIP.

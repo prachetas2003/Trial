@@ -5,6 +5,10 @@ const { FocusCompanion } = require('./focus.js');
 const bank = require('./quotes.js');
 const { createShieldBridge } = require('./shield-bridge.cjs');
 const crypto = require('node:crypto');
+const { createStorage } = require('./storage.cjs');
+const safeMode = process.argv.includes('--safe-mode');
+if (safeMode) app.disableHardwareAcceleration();
+let storage, quitReady = false, overlayRecoveries = 0, recovering = false;
 let shieldBridge, trayMenu;
 if (process.env.BUILDLINGS_TEST_DATA) app.setPath('userData', process.env.BUILDLINGS_TEST_DATA);
 const gotLock = app.requestSingleInstanceLock();
@@ -15,12 +19,25 @@ const quoteDelay = () => focus.preferences.quoteSeconds * 1000;
 let settings = { pet: 'monkey', ink: 'black', chasing: true, hopping: true };
 const dataPath = name => path.join(app.getPath('userData'), name);
 function areas() { return screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })); }
-function writeData(name, data) {
-  try {
-    fs.mkdirSync(app.getPath('userData'), { recursive: true });
-    fs.writeFileSync(dataPath(name + '.tmp'), JSON.stringify(data));
-    fs.renameSync(dataPath(name + '.tmp'), dataPath(name)); saveError = '';
-  } catch (error) { saveError = 'Your latest changes could not be saved. Keep Mischief open and check that your app-data folder is writable.'; console.error('Could not save companion data:', error.message); }
+function writeData(name, data) { storage.write(name, data); }
+const diagnostics = [];
+function diagnostic(type, details = {}) {
+  diagnostics.push({ at: new Date().toISOString(), type, ...details });
+  if (diagnostics.length > 100) diagnostics.shift();
+  storage?.write('diagnostics.json', { version: app.getVersion(), platform: process.platform, safeMode, events: diagnostics });
+}
+async function restartOverlay(manual = false) {
+  if (quitting || recovering || !win || win.isDestroyed()) return;
+  if (manual) overlayRecoveries = 0;
+  if (overlayRecoveries >= 2) { diagnostic('overlay-recovery-limit'); return; }
+  overlayRecoveries++; recovering = true; rendererReady = false;
+  dragging = false; hudRect = null; lastFrame = null; lastCursor = null;
+  interactive = false; win.setIgnoreMouseEvents(true, { forward: true });
+  focus.dispatch({ type: 'pause' }); saveFocus(); broadcastFocus(); updateTray();
+  const previous=win; win=createOverlayWindow(previous.getBounds()); previous.destroy();
+  try { await win.loadFile(path.join(__dirname, 'renderer.html')); diagnostic('overlay-reloaded'); }
+  catch (error) { diagnostic('overlay-load-failed', { code: error.code || 'load' }); }
+  finally { recovering = false; }
 }
 function readData(name) {
   try { return JSON.parse(fs.readFileSync(dataPath(name), 'utf8')); }
@@ -48,10 +65,10 @@ function loadSettings() {
 }
 function send(input) { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:input', input); }
 function presence() { return focus.presence(); }
-function snapshot() { return { ...focus.snapshot(), ink: settings.ink, saveError, highlight, browser: shieldBridge?.info() }; }
+function snapshot() { return { ...focus.snapshot(), safeMode, ink: settings.ink, saveError, highlight, browser: shieldBridge?.info() }; }
 function state(action) {
   const mode = presence(); hidden = mode === 'hidden';
-  send({ areas: areas(), activeId, cursor: screen.getCursorScreenPoint(), settings, paused, visible: !hidden, presence: mode, preferences: focus.preferences, action });
+  send({ areas: areas(), activeId, cursor: screen.getCursorScreenPoint(), settings, paused, visible: !hidden, presence: mode, preferences: focus.preferences, safeMode, action });
   if (win && rendererReady) { if (!win.isVisible()) win.showInactive(); }
 }
 function broadcastFocus() { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:focus-state', snapshot()); if (focusWin && !focusWin.isDestroyed() && focusWin.isVisible()) focusWin.webContents.send('companion:focus-state', snapshot()); }
@@ -120,6 +137,7 @@ function secureWindow(window) {
   window.webContents.on('will-navigate', event => event.preventDefault());
   window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
 }
+let focusLoading;
 async function showFocus(view = 'timer') {
   highlight = null; broadcastFocus();
   if (!focusWin || focusWin.isDestroyed()) {
@@ -128,8 +146,13 @@ async function showFocus(view = 'timer') {
     secureWindow(focusWin);
     focusWin.on('close', event => { if (!quitting) { event.preventDefault(); focusWin.hide(); } });
     focusWin.on('closed', () => { focusWin = null; });
-    await focusWin.loadFile(path.join(__dirname, 'focus.html'));
+    focusLoading = focusWin.loadFile(path.join(__dirname, 'focus.html'));
+    focusWin.webContents.on('render-process-gone', (_event, details) => { diagnostic('panel-gone', { reason: details.reason }); const failed=focusWin; focusWin=null; focusLoading=null; failed?.destroy(); });
+    focusWin.on('unresponsive', () => diagnostic('panel-unresponsive'));
   }
+  try { if (focusLoading) await focusLoading; }
+  catch (error) { diagnostic('panel-load-failed', { code: error.code || 'load' }); focusWin?.destroy(); focusWin = null; focusLoading = null; return; }
+  if (!focusWin || focusWin.isDestroyed()) return;
   if (focusWin.isMinimized()) focusWin.restore();
   focusWin.show(); focusWin.focus(); broadcastFocus(); focusWin.webContents.send('companion:focus-view', view);
 }
@@ -161,6 +184,8 @@ function updateTray() {
     { label: 'Bring pet to this screen', click: () => command('call') },
     { label: presence() === 'wander' ? 'Tuck to the screen edge · Ctrl+Alt+H' : 'Let the monkey wander · Ctrl+Alt+H', click: toggleHidden },
     { label: hidden ? 'Show the monkey at the edge' : 'Hide completely', click: () => setPresence(hidden ? 'peek' : 'hidden') }, { type: 'separator' },
+    { label: 'Restart desktop overlay', click: () => restartOverlay(true) },
+    { label: 'Open local diagnostics', click: () => { storage.flush().then(() => shell.openPath(dataPath('diagnostics.json'))); } },
     { label: 'Quit Buildlings', click: () => app.quit() }
   ]);
   tray.setContextMenu(trayMenu);
@@ -194,7 +219,22 @@ function tickFocus() {
   if (hasEvents || (focus.session?.running && Date.now() - lastSaved >= 10000)) saveFocus();
   broadcastFocus(); updateTray();
 }
+function createOverlayWindow(area) {
+  const surface=new BrowserWindow(windowOptions(area.x, area.y, area.width, area.height));
+  surface.webContents.on('render-process-gone', (_event, details) => { if (win===surface) { diagnostic('overlay-gone', {reason:details.reason}); restartOverlay(); } });
+  surface.on('unresponsive', () => { if (win===surface) { diagnostic('overlay-unresponsive'); restartOverlay(); } });
+  secureWindow(surface); surface.setHasShadow(false); surface.setAlwaysOnTop(true,'screen-saver');
+  surface.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true}); surface.setIgnoreMouseEvents(true,{forward:true});
+  surface.on('closed', () => { if (win===surface) {win=null;clearInterval(inputTimer);app.quit();} });
+  return surface;
+}
 async function createCompanion() {
+  const failedSaves=new Set();
+  storage = createStorage(app.getPath('userData'), {
+    onError: (error,name) => { failedSaves.add(name); saveError = 'Changes could not be saved. Check that your app-data folder is writable.'; console.error('Could not save companion data:', error.code || 'write'); },
+    onSaved: name => { failedSaves.delete(name); if (!failedSaves.size) saveError = ''; }
+  });
+  diagnostic('started');
   loadSettings();
   const savedBridge = readData('browser-pairing.json');
   const token = typeof savedBridge?.token === 'string' && /^[a-zA-Z0-9_-]{43}$/.test(savedBridge.token) ? savedBridge.token : crypto.randomBytes(32).toString('base64url');
@@ -202,28 +242,30 @@ async function createCompanion() {
   shieldBridge = createShieldBridge({ token, getState: () => focus.snapshot(), action: applyFocus });
   const cursor = screen.getCursorScreenPoint(), display = screen.getDisplayNearestPoint(cursor);
   activeId = display.id; const area = display.workArea;
-  win = new BrowserWindow(windowOptions(area.x, area.y, area.width, area.height));
-  secureWindow(win); win.setHasShadow(false); win.setAlwaysOnTop(true, 'screen-saver');
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true }); win.setIgnoreMouseEvents(true, { forward: true });
+  win = createOverlayWindow(area);
   ipcMain.on('companion:ready', event => {
-    if (event.sender !== win.webContents) return;
+    if (event.sender !== win?.webContents) return;
     rendererReady = true; state(); broadcastFocus(); win.showInactive();
     clearInterval(inputTimer); inputTimer = setInterval(pollCursor, 8);
   });
   ipcMain.handle('companion:focus-state', event => {
-    if (event.sender !== focusWin?.webContents && event.sender !== win.webContents) throw new Error('Unknown companion window.');
+    if (event.sender !== focusWin?.webContents && event.sender !== win?.webContents) throw new Error('Unknown companion window.');
     return snapshot();
   });
   ipcMain.handle('companion:focus-action', (event, action) => {
-    if (event.sender !== focusWin?.webContents && event.sender !== win.webContents) throw new Error('Unknown companion window.');
+    if (event.sender !== focusWin?.webContents && event.sender !== win?.webContents) throw new Error('Unknown companion window.');
     return applyFocus(action);
   });
-  ipcMain.on('companion:open-focus', (event, view) => { if (event.sender === win.webContents) showFocus(['timer', 'thought', 'summary', 'appearance', 'blocking'].includes(view) ? view : 'timer'); });
-  ipcMain.on('companion:dragging', (event, value) => { if (event.sender !== win.webContents || typeof value !== 'boolean') return; dragging = value; updateInteractive(); });
-  ipcMain.on('companion:interactive', (event, value) => { if (event.sender !== win.webContents || typeof value !== 'boolean') return; setInteractive(dragging || value); });
+  ipcMain.on('companion:open-focus', (event, view) => { if (event.sender === win?.webContents) showFocus(['timer', 'thought', 'summary', 'appearance', 'blocking'].includes(view) ? view : 'timer'); });
+  ipcMain.on('companion:dragging', (event, value) => { if (event.sender !== win?.webContents || typeof value !== 'boolean') return; dragging = value; updateInteractive(); });
+  ipcMain.on('companion:interactive', (event, value) => { if (event.sender !== win?.webContents || typeof value !== 'boolean') return; setInteractive(dragging || value); });
   ipcMain.on('companion:focus-hide', event => { if (event.sender === focusWin?.webContents) focusWin.hide(); });
+  ipcMain.on('companion:diagnostic', (event, value) => {
+    if (event.sender !== win?.webContents || !value || typeof value !== 'object') return;
+    if (['frame-stall','renderer-error'].includes(value.type)) diagnostic(value.type, { duration: Number.isFinite(value.duration) ? Math.min(60000, value.duration) : 0 });
+  });
   ipcMain.on('companion:report', (event, report) => {
-    if (event.sender !== win.webContents || !report || typeof report !== 'object') return;
+    if (event.sender !== win?.webContents || !report || typeof report !== 'object') return;
     if (report.error) { if (tray) tray.setToolTip('Buildlings — Doodle drawing unavailable'); return; }
     if (![report.x, report.y, report.hop, report.sparkleId].every(Number.isFinite) || !areas().some(a => a.id === report.areaId)) return;
     lastFrame = { scale: Number.isFinite(report.scale) && report.scale >= .6 && report.scale <= 1 ? report.scale : 1, x: report.x, y: report.y, hop: report.hop, sparkleId: report.sparkleId, areaId: report.areaId, mode: String(report.mode).slice(0, 24), renderer: report.renderer === 'canvas2d' ? 'canvas2d' : 'unavailable' };
@@ -232,7 +274,6 @@ async function createCompanion() {
     updateInteractive();
     if (report.areaId !== activeId) moveToDisplay(report.areaId);
   });
-  win.on('closed', () => { win = null; clearInterval(inputTimer); app.quit(); });
   const refreshDisplays = () => { moveToDisplay(activeId); state(); };
   for (const event of ['display-added', 'display-removed', 'display-metrics-changed']) screen.on(event, refreshDisplays);
   powerMonitor.on('suspend', () => applyFocus({ type: 'pause' }));
@@ -242,16 +283,28 @@ async function createCompanion() {
   tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png')));
   updateTray(); tray.on('double-click', () => showFocus());
   for (const [keys, action] of [['CommandOrControl+Alt+P', togglePause], ['CommandOrControl+Alt+H', toggleHidden], ['CommandOrControl+Alt+F', () => showFocus()], ['CommandOrControl+Alt+T', () => showFocus('thought')], ['CommandOrControl+Alt+S', stay], ['CommandOrControl+Alt+Q', () => app.quit()]]) {
-    if (!globalShortcut.register(keys, action)) console.warn(`Shortcut unavailable: ${keys}. Use the tray menu.`);
+    if (!globalShortcut.register(keys, action)) { diagnostic('shortcut-unavailable', {keys}); console.warn(`Shortcut unavailable: ${keys}. Use the tray menu.`); }
   }
-  focusTimer = setInterval(tickFocus, 1000);
+  let lastTick=Date.now();
+  focusTimer = setInterval(() => { const now=Date.now(); if (now-lastTick > 2000) diagnostic('main-stall', {duration:now-lastTick}); lastTick=now; tickFocus(); }, 1000);
+  diagnostic('graphics-status', { features: app.getGPUFeatureStatus(), displays: screen.getAllDisplays().map(d=>({width:d.size.width,height:d.size.height,scale:d.scaleFactor})) });
   await win.loadFile(path.join(__dirname, 'renderer.html'));
 }
+app.on('child-process-gone', (_event, details) => diagnostic('child-gone', {reason:details.reason,kind:details.type}));
 if (!gotLock) app.quit();
 else {
   app.on('second-instance', () => showFocus());
   app.whenReady().then(createCompanion).catch(error => { console.error(error); app.quit(); });
 }
-app.on('before-quit', () => { quitting = true; if (focus) { focus.dispatch({ type: 'pause' }); saveFocus(); } shieldBridge?.close(); clearInterval(inputTimer); clearInterval(focusTimer); globalShortcut.unregisterAll(); });
-module.exports = { getRuntime: () => ({ win, focusWin, focus, trayMenu, settings, hidden, paused, lastFrame, dragging, interactive, hudRect, highlight, nextWarmQuote }), togglePause, toggleHidden, command, state, moveToDisplay, applyFocus, showFocus, tickFocus };
+app.on('before-quit', event => {
+  if (quitReady) return;
+  event.preventDefault();
+  if (quitting) return;
+  quitting = true;
+  clearInterval(inputTimer); clearInterval(focusTimer); globalShortcut.unregisterAll(); shieldBridge?.close();
+  if (focus) { focus.dispatch({ type: 'pause' }); saveFocus(); }
+  diagnostic('quit');
+  Promise.resolve(storage?.flush()).finally(() => { quitReady = true; app.quit(); });
+});
+module.exports = { getRuntime: () => ({ win, focusWin, focus, trayMenu, settings, hidden, paused, lastFrame, dragging, interactive, hudRect, highlight, nextWarmQuote, storage, safeMode, diagnostics }), togglePause, toggleHidden, command, state, moveToDisplay, applyFocus, showFocus, tickFocus };
 if (process.env.BUILDLINGS_TEST_DATA) app.__buildlingsRuntime = module.exports;
