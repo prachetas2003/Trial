@@ -6,13 +6,24 @@ function createShieldBridge({ token, getState, action, now = Date.now, port = PO
   const clients = new Map(); let error = '';
   const equal = value => typeof value === 'string' && Buffer.byteLength(value) === Buffer.byteLength(token) && crypto.timingSafeEqual(Buffer.from(value), Buffer.from(token));
   const fresh = () => [...clients.values()].filter(c => now() - c.seenAt < 7000);
+  const modern = version => { const [major, minor] = String(version || '').split('.').map(Number); return Number.isFinite(major) && (major > 0 || (major === 0 && Number.isFinite(minor) && minor >= 8)); };
   const info = () => {
-    const current = getState(), peers = fresh();
+    const current = getState(), connectedPeers = fresh(), peers = connectedPeers.filter(c => modern(c.version));
     const active = current.preferences.shield.enabled && current.session?.running && current.session.kind === 'focus';
     const expected = JSON.stringify(policy.settings(current.preferences.shield));
-    return { available: !error && !!server.listening, error, connected: peers.length > 0,
-      enforced: !!active && peers.length > 0 && peers.every(c => c.applied?.active && c.applied.sessionId === current.session.id && c.applied.rules === expected),
-      clients: peers.map(c => ({ id: c.id, name: c.name })), tabs: peers.flatMap(c => c.tabs), pairingCode: token };
+    const evaluated = peers.flatMap(c => c.tabs.map(t => {
+      const wanted = policy.reason(t.url, t.key, { active: true, shield: current.preferences.shield });
+      const ack = c.protection.find(p => p.id === t.id && p.url === t.url && p.generation === t.generation);
+      const same = c.applied?.active && c.applied.sessionId === current.session?.id && c.applied.rules === expected;
+      const status = !wanted ? 'available' : !current.preferences.shield.enabled ? 'off' : !active ? current.session?.kind === 'focus' ? 'paused' : 'scheduled' : !same || !ack ? 'checking' : ack.status;
+      return { ...t, protection: { status, reason: status === 'unsupported' ? ack.reason : wanted } };
+    }));
+    return { available: !error && !!server.listening, error, connected: connectedPeers.length > 0, legacyCount: connectedPeers.length - peers.length,
+      outdated: connectedPeers.length > 0 && peers.length === 0,
+      needsAttention: evaluated.some(t => t.protection.status === 'unsupported'),
+      enforced: !!active && peers.length > 0 && peers.every(c => c.applied?.active && c.applied.sessionId === current.session.id && c.applied.rules === expected) && evaluated.every(t => !policy.reason(t.url, t.key, { active: true, shield: current.preferences.shield }) || t.protection.status === 'locked'),
+      clients: peers.map(c => ({ id: c.id, name: c.name, version: c.version })), tabs: evaluated, pairingCode: token };
+
   };
   const server = http.createServer(async (req, res) => {
     const origin = req.headers.origin;
@@ -25,19 +36,20 @@ function createShieldBridge({ token, getState, action, now = Date.now, port = PO
     if (!equal(req.headers['x-mischief-key'])) { onReject({ status: 401, origin: origin || '(none)', host }); res.writeHead(401); res.end('{}'); return; }
     if (req.method !== 'POST' || req.url !== '/sync') { res.writeHead(404); res.end('{}'); return; }
     try {
-      let body = ''; for await (const chunk of req) { body += chunk; if (body.length > 128000) { res.writeHead(413); res.end('{}'); return; } }
+      let body = ''; for await (const chunk of req) { body += chunk; if (body.length > 2621440) { res.writeHead(413); res.end('{}'); return; } }
       const input = JSON.parse(body), id = input.clientId;
       for (const [key, client] of clients) if (now() - client.seenAt > 60000) clients.delete(key);
       if (typeof id !== 'string' || !/^[a-zA-Z0-9_-]{8,80}$/.test(id) || (!clients.has(id) && clients.size >= 8)) throw new Error('Invalid browser identity.');
       if (clients.has(id) && clients.get(id).origin !== (origin || '')) throw new Error('Browser identity belongs to another extension.');
-      const tabs = (Array.isArray(input.tabs) ? input.tabs : []).filter(t => Number.isSafeInteger(t.id) && t.id >= 0 && typeof t.url === 'string' && /^https?:\/\//.test(t.url)).slice(0, 200).map(t => ({ key: `${id}:${t.id}`, id: t.id, clientId: id, title: String(t.title || 'Untitled tab').slice(0, 200), url: t.url.slice(0, 4096) }));
-      clients.set(id, { id, name: input.browser === 'Edge' ? 'Edge' : 'Chrome / Chromium', seenAt: now(), origin: origin || '', tabs, applied: input.applied && { active: input.applied.active === true, sessionId: String(input.applied.sessionId || '').slice(0, 100), rules: String(input.applied.rules || '').slice(0, 40000) } });
+      const tabs = (Array.isArray(input.tabs) ? input.tabs : []).filter(t => Number.isSafeInteger(t.id) && t.id >= 0 && typeof t.url === 'string' && /^https?:\/\//.test(t.url)).slice(0, 200).map(t => ({ key: `${id}:${t.id}`, id: t.id, generation: Number.isSafeInteger(t.generation) && t.generation >= 0 ? t.generation : 0, clientId: id, title: String(t.title || 'Untitled tab').slice(0, 200), url: t.url.slice(0, 4096) }));
+      const protection = (Array.isArray(input.protection) ? input.protection : []).filter(p => Number.isSafeInteger(p.id) && typeof p.url === 'string' && ['available', 'locked', 'checking', 'unsupported'].includes(p.status)).slice(0, 200).map(p => ({ id: p.id, generation: Number.isSafeInteger(p.generation) && p.generation >= 0 ? p.generation : 0, url: p.url.slice(0,4096), status: p.status, reason: String(p.reason || '').slice(0,250) }));
+      clients.set(id, { id, version: String(input.version || '').slice(0,30), protection, name: input.browser === 'Edge' ? 'Edge' : 'Chrome / Chromium', seenAt: now(), origin: origin || '', tabs, applied: input.applied && { active: input.applied.active === true, sessionId: String(input.applied.sessionId || '').slice(0, 100), rules: String(input.applied.rules || '').slice(0, 200000) } });
       // Browser pages can request a focus action, never change settings or arbitrary app actions.
       let actionError = '';
       if (input.action === 'stay' || input.action === 'pause') actionError = action({ type: input.action })?.error || '';
       if (input.action === 'save' && typeof input.url === 'string') { const u = new URL(input.url); if (['http:', 'https:'].includes(u.protocol)) actionError = action({ type: 'note-add', text: `For later: ${u.href.slice(0, 900)}` })?.error || ''; }
       const state = getState(), s = state.session, shield = policy.settings(state.preferences.shield);
-      res.end(JSON.stringify({ error: actionError, active: shield.enabled && !!s?.running && s.kind === 'focus', sessionId: s?.id || '', remainingMs: s?.remainingMs || 0, intention: s?.intention || '', shield, clientId: id, leaseMs: 6000 }));
+      res.end(JSON.stringify({ error: actionError, active: modern(input.version) && shield.enabled && !!s?.running && s.kind === 'focus', sessionId: s?.id || '', remainingMs: s?.remainingMs || 0, intention: s?.intention || '', shield, clientId: id, leaseMs: 6000 }));
     } catch { res.writeHead(400); res.end('{}'); }
   });
   server.requestTimeout = 3000; server.headersTimeout = 3000;

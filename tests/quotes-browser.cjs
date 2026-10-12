@@ -31,7 +31,7 @@ const { chromium } = require('playwright');
     await page.clock.fastForward(11000); assert.equal(await page.evaluate(() => window.__quoteEvents.length), 3);
     await page.clock.runFor(2000); assert.equal(await page.evaluate(() => window.__quoteEvents.length), 4);
     const gap = await page.evaluate(() => window.__quoteEvents.at(-1).spokenAt) - manualAt; assert.ok(gap >= 12000 && gap < 13000);
-    await page.locator('#bar-timer').click(); await page.locator('.preferences-card > summary').click();
+    await page.locator('#bar-timer').click(); await page.locator('[data-desk-tab=appearance]').click();
     assert.equal(await page.locator('#quote-seconds').inputValue(), '12');
     await page.locator('#quote-seconds').selectOption('25'); await page.locator('.close-desk').click();
     await page.clock.fastForward(24000); assert.equal(await page.evaluate(() => window.__quoteEvents.length), 4);

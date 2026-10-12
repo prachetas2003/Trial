@@ -1,4 +1,4 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.7.0
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.8.0
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
@@ -22,6 +22,36 @@ FOCUS SHIELD AND MODES
   popup also has Pause timer & unlock. Browser settings pages cannot be covered.
 - Blocker Only can be controlled from the tray or Ctrl+Alt+F.
 
+QUICK CONTROLS
+The panel has Focus, Blocking, Appearance and Notes destinations.
+Monkey, Quotes, Timer and Glow switches are always visible at the top.
+Focus > Choose tabs & sites opens the blocking picker directly.
+Appearance has a timer background slider, monkey size (60-100%), glow brightness
+and colour, and Reset. Settings save automatically and preview immediately.
+The timer's settings button and right-clicking the draggable monkey open
+Appearance directly. Right-click the tray icon for Show/Hide timer, Show/Hide
+monkey, and Open controls. Ctrl+Alt+F always opens the panel.
+
+TAB PROTECTION
+Choose Block selected tabs or Only selected work tabs in Blocking.
+Selecting a block/allowed tab enables Focus Shield. Before a timer starts,
+rows say Will lock when you start. During focus, Locked for this session means
+the browser confirmed protection for that page. Needs attention gives a refresh
+or site-access instruction. Pausing or finishing unlocks the pages.
+Existing tabs get protection without needing a reload when the browser allows
+injection; unfinished documents stay beneath a cover. Browser-protected pages
+cannot be covered. The optional approved-websites restriction prevents a work
+tab navigating to a new website until you approve it from the panel.
+Global website/Shorts/Reels blocks still apply to allowed work tabs.
+
+UPDATE THE EXTENSION TOO
+If you used 0.7: quit the app, extract the new ZIP, and run Buildlings.exe.
+Copy the new FocusShield folder contents over the folder your browser already
+loads, then click Reload on the extension card at chrome://extensions or
+edge://extensions. The same path preserves pairing. Alternatively remove the
+old extension, load the new FocusShield folder and pair again. Older extensions
+receive a release signal so they cannot conflict with the updated extension.
+
 YOUR LITTLE CORNER
 - A focus timer with pause, resume, early finish, and optional breaks.
 - A longer break after every fourth completed focus session.
@@ -38,7 +68,7 @@ YOUR LITTLE CORNER
 THE TOP BAR
 - Click the clock to open the focus corner.
 - Click "I'm staying" when you choose to stay despite a distraction.
-- The pencil saves a thought. The diagonal arrow tucks / brings back the monkey.
+- The pencil opens Notes. The diagonal arrow tucks / brings back the monkey.
 - Chase keeps following your cursor until switched off. Tucking turns chase off.
 - When a timer expires, a soft bell plays and the bar glows. Click Highlights
   to see the session intention, time and choices. Sound can be turned off.
@@ -47,7 +77,7 @@ THE TOP BAR
 THE MONKEY
 Click and hold the monkey's head/body to drag him. His body and legs swing
 with momentum and settle after release. While peeking, drag along the margins
-or onto another edge. You can disable dragging in "Customize individually"
+or onto another edge. You can disable dragging under Appearance > More behaviour options
 for clicks to pass through the monkey as well.
 Move your cursor gently across Mischief to pet it. Right-click the tray icon
 for motion, marker ink, quotes, hiding, and timer controls. White marker works
@@ -95,4 +125,4 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.7.0
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.0

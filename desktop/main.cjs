@@ -5,7 +5,7 @@ const { FocusCompanion } = require('./focus.js');
 const bank = require('./quotes.js');
 const { createShieldBridge } = require('./shield-bridge.cjs');
 const crypto = require('node:crypto');
-let shieldBridge;
+let shieldBridge, trayMenu;
 if (process.env.BUILDLINGS_TEST_DATA) app.setPath('userData', process.env.BUILDLINGS_TEST_DATA);
 const gotLock = app.requestSingleInstanceLock();
 let win, focusWin, tray, inputTimer, focusTimer, focus, activeId, lastCursor, lastFrame, paused = false, hidden = false, rendererReady = false, quitting = false;
@@ -82,6 +82,7 @@ function applyFocus(action) {
         if (p.enabled && (!focus.session || focus.session.kind === 'focus')) {
           const browser = shieldBridge?.info();
           if (!browser?.connected) throw new Error('Connect the browser extension before starting with Focus Shield, or turn blocking off.');
+          if (browser.outdated) throw new Error('Reload the updated FocusShield extension in your browser before using blocking.');
           if (p.onlyWorkTabs && !browser.tabs.some(t => p.workTabs.includes(t.key))) throw new Error('Select at least one currently open work tab.');
         }
       }
@@ -136,11 +137,14 @@ function updateTray() {
   if (!tray || tray.isDestroyed()) return;
   const s = focus.snapshot().session;
   const status = s ? `${s.kind === 'focus' ? 'Focus' : 'Break'} ${s.running ? '' : 'paused · '}${Math.ceil(s.remainingMs / 60000)} min left` : focus.history.length ? 'Your last session is saved' : 'Ready when you are';
-  const key = JSON.stringify([status, s?.choices, s?.running, paused, settings, presence(), focus.preferences.chaseCursor, focus.preferences.dragEnabled]); if (key === trayKey) return; trayKey = key;
+  const key = JSON.stringify([status, s?.choices, s?.running, paused, settings, presence(), focus.preferences.showHud, focus.preferences.quotesEnabled, focus.preferences.chaseCursor, focus.preferences.dragEnabled]); if (key === trayKey) return; trayKey = key;
   tray.setToolTip(`Mischief — ${status}${s?.kind === 'focus' ? ` · ${s.choices} choices to stay` : ''}`);
-  tray.setContextMenu(Menu.buildFromTemplate([
+  trayMenu = Menu.buildFromTemplate([
     { label: 'Mischief — your marker monkey', enabled: false }, { label: status, enabled: false }, { type: 'separator' },
-    { label: 'Open my focus corner · Ctrl+Alt+F', click: () => showFocus() },
+    { label: 'Open controls · Ctrl+Alt+F', click: () => showFocus() },
+    { label: focus.preferences.showHud ? 'Hide timer bar' : 'Show timer bar', click: () => applyFocus({ type: 'preferences', values: { showHud: !focus.preferences.showHud } }) },
+    { label: presence() === 'hidden' ? 'Show monkey' : 'Hide monkey', click: () => setPresence(presence() === 'hidden' ? focus.preferences.lastPresence : 'hidden') },
+    { label: 'Quick appearance controls', click: () => showFocus('appearance') },
     ...(!s ? [{ label: `Start ${focus.preferences.focusMinutes}-minute focus session`, click: () => applyFocus({ type: 'start' }) }] : [{ label: s.running ? 'Pause timer' : 'Resume timer', click: () => applyFocus({ type: s.running ? 'pause' : 'resume' }) }, { label: s.kind === 'focus' ? 'Finish session' : 'End break', click: () => applyFocus({ type: 'end' }) }]),
     { label: `I’m staying · ${s?.choices || 0} choices · Ctrl+Alt+S`, enabled: s?.kind === 'focus' && s.running, click: stay },
     { label: 'Keep a thought for later · Ctrl+Alt+T', click: () => showFocus('thought') },
@@ -157,7 +161,8 @@ function updateTray() {
     { label: presence() === 'wander' ? 'Tuck to the screen edge · Ctrl+Alt+H' : 'Let the monkey wander · Ctrl+Alt+H', click: toggleHidden },
     { label: hidden ? 'Show the monkey at the edge' : 'Hide completely', click: () => setPresence(hidden ? 'peek' : 'hidden') }, { type: 'separator' },
     { label: 'Quit Buildlings', click: () => app.quit() }
-  ]));
+  ]);
+  tray.setContextMenu(trayMenu);
 }
 function setInteractive(value) {
   if (!win || win.isDestroyed() || value === interactive) return;
@@ -165,7 +170,7 @@ function setInteractive(value) {
 }
 function updateInteractive(cursor = screen.getCursorScreenPoint()) {
   const inBar = focus.preferences.showHud && hudRect && cursor.x >= hudRect.x && cursor.x <= hudRect.x + hudRect.width && cursor.y >= hudRect.y && cursor.y <= hudRect.y + hudRect.height;
-  const inPet = !hidden && focus.preferences.dragEnabled && lastFrame && ((cursor.x - lastFrame.x) / 74) ** 2 + ((cursor.y - (lastFrame.y - 94 - lastFrame.hop)) / 86) ** 2 <= 1;
+  const inPet = !hidden && focus.preferences.dragEnabled && lastFrame && ((cursor.x - lastFrame.x) / (74 * lastFrame.scale)) ** 2 + ((cursor.y - (lastFrame.y - 94 * lastFrame.scale - lastFrame.hop)) / (86 * lastFrame.scale)) ** 2 <= 1;
   setInteractive(!!(dragging || inBar || inPet));
 }
 function pollCursor() {
@@ -212,7 +217,7 @@ async function createCompanion() {
     if (event.sender !== focusWin?.webContents && event.sender !== win.webContents) throw new Error('Unknown companion window.');
     return applyFocus(action);
   });
-  ipcMain.on('companion:open-focus', (event, view) => { if (event.sender === win.webContents) showFocus(['timer', 'thought', 'summary'].includes(view) ? view : 'timer'); });
+  ipcMain.on('companion:open-focus', (event, view) => { if (event.sender === win.webContents) showFocus(['timer', 'thought', 'summary', 'appearance', 'blocking'].includes(view) ? view : 'timer'); });
   ipcMain.on('companion:dragging', (event, value) => { if (event.sender !== win.webContents || typeof value !== 'boolean') return; dragging = value; updateInteractive(); });
   ipcMain.on('companion:interactive', (event, value) => { if (event.sender !== win.webContents || typeof value !== 'boolean') return; setInteractive(dragging || value); });
   ipcMain.on('companion:focus-hide', event => { if (event.sender === focusWin?.webContents) focusWin.hide(); });
@@ -220,7 +225,7 @@ async function createCompanion() {
     if (event.sender !== win.webContents || !report || typeof report !== 'object') return;
     if (report.error) { if (tray) tray.setToolTip('Buildlings — Doodle drawing unavailable'); return; }
     if (![report.x, report.y, report.hop, report.sparkleId].every(Number.isFinite) || !areas().some(a => a.id === report.areaId)) return;
-    lastFrame = { x: report.x, y: report.y, hop: report.hop, sparkleId: report.sparkleId, areaId: report.areaId, mode: String(report.mode).slice(0, 24), renderer: report.renderer === 'canvas2d' ? 'canvas2d' : 'unavailable' };
+    lastFrame = { scale: Number.isFinite(report.scale) && report.scale >= .6 && report.scale <= 1 ? report.scale : 1, x: report.x, y: report.y, hop: report.hop, sparkleId: report.sparkleId, areaId: report.areaId, mode: String(report.mode).slice(0, 24), renderer: report.renderer === 'canvas2d' ? 'canvas2d' : 'unavailable' };
     const r = report.hudRect, a = areas().find(a => a.id === report.areaId);
     if (r && [r.x, r.y, r.width, r.height].every(Number.isFinite) && r.width > 0 && r.width <= a.width && r.height > 0 && r.height <= 120 && r.x >= a.x && r.y >= a.y && r.x + r.width <= a.x + a.width) hudRect = { ...r };
     updateInteractive();
@@ -247,5 +252,5 @@ else {
   app.whenReady().then(createCompanion).catch(error => { console.error(error); app.quit(); });
 }
 app.on('before-quit', () => { quitting = true; if (focus) { focus.dispatch({ type: 'pause' }); saveFocus(); } shieldBridge?.close(); clearInterval(inputTimer); clearInterval(focusTimer); globalShortcut.unregisterAll(); });
-module.exports = { getRuntime: () => ({ win, focusWin, focus, settings, hidden, paused, lastFrame, dragging, interactive, hudRect, highlight, nextWarmQuote }), togglePause, toggleHidden, command, state, moveToDisplay, applyFocus, showFocus, tickFocus };
+module.exports = { getRuntime: () => ({ win, focusWin, focus, trayMenu, settings, hidden, paused, lastFrame, dragging, interactive, hudRect, highlight, nextWarmQuote }), togglePause, toggleHidden, command, state, moveToDisplay, applyFocus, showFocus, tickFocus };
 if (process.env.BUILDLINGS_TEST_DATA) app.__buildlingsRuntime = module.exports;

@@ -4,15 +4,15 @@
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const lerp = (a, b, t) => a + (b - a) * t;
   const ease = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
-  function safeArea(area) {
+  function safeArea(area, scale = 1) {
     // Reserve the monkey's curled tail and enlarged reaching hand at turns.
-    const margin = Math.min(128, area.width / 2);
-    const top = Math.min(270, area.height / 2);
-    const bottom = Math.min(32, area.height / 2);
+    const margin = Math.min(128 * scale, area.width / 2);
+    const top = Math.min(270 * scale, area.height / 2);
+    const bottom = Math.min(32 * scale, area.height / 2);
     return { left: area.x + margin, right: area.x + area.width - margin, top: area.y + top, bottom: area.y + area.height - bottom };
   }
   function contains(area, p) { return p.x >= area.x && p.x <= area.x + area.width && p.y >= area.y && p.y <= area.y + area.height; }
-  function hitsPet(cursor, x, y, hop = 0) { return ((cursor.x - x) / 74) ** 2 + ((cursor.y - (y - 94 - hop)) / 86) ** 2 <= 1; }
+  function hitsPet(cursor, x, y, hop = 0, scale = 1) { return ((cursor.x - x) / (74 * scale)) ** 2 + ((cursor.y - (y - (94 + hop) * scale)) / (86 * scale)) ** 2 <= 1; }
   // Exact critically damped spring for a target held constant over this step.
   function spring(state, target, frequency, dt) {
     const displacement = state.value - target;
@@ -30,7 +30,7 @@
   class CompanionMotion {
     constructor({ areas, activeId, now = 0, random = Math.random }) {
       if (!areas?.length || areas.some(a => !Number.isFinite(a.x) || !Number.isFinite(a.y) || !(a.width > 0) || !(a.height > 0))) throw new Error('A valid display work area is required.');
-      this.random = random; this.areas = areas.map(a => ({ ...a }));
+      this.scale = 1; this.random = random; this.areas = areas.map(a => ({ ...a }));
       this.areaId = areas.some(a => a.id === activeId) ? activeId : areas[0].id;
       const b = this.bounds(); this.x = (b.left + b.right) / 2; this.y = Math.max(b.top, b.bottom - 70);
       this.target = { x: this.x, y: this.y }; this.vx = 0; this.vy = 0;
@@ -53,17 +53,24 @@
         lookX: this.look.x.value, lookY: this.look.y.value, dragWeight: this.dragWeight.value, bodySwing: this.bodySwing.value, legSwing: this.legSwing.value };
     }
     bounds() {
-      const b = safeArea(this.area()), a = this.area();
+      const b = safeArea(this.area(), this.scale), a = this.area();
       if (this.presence === 'peek' || this.returning) {
-        b.left = a.x + 18; b.right = a.x + a.width - 18;
-        b.top = a.y + 150; b.bottom = a.y + a.height + 118;
+        b.left = a.x + 18 * this.scale; b.right = a.x + a.width - 18 * this.scale;
+        b.top = a.y + 150 * this.scale; b.bottom = a.y + a.height + 118 * this.scale;
       }
       return b;
     }
     peekTarget() {
-      const a = this.area(), b = safeArea(a), p = this.edgePosition;
-      if (this.edge === 'top' || this.edge === 'bottom') return { x: lerp(a.x + 70, a.x + a.width - 70, p), y: this.edge === 'top' ? a.y + 154 : a.y + a.height + 118 };
-      return { x: this.edge === 'left' ? a.x + 18 : a.x + a.width - 18, y: lerp(b.top, b.bottom, p) };
+      const a = this.area(), b = safeArea(a, this.scale), p = this.edgePosition;
+      if (this.edge === 'top' || this.edge === 'bottom') return { x: lerp(a.x + 70 * this.scale, a.x + a.width - 70 * this.scale, p), y: this.edge === 'top' ? a.y + 154 * this.scale : a.y + a.height + 118 * this.scale };
+      return { x: this.edge === 'left' ? a.x + 18 * this.scale : a.x + a.width - 18 * this.scale, y: lerp(b.top, b.bottom, p) };
+    }
+    setScale(value) {
+      if (!Number.isFinite(value)) return;
+      const next = clamp(value, .6, 1); if (next === this.scale) return;
+      this.scale = next;
+      if (this.presence === 'peek') this.target = this.peekTarget();
+      else { const b = safeArea(this.area(), this.scale); if (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom) { this.returning = true; this.target = { x: clamp(this.x, b.left, b.right), y: clamp(this.y, b.top, b.bottom) }; } }
     }
     setEdge(edge, position) {
       if (['left', 'right', 'top', 'bottom'].includes(edge)) this.edge = edge;
@@ -73,7 +80,7 @@
     setPresence(value, now) {
       if (value === this.presence) return;
       this.presence = value; this.hopStart = null; this.reachStart = null; this.wanderPath = null;
-      const b = safeArea(this.area());
+      const b = safeArea(this.area(), this.scale);
       this.returning = value !== 'peek' && (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom);
       this.mode = value === 'peek' ? 'peek' : this.returning ? 'return' : 'idle';
       this.target = value === 'peek' ? this.peekTarget() : { x: clamp(this.x, b.left, b.right), y: clamp(this.y, b.top, b.bottom) };
@@ -98,17 +105,17 @@
       this.vx = clamp(this.vx, -120, 120); this.vy = clamp(this.vy, -120, 120);
       this.mode = this.presence === 'peek' ? 'peek' : this.chaseLocked ? 'chase' : 'idle';
       this.target = this.presence === 'peek' ? this.peekTarget() : { x: this.x, y: this.y };
-      const b = safeArea(this.area()); this.returning = this.presence !== 'peek' && (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom);
+      const b = safeArea(this.area(), this.scale); this.returning = this.presence !== 'peek' && (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom);
       if (this.returning) this.target = { x: clamp(this.x, b.left, b.right), y: clamp(this.y, b.top, b.bottom) };
       return { edge: this.edge, edgePosition: this.edgePosition };
     }
     updateHeld(dt) {
-      const a = this.area(), c = this.dragCursor, b = safeArea(a);
+      const a = this.area(), c = this.dragCursor, b = safeArea(a, this.scale);
       let x = c.x + this.dragOffset.x, y = c.y + this.dragOffset.y;
       if (this.presence === 'peek') {
         const distances = [ ['left', Math.abs(c.x - a.x)], ['right', Math.abs(c.x - a.x - a.width)], ['top', Math.abs(c.y - a.y)], ['bottom', Math.abs(c.y - a.y - a.height)] ];
         distances.sort((p, q) => p[1] - q[1]); this.edge = distances[0][0];
-        this.edgePosition = ['top', 'bottom'].includes(this.edge) ? clamp((c.x - a.x - 70) / Math.max(1, a.width - 140), 0, 1) : clamp((y - b.top) / Math.max(1, b.bottom - b.top), 0, 1);
+        this.edgePosition = ['top', 'bottom'].includes(this.edge) ? clamp((c.x - a.x - 70 * this.scale) / Math.max(1, a.width - 140 * this.scale), 0, 1) : clamp((y - b.top) / Math.max(1, b.bottom - b.top), 0, 1);
         ({ x, y } = this.peekTarget());
       } else { x = clamp(x, b.left, b.right); y = clamp(y, b.top, b.bottom); }
       this.vx = clamp((x - this.x) / dt, -1600, 1600); this.vy = clamp((y - this.y) / dt, -1600, 1600);
@@ -242,7 +249,7 @@
       const elapsed = clamp((now - this.lastTime) / 1000, 0, .06); this.lastTime = now;
       if (!cursor || !Number.isFinite(cursor.x) || !Number.isFinite(cursor.y)) cursor = this.lastCursor || { x: this.x, y: this.y };
       let pose = this.pose(now);
-      const hovering = hitsPet(cursor, this.x, this.y, pose.hop);
+      const hovering = hitsPet(cursor, this.x, this.y, pose.hop, this.scale);
       const cursorMotion = this.lastCursor ? Math.hypot(cursor.x - this.lastCursor.x, cursor.y - this.lastCursor.y) : 0;
       this.strokeEnergy = Math.max(0, this.strokeEnergy - elapsed * 12);
       if (!this.dragging && hovering && cursorMotion >= .5 && cursorMotion < 180) {

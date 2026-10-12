@@ -1,10 +1,10 @@
-import { MonkeyScene } from './monkey.js?v=0.7.0';
-import { SpeechBubble } from './bubbles.js?v=0.7.0';
-import { OverlayBar } from './hud.js?v=0.7.0';
+import { MonkeyScene } from './monkey.js?v=0.8.0';
+import { SpeechBubble } from './bubbles.js?v=0.8.0';
+import { OverlayBar } from './hud.js?v=0.8.0';
 const hud = new OverlayBar(window.companion);
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
-let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true, grabZone, quotesEnabled = true, dragEnabled = true, heldPointer = null, lastInteractive = false;
+let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true, grabZone, quotesEnabled = true, dragEnabled = true, heldPointer = null, lastInteractive = false, scale = 1;
 let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const bubble = new SpeechBubble();
 function selectPet() {
@@ -19,6 +19,7 @@ function selectPet() {
       const area = motion.area(); cursor = { x: area.x + event.clientX, y: area.y + event.clientY };
       motion.beginDrag(cursor, performance.now()); grabZone.dataset.held = 'true'; window.companion.setDragging?.(true);
     });
+    grabZone.addEventListener('contextmenu', event => { event.preventDefault(); window.companion.openFocus('appearance'); });
     for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) grabZone.addEventListener(type, stopDrag);
   }
   catch (error) {
@@ -50,6 +51,7 @@ function onInput(input) {
   host.style.visibility = enabled ? 'visible' : 'hidden';
   if (input.presence) motion.setPresence(input.presence === 'peek' ? 'peek' : 'wander', performance.now());
   if (input.preferences) {
+    scale = input.preferences.monkeyScale || 1; motion.setScale(scale);
     quotesEnabled = input.preferences.quotesEnabled !== false;
     if (!quotesEnabled) { bubble.quote = null; bubble.element.hidden = true; }
     dragEnabled = input.preferences.dragEnabled !== false; if (!dragEnabled) stopDrag();
@@ -88,21 +90,22 @@ function frame(now) {
   if (motion) {
     if (motion.dragging) motion.dragTo(cursor);
     const next = motion.advance(now, cursor), area = motion.area();
-    host.style.transform = `translate3d(${next.x - area.x - (scene?.footX ?? WINDOW.footX)}px,${next.y - area.y - (scene?.footY ?? WINDOW.footY)}px,0)`;
+    host.style.transform = `translate3d(${next.x - area.x - (scene?.footX ?? WINDOW.footX)}px,${next.y - area.y - (scene?.footY ?? WINDOW.footY)}px,0) scale(${scale})`;
+    host.style.transformOrigin = `${scene?.footX ?? WINDOW.footX}px ${scene?.footY ?? WINDOW.footY}px`;
     if (enabled) scene?.draw(next, now);
     if (grabZone) grabZone.style.transform = `translateY(${-next.hop}px)`;
     if (window.companion.native) {
       const bar = hud.rectangle(area), overBar = bar.width > 0 && cursor.x >= bar.x && cursor.x <= bar.x + bar.width && cursor.y >= bar.y && cursor.y <= bar.y + bar.height;
-      const hot = motion.dragging || overBar || (enabled && dragEnabled && window.BuildlingsMotion.hitsPet(cursor, next.x, next.y, next.hop));
+      const hot = motion.dragging || overBar || (enabled && dragEnabled && window.BuildlingsMotion.hitsPet(cursor, next.x, next.y, next.hop, scale));
       if (hot !== lastInteractive) { lastInteractive = hot; window.companion.setInteractive(hot); }
     }
-    bubble.draw({ ...next, x: next.x - area.x, y: next.y - area.y }, now, reduceMotion);
+    bubble.draw({ ...next, scale, x: next.x - area.x, y: next.y - area.y }, now, reduceMotion);
     document.body.dataset.mood = next.mode;
-    window.__buildlingsFrame = { ...next, pet: selected };
+    window.__buildlingsFrame = { ...next, scale, pet: selected };
     window.dispatchEvent(new CustomEvent('companion-frame', { detail: window.__buildlingsFrame }));
     if (now - lastReport > 33 || window.__reportedArea !== next.areaId) {
       window.__reportedArea = next.areaId; lastReport = now;
-      window.companion.report?.({ x: next.x, y: next.y, mode: next.mode, hop: next.hop, sparkleId: next.sparkleId, areaId: next.areaId, renderer: window.__buildlingsRenderer?.type, hudRect: hud.rectangle(area) });
+      window.companion.report?.({ x: next.x, y: next.y, mode: next.mode, hop: next.hop * scale, scale, sparkleId: next.sparkleId, areaId: next.areaId, renderer: window.__buildlingsRenderer?.type, hudRect: hud.rectangle(area) });
     }
   }
   requestAnimationFrame(frame);

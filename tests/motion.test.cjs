@@ -208,3 +208,14 @@ test('continuous chase remains enabled after the occasional chase timeout and st
   const x = m.x; for (let t = 12016; t < 14000; t += 16) m.advance(t, { x: 300, y: 400 }); assert.ok(m.x < x - 80);
   m.setChasing(false, 14000); assert.equal(m.chaseLocked, false); const f = m.advance(14016, { x: 300, y: 400 }); assert.notEqual(f.mode, 'chase');
 });
+
+test('smaller monkey keeps its foot anchor, scaled hit region, drag point and edge placement', () => {
+  const m = make(), anchor = {x:m.x,y:m.y}; m.setScale(.6);
+  assert.equal(m.x,anchor.x); assert.equal(m.y,anchor.y);
+  assert.equal(hitsPet({x:m.x,y:m.y-94*.6},m.x,m.y,0,.6),true);
+  assert.equal(hitsPet({x:m.x+60,y:m.y-94*.6},m.x,m.y,0,.6),false);
+  m.beginDrag({x:m.x,y:m.y-94*.6},0); m.dragTo({x:m.x+80,y:m.y-94*.6+30}); m.advance(100,{x:0,y:0});
+  assert.ok(Math.abs(m.x-anchor.x-80)<1); assert.ok(Math.abs(m.y-anchor.y-30)<1); m.endDrag(110);
+  m.setPresence('peek',120); m.setEdge('top',.5); assert.equal(m.peekTarget().y,154*.6);
+  m.setEdge('bottom',.5); assert.equal(m.peekTarget().y,900+118*.6);
+});

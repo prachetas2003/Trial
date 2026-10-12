@@ -10,7 +10,7 @@ Drag the monkey by its head or body. Empty screen areas and speech bubbles
 let clicks through; a compact timer bar stays at the top of the screen.
 This release contains one doodle character.
 
-Version 0.7.0 includes click-and-drag with body and leg momentum, dragging along
+Version 0.8.0 includes click-and-drag with body and leg momentum, dragging along
 all four screen margins while peeking, and a continuous cursor-chase toggle.
 The top bar shows the timer, an “I’m staying” button, thought capture, tuck/bring
 back, and chase controls. Click the timer to open the focus corner. Completion
@@ -24,6 +24,19 @@ running focus timer and release on pause, finish, breaks or disconnection.
 Connect the extension from **Focus Shield > Connect your browser**; see
 [extension setup and limits](extension/README.txt). Browser settings and other
 protected browser pages cannot be covered. This is a voluntary focus tool.
+
+Tab locking now injects protection into already-open pages and confirms each
+page's status. The picker distinguishes **Block selected tabs** and **Only
+selected work tabs**, with an optional approved-website restriction. Scheduled,
+paused, confirmed and unsupported states are visible; navigation-rule receipts
+alone cannot confirm an existing page lock. Update the included extension too.
+
+The panel has **Focus**, **Blocking**, **Appearance**, and **Notes** destinations,
+with Monkey/Quotes/Timer/Glow switches at the top. Quick Appearance opens from
+the timer settings button or right-clicking the draggable monkey. Its sliders
+adjust timer background transparency, monkey size (60–100%), and glow brightness;
+a palette/custom picker changes glow colour. The tray has direct Show/Hide timer
+and Show/Hide monkey controls. Resizing also scales drag hits and edge placement.
 
 Choose **Companion**, **Deep Focus**, or **Blocker Only**, then customize
 individual settings in grouped sections. Blocker Only hides every desktop

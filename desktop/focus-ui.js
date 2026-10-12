@@ -5,7 +5,12 @@ root.innerHTML = `
   <header class="desk-heading"><div><span class="desk-eyebrow">MISCHIEF · YOUR LITTLE CORNER</span><h1>One thing at a time<span>.</span></h1></div><button type="button" class="close-desk" aria-label="Back to my work">${arrow}</button></header>
   <p class="desk-intro">Make room for what matters. Leave the other thoughts with me.</p>
   <p id="save-warning" class="save-warning" role="status" hidden></p>
+  <div class="quick-switches" aria-label="On-screen controls"><label><input id="quick-monkey" type="checkbox"> Monkey</label><label><input id="quotes-enabled" type="checkbox"> Quotes</label><label><input id="show-hud" type="checkbox"> Timer</label><label><input id="vignette" type="checkbox"> Glow</label></div>
+  <nav class="desk-tabs" aria-label="Focus corner sections"><button type="button" data-desk-tab="focus" aria-pressed="true">Focus</button><button type="button" data-desk-tab="blocking" aria-pressed="false">Blocking</button><button type="button" data-desk-tab="appearance" aria-pressed="false">Appearance</button><button type="button" data-desk-tab="notes" aria-pressed="false">Notes</button></nav>
+  <p id="desk-feedback" role="status" class="desk-feedback"></p>
+  <div id="focus-view">
   <section class="mode-card" aria-label="Focus modes"><div class="section-heading"><h2>Choose your setup</h2><span id="mode-label">Custom</span></div><div class="mode-buttons"><button type="button" data-mode="companion"><strong>Companion</strong><small>Monkey · gentle quotes</small></button><button type="button" data-mode="deep"><strong>Deep Focus</strong><small>Blocking · quiet monkey · glow</small></button><button type="button" data-mode="blocker"><strong>Blocker Only</strong><small>Blocking · nothing on screen</small></button></div><p class="quiet-copy">Modes apply a set of settings now. Adjust any feature below.</p></section>
+  <button id="choose-blocking" type="button">Choose tabs &amp; sites <span id="blocking-summary"></span></button>
   <section class="focus-card" aria-label="Focus timer">
     <div class="timer-heading"><span id="timer-label">A little room to focus</span><span id="timer-state" class="timer-state">READY WHEN YOU ARE</span></div>
     <div class="timer-face"><svg viewBox="0 0 180 180" aria-hidden="true"><circle class="ring-track" cx="90" cy="90" r="80"/><circle id="timer-ring" cx="90" cy="90" r="80"/></svg><div><output id="timer-clock" aria-label="Time remaining">25:00</output><span id="timer-subtitle">a fresh start</span></div></div>
@@ -13,18 +18,24 @@ root.innerHTML = `
     <div id="session-controls" hidden><p id="session-intention"></p><div class="session-actions"><button id="session-pause" type="button">Pause timer</button><button id="session-end" type="button">Finish session</button></div></div>
     <p id="recovery" class="quiet-copy" hidden>Your saved timer is paused. Resume when you’re ready.</p>
     <div class="choice-area"><button id="stay-button" type="button" disabled><span class="choice-spark" aria-hidden="true">✧</span><span>I’m staying<small>Feel the pull elsewhere? Choose your next step.</small></span><span class="choice-count" id="choice-count">0</span></button><p class="shortcut-copy">Desktop shortcut: Ctrl + Alt + S</p></div>
-    <p id="desk-feedback" role="status" class="desk-feedback"></p>
   </section>
   <section id="session-summary" class="summary-card" aria-label="Your session summary" hidden><span class="desk-eyebrow">THIS WAS YOUR CHOICE</span><h2 id="summary-title"></h2><p id="summary-intention"></p><div class="summary-numbers"><div><strong id="summary-time"></strong><span>session time</span></div><div><strong id="summary-choices"></strong><span>choices to stay</span></div></div><div id="choice-marks" aria-hidden="true"></div><p id="summary-message"></p><button id="start-break" type="button">Take a break →</button><p class="quiet-copy">Every fourth completed session gets a longer break. The next session starts when you choose.</p></section>
-  <section class="shield-card" aria-label="Focus Shield"><div class="section-heading"><h2>Focus Shield</h2><label class="shield-switch"><input id="shield-enabled" type="checkbox"> Enable</label></div><p id="browser-status" role="status" class="connection-status">Browser extension not connected</p><p class="quiet-copy">Blocks only during a running focus session. Pause, finish, or quit to unlock.</p><details id="shield-setup"><summary>Connect your browser</summary><div class="setup-content"><p class="quiet-copy">Chrome or Edge · one-time setup for each browser profile. Private windows need separate extension permission.</p><ol><li><button type="button" id="extension-folder">Open extension folder</button></li><li>Open <strong>chrome://extensions</strong> or <strong>edge://extensions</strong>. Enable Developer mode, choose <strong>Load unpacked</strong>, and select the <strong>FocusShield</strong> folder.</li><li>Open the extension from your browser toolbar and paste this pairing code.</li></ol><div class="pairing-row"><input id="pairing-code" readonly aria-label="Browser pairing code"><button id="copy-pairing" type="button">Copy</button></div><p id="preview-shield-note" class="quiet-copy" hidden>The website demonstrates the controls. Install the Windows app and extension to block real browser tabs.</p></div></details><details id="shield-rules"><summary>Websites &amp; features <span id="rule-count"></span></summary><div class="shield-fields"><form id="website-form"><label for="website-input">Add a website to block</label><div class="website-row"><input id="website-input" placeholder="reddit.com" maxlength="250" required><button type="submit">Add</button></div></form><ul id="website-list"></ul><label class="check-preference"><input type="checkbox" id="block-shorts"> YouTube Shorts <small>Keep regular videos available</small></label><label class="check-preference"><input type="checkbox" id="block-reels"> Instagram Reels</label></div></details><details id="shield-tabs"><summary>Tabs &amp; workspace <span id="tab-count"></span></summary><div class="shield-fields"><label class="check-preference"><input type="checkbox" id="only-work-tabs"> Only my work tabs</label><p class="quiet-copy">With this on, only tabs marked Work are available. New tabs are locked until you add them here. Website and feature blocks still apply inside work tabs.</p><p id="tab-empty" class="quiet-copy">Connect your extension to select open tabs.</p><ul id="browser-tabs"></ul><p class="quiet-copy">Lock covers a page without closing it. Browser settings and other protected browser pages cannot be covered. Refresh your work-tab selection after restarting the browser.</p></div></details></section>
+
+  </div>
+  <section id="blocking-view" hidden>
+  <section class="shield-card" aria-label="Focus Shield"><div class="section-heading"><h2>Focus Shield</h2><label class="shield-switch"><input id="shield-enabled" type="checkbox"> Enable</label></div><p id="browser-status" role="status" class="connection-status">Browser extension not connected</p><p class="quiet-copy">Blocks only during a running focus session. Pause, finish, or quit to unlock.</p><details id="shield-setup"><summary>Connect your browser</summary><div class="setup-content"><p class="quiet-copy">Chrome or Edge · one-time setup for each browser profile. Private windows need separate extension permission.</p><ol><li><button type="button" id="extension-folder">Open extension folder</button></li><li>Open <strong>chrome://extensions</strong> or <strong>edge://extensions</strong>. Enable Developer mode, choose <strong>Load unpacked</strong>, and select the <strong>FocusShield</strong> folder.</li><li>Open the extension from your browser toolbar and paste this pairing code.</li></ol><div class="pairing-row"><input id="pairing-code" readonly aria-label="Browser pairing code"><button id="copy-pairing" type="button">Copy</button></div><p id="preview-shield-note" class="quiet-copy" hidden>The website demonstrates the controls. Install the Windows app and extension to block real browser tabs.</p></div></details><section id="shield-rules"><div class="section-heading"><h3>Websites &amp; features</h3><span id="rule-count"></span></div><div class="shield-fields"><form id="website-form"><label for="website-input">Add a website to block</label><div class="website-row"><input id="website-input" placeholder="reddit.com" maxlength="250" required><button type="submit">Add</button></div></form><ul id="website-list"></ul><label class="check-preference"><input type="checkbox" id="block-shorts"> YouTube Shorts <small>Keep regular videos available</small></label><label class="check-preference"><input type="checkbox" id="block-reels"> Instagram Reels</label></div></section><section id="shield-tabs"><div class="section-heading"><h3>Tabs &amp; workspace</h3><span id="tab-count"></span></div><div class="shield-fields"><label class="tab-policy-label">Tab access<select id="tab-policy"><option value="blocked">Block selected tabs</option><option value="work">Only selected work tabs</option></select></label><label class="check-preference" id="work-site-option"><input type="checkbox" id="restrict-work-sites"> Keep work tabs on their approved websites</label><p id="workspace-help" class="quiet-copy"></p><p id="tab-empty" class="quiet-copy">Connect your extension to select open tabs.</p><ul id="browser-tabs"></ul><p class="quiet-copy">Lock covers a page without closing it. Browser settings and other protected browser pages cannot be covered. Refresh your work-tab selection after restarting the browser.</p></div></section></section>
+  </section>
+  <section id="appearance-view" class="appearance-card" aria-label="Appearance controls" hidden><div class="section-heading"><h2>Make it feel right</h2><button id="reset-appearance" type="button">Reset</button></div><p class="quiet-copy">Changes preview and save as you adjust. Use the switches above to show or hide each feature.</p>
+    <div class="adjustment"><label for="timer-opacity">Timer background <output id="timer-opacity-value"></output></label><input id="timer-opacity" type="range" min="15" max="100" step="1"><div class="range-ends"><span>Clear</span><span>Solid</span></div><p class="quiet-copy">Numbers stay readable. Hover over the timer for a clearer background.</p></div>
+    <div class="adjustment"><label for="monkey-size">Monkey size <output id="monkey-size-value"></output></label><input id="monkey-size" type="range" min="60" max="100" step="1"><div class="range-ends"><span>Small</span><span>Original</span></div><label>Monkey on my screen<select id="presence"><option value="wander">Wander freely</option><option value="peek">Peek from the edge</option><option value="hidden">Completely hidden</option></select></label></div>
+    <div class="adjustment"><label for="glow-intensity">Focus glow brightness <output id="glow-intensity-value"></output></label><input id="glow-intensity" type="range" min="0" max="100" step="1"><div class="range-ends"><span>Subtle</span><span>Strong</span></div><div class="glow-colours" aria-label="Glow colour"><button type="button" data-glow-colour="#ed873a" aria-label="Amber" style="--swatch:#ed873a"></button><button type="button" data-glow-colour="#ee9a84" aria-label="Peach" style="--swatch:#ee9a84"></button><button type="button" data-glow-colour="#9e8edb" aria-label="Lavender" style="--swatch:#9e8edb"></button><button type="button" data-glow-colour="#719dcc" aria-label="Blue" style="--swatch:#719dcc"></button><label>Custom <input id="glow-colour" type="color" aria-label="Custom glow colour"></label></div><div id="glow-preview" aria-label="Glow colour preview"></div><p class="quiet-copy">Appears at the screen edges during focus. The centre stays clear.</p></div>
+    <div class="preference-fields"><label class="check-preference"><input id="completion-sound" type="checkbox"> A soft sound when the timer ends</label><label>Marker ink<select id="marker-ink"><option value="black">Black · light screens</option><option value="white">White · dark screens</option></select></label><label>Quote frequency<select id="quote-seconds"><option value="12">Every 12 seconds</option><option value="25">Every 25 seconds</option><option value="45">Every 45 seconds</option><option value="90">Every 90 seconds</option></select></label><button id="encourage" type="button">A little encouragement ✧</button></div>
+    <details class="preferences-card"><summary>More behaviour options</summary><div class="preference-fields"><label class="check-preference"><input id="auto-quotes" type="checkbox"> Automatic warm quotes</label><label class="check-preference"><input id="quiet-focus" type="checkbox"> Keep ordinary quotes quiet during focus</label><label class="check-preference"><input id="peek-focus" type="checkbox"> Tuck to the edge during focus</label><label class="check-preference"><input id="return-session" type="checkbox"> Bring monkey back after focus</label><label class="check-preference"><input id="drag-enabled" type="checkbox"> Let me click and drag the monkey</label><label class="check-preference"><input id="chase-cursor" type="checkbox"> Keep chasing my cursor</label><label>Long break <span><input id="long-break-minutes" type="number" min="1" max="60"> min</span></label></div></details><p class="quiet-copy">Everything hidden? Use the tray’s Show timer / Show monkey controls, or Ctrl + Alt + F to open this panel.</p>
+  </section>
+  <section id="notes-view" hidden>
   <section class="thought-card" aria-label="Keep my thoughts"><div class="section-heading"><h2>Keep my thoughts<span>✎</span></h2><span id="thought-count">0 saved</span></div><p class="quiet-copy">Put it here. It will still be here after your session.</p><form id="thought-form"><label class="visually-hidden" for="thought-input">A thought for later</label><textarea id="thought-input" maxlength="1000" rows="2" placeholder="Look something up, send a message, an idea for later…" required></textarea><button type="submit">Keep this for later <span>${arrow}</span></button></form><ul id="thought-list"></ul><p id="thought-empty" class="empty-copy">Nothing to carry right now.</p><details id="done-thoughts"><summary>Thoughts I’ve returned to <span id="done-count"></span></summary><ul id="done-list"></ul></details></section>
-  <details class="preferences-card"><summary>Customize individually <span>＋</span></summary><div class="custom-groups">
-    <details open><summary>Monkey &amp; quotes</summary><div class="preference-fields"><label>Monkey on my screen<select id="presence"><option value="wander">Wander freely</option><option value="peek">Peek from the edge</option><option value="hidden">Completely hidden</option></select></label><label class="check-preference"><input id="quotes-enabled" type="checkbox" checked> Show monkey quotes <small>Off means no speech, including encouragement</small></label><label class="check-preference"><input id="auto-quotes" type="checkbox" checked> Automatic warm quotes</label><label>Quote frequency<select id="quote-seconds"><option value="12">Every 12 seconds</option><option value="25">Every 25 seconds</option><option value="45">Every 45 seconds</option><option value="90">Every 90 seconds</option></select></label><label class="check-preference"><input id="quiet-focus" type="checkbox"> Keep ordinary quotes quiet during focus</label><label class="check-preference"><input id="peek-focus" type="checkbox" checked> Tuck to the edge during focus</label><label class="check-preference"><input id="return-session" type="checkbox" checked> Bring monkey back after focus</label><button id="encourage" type="button">A little encouragement ✧</button></div></details>
-    <details open><summary>Screen &amp; sound</summary><div class="preference-fields"><label class="check-preference"><input id="show-hud" type="checkbox" checked> Show timer bar on screen</label><label class="check-preference"><input id="vignette" type="checkbox"> Soft amber focus edges</label><p class="quiet-copy">Edges glow once at session start, then stay still. All glow remains click-through.</p><label class="check-preference"><input id="completion-sound" type="checkbox" checked> A soft sound when the timer ends</label><p class="quiet-copy">When everything is hidden, use the tray icon or Ctrl + Alt + F to open this panel. Ctrl + Alt + Q quits.</p></div></details>
-    <details><summary>Movement &amp; appearance</summary><div class="preference-fields"><label>Marker ink<select id="marker-ink"><option value="black">Black · light screens</option><option value="white">White · dark screens</option></select></label><label class="check-preference"><input id="drag-enabled" type="checkbox" checked> Let me click and drag the monkey</label><label class="check-preference"><input id="chase-cursor" type="checkbox"> Keep chasing my cursor</label></div></details>
-    <details><summary>Breaks</summary><div class="preference-fields"><label>Long break <span><input id="long-break-minutes" type="number" min="1" max="60" value="15"> min</span></label></div></details>
-  </div></details>
   <details class="history-card"><summary>My recent sessions <span id="history-count"></span></summary><ol id="history-list"></ol></details>
+  </section>
   <footer class="desk-footer">Your thoughts and sessions stay on this device.<br><span>No account. Just you and a little monkey.</span></footer>`;
 
 const el = id => root.querySelector(`#${id}`);
@@ -57,6 +68,13 @@ function render(state) {
     for (const [id, value] of [['focus-minutes', p.focusMinutes], ['break-minutes', p.breakMinutes], ['long-break-minutes', p.longBreakMinutes], ['presence', state.presence || p.presence], ['quote-seconds', p.quoteSeconds], ['marker-ink', state.ink || 'black']]) if (document.activeElement !== el(id)) el(id).value = value;
     for (const [id, value] of [['peek-focus', p.peekDuringFocus], ['auto-quotes', p.autoQuotes], ['quiet-focus', p.quietFocus], ['drag-enabled', p.dragEnabled], ['chase-cursor', p.chaseCursor], ['completion-sound', p.completionSound], ['return-session', p.returnAfterSession], ['quotes-enabled', p.quotesEnabled], ['show-hud', p.showHud], ['vignette', p.vignette]]) el(id).checked = value;
   }
+  el('quick-monkey').checked = state.presence !== 'hidden';
+  for (const [id, value] of [['timer-opacity', p.timerOpacity], ['monkey-size', Math.round(p.monkeyScale * 100)], ['glow-intensity', p.glowIntensity], ['glow-colour', p.glowColor]]) if (document.activeElement !== el(id)) el(id).value = value;
+  for (const id of ['timer-opacity','monkey-size','glow-intensity']) el(id + '-value').textContent = el(id).value + '%';
+  el('timer-opacity').disabled = !p.showHud; el('monkey-size').disabled = state.presence === 'hidden';
+  el('glow-intensity').disabled = !p.vignette;
+  el('glow-preview').style.boxShadow = `inset 0 0 24px 5px ${p.glowColor}${Math.round(p.glowIntensity * .006 * 255).toString(16).padStart(2,'0')}`;
+  for (const button of root.querySelectorAll('[data-glow-colour]')) button.setAttribute('aria-pressed', String(button.dataset.glowColour === p.glowColor));
   renderShield(state);
   el('encourage').disabled = !p.quotesEnabled;
   el('quote-seconds').disabled = !p.quotesEnabled || !p.autoQuotes;
@@ -110,17 +128,22 @@ function renderShield(state) {
   }
   el('mode-label').textContent = mode;
   el('shield-enabled').checked = shield.enabled;
-  el('only-work-tabs').checked = shield.onlyWorkTabs;
+  if (document.activeElement !== el('tab-policy')) el('tab-policy').value = shield.onlyWorkTabs ? 'work' : 'blocked';
+  el('restrict-work-sites').checked = shield.restrictWorkSites; el('work-site-option').hidden = !shield.onlyWorkTabs;
+  el('workspace-help').textContent = shield.onlyWorkTabs ? 'Allow the tabs you need. All other tabs and new tabs are locked during focus. Website and feature blocks still apply.' : 'Select Block beside any tab you want unavailable during your focus session.';
   el('block-shorts').checked = shield.features.shorts; el('block-reels').checked = shield.features.reels;
   const active = shield.enabled && state.session?.running && state.session.kind === 'focus';
-  el('browser-status').textContent = browser.preview ? 'Preview only · real blocking needs the app + extension' : browser.error || (!browser.connected ? 'Not connected · connect the browser extension' : `${active ? browser.enforced ? 'Blocking active' : 'Connected · applying restrictions…' : 'Connected · blocking ready'} · ${browser.clients?.map(c => c.name).join(', ') || 'browser'}`);
+  el('browser-status').textContent = browser.preview ? 'Preview only · real blocking needs the app + extension' : browser.error || (browser.outdated ? 'Reload your updated FocusShield extension to activate protection' : (!browser.connected ? 'Not connected · connect the browser extension' : `${active ? browser.needsAttention ? 'Some tabs need attention' : browser.enforced ? 'Blocking active' : 'Connected · applying restrictions…' : 'Connected · blocking ready'} · ${browser.clients?.map(c => c.name).join(', ') || 'browser'}`));
+  if (browser.legacyCount && !browser.outdated) el('browser-status').textContent += ' · older extension paused; reload it';
   el('browser-status').dataset.connected = String(browser.connected);
   el('pairing-code').value = browser.pairingCode || '';
   el('copy-pairing').disabled = !browser.pairingCode;
   el('extension-folder').disabled = !!browser.preview;
   el('preview-shield-note').hidden = !browser.preview;
   el('rule-count').textContent = `${shield.websites.length + Number(shield.features.shorts) + Number(shield.features.reels)} selected`;
-  el('tab-count').textContent = `${shield.workTabs.length} work · ${shield.lockedTabs.length} locked`;
+  const liveKeys = new Set((browser.tabs || []).map(t => t.key));
+  el('blocking-summary').textContent = !shield.enabled ? 'Off' : `${(shield.onlyWorkTabs ? shield.workTabs : shield.lockedTabs).filter(key => liveKeys.has(key)).length} ${shield.onlyWorkTabs ? 'work tabs' : 'tabs'} · ${shield.websites.length + Number(shield.features.shorts) + Number(shield.features.reels)} rules`;
+  el('tab-count').textContent = `${(shield.onlyWorkTabs ? shield.workTabs : shield.lockedTabs).filter(key => liveKeys.has(key)).length} selected`;
   const sites = JSON.stringify(shield.websites);
   if (sites !== lastSites) {
     lastSites = sites;
@@ -131,29 +154,59 @@ function renderShield(state) {
       li.append(text, remove); return li;
     }));
   }
-  const tabs = browser.tabs || [], tabKey = JSON.stringify([tabs, shield.workTabs, shield.lockedTabs]);
+  const tabs = browser.tabs || [], tabKey = JSON.stringify([tabs.map(t => [t.key,t.title,t.url]), shield.onlyWorkTabs, shield.workTabs, shield.lockedTabs, shield.workOrigins]);
   el('tab-empty').hidden = tabs.length > 0;
   if (tabKey !== lastTabKey) {
     lastTabKey = tabKey;
     el('browser-tabs').replaceChildren(...tabs.map(tab => {
-      const li = document.createElement('li'), text = document.createElement('div'), title = document.createElement('strong'), url = document.createElement('small'), choices = document.createElement('div');
-      title.textContent = tab.title; url.textContent = tab.url; text.append(title, url); choices.className = 'tab-options';
-      for (const [field, label] of [['workTabs', 'Work'], ['lockedTabs', 'Lock']]) {
-        const item = document.createElement('label'), input = document.createElement('input'); input.type = 'checkbox'; input.checked = shield[field].includes(tab.key); input.setAttribute('aria-label', `${label}: ${tab.title}`);
-        input.onchange = () => { const p = current.preferences.shield, opposite = field === 'workTabs' ? 'lockedTabs' : 'workTabs'; act({ type: 'shield', values: { [field]: input.checked ? [...p[field], tab.key] : p[field].filter(v => v !== tab.key), ...(input.checked ? { [opposite]: p[opposite].filter(v => v !== tab.key) } : {}) } }); };
-        item.append(input, document.createTextNode(label)); choices.append(item);
-      }
-      li.append(text, choices); return li;
+      const li = document.createElement('li'), text = document.createElement('div'), title = document.createElement('strong'), url = document.createElement('small'), status = document.createElement('small'), choices = document.createElement('div');
+      li.dataset.tabKey = tab.key; title.textContent = tab.title; url.textContent = tab.url; status.className = 'tab-protection'; text.append(title, url, status); choices.className = 'tab-options';
+      const field = shield.onlyWorkTabs ? 'workTabs' : 'lockedTabs', label = shield.onlyWorkTabs ? 'Allow' : 'Block';
+      const item = document.createElement('label'), input = document.createElement('input'); input.type = 'checkbox'; input.checked = shield[field].includes(tab.key); input.setAttribute('aria-label', `${label}: ${tab.title}`);
+      input.onchange = () => {
+        const p = current.preferences.shield, opposite = field === 'workTabs' ? 'lockedTabs' : 'workTabs';
+        const existing = p[field].filter(key => liveKeys.has(key));
+        const origins = Object.fromEntries(Object.entries(p.workOrigins).filter(([key]) => liveKeys.has(key)));
+        if (input.checked && field === 'workTabs') origins[tab.key] = new URL(tab.url).origin;
+        act({ type: 'shield', values: { ...(input.checked ? { enabled: true } : {}), [field]: input.checked ? [...existing.filter(key => key !== tab.key), tab.key] : existing.filter(key => key !== tab.key), workOrigins: origins, ...(input.checked ? { [opposite]: p[opposite].filter(key => key !== tab.key && liveKeys.has(key)) } : {}) } });
+      };
+      item.append(input, document.createTextNode(label)); choices.append(item);
+      const approve = document.createElement('button'); approve.type = 'button'; approve.className = 'approve-site'; approve.textContent = 'Approve this site';
+      approve.hidden = !(shield.onlyWorkTabs && shield.restrictWorkSites && shield.workTabs.includes(tab.key) && shield.workOrigins[tab.key] !== new URL(tab.url).origin && !window.MischiefShield.reason(tab.url, tab.key, { active: true, shield: { ...shield, restrictWorkSites: false } }));
+      approve.onclick = () => act({ type: 'shield', values: { workOrigins: { ...current.preferences.shield.workOrigins, [tab.key]: new URL(tab.url).origin } } });
+      text.append(approve); li.append(text, choices); return li;
     }));
   }
+  for (const row of el('browser-tabs').children) {
+    const tab = tabs.find(t => t.key === row.dataset.tabKey), protection = tab?.protection;
+    const labels = { available: 'Available', off: 'Blocking is off', scheduled: 'Will lock when you start', paused: 'Unlocked · timer paused', checking: 'Applying protection…', locked: 'Locked for this session', unsupported: 'Needs attention' };
+    const status = row.querySelector('.tab-protection'); status.textContent = protection ? labels[protection.status] || 'Checking protection…' : 'Protection status not confirmed';
+    if (protection?.reason && shield.onlyWorkTabs && shield.workTabs.includes(tab.key) && ['locked','checking','scheduled'].includes(protection.status)) status.textContent += ' · ' + protection.reason;
+    status.dataset.status = protection?.status || 'checking'; status.title = protection?.reason || '';
+    if (protection?.status === 'unsupported') status.textContent += ' · Refresh tab or check extension site access';
+  }
+
 }
 for (const button of root.querySelectorAll('[data-mode]')) button.onclick = () => act({ type: 'preset', name: button.dataset.mode });
 el('shield-enabled').onchange = () => act({ type: 'shield', values: { enabled: el('shield-enabled').checked } });
-el('only-work-tabs').onchange = () => act({ type: 'shield', values: { onlyWorkTabs: el('only-work-tabs').checked } });
-for (const [id, key] of [['block-shorts', 'shorts'], ['block-reels', 'reels']]) el(id).onchange = () => act({ type: 'shield', values: { features: { [key]: el(id).checked } } });
-el('website-form').onsubmit = async event => { event.preventDefault(); if (await act({ type: 'shield', values: { websites: [...current.preferences.shield.websites, el('website-input').value] } })) el('website-input').value = ''; };
+el('tab-policy').onchange = () => act({ type: 'shield', values: { enabled: true, onlyWorkTabs: el('tab-policy').value === 'work' } });
+el('restrict-work-sites').onchange = () => act({ type: 'shield', values: { restrictWorkSites: el('restrict-work-sites').checked } });
+for (const [id, key] of [['block-shorts', 'shorts'], ['block-reels', 'reels']]) el(id).onchange = () => act({ type: 'shield', values: { ...(el(id).checked ? { enabled: true } : {}), features: { [key]: el(id).checked } } });
+el('website-form').onsubmit = async event => { event.preventDefault(); if (await act({ type: 'shield', values: { enabled: true, websites: [...current.preferences.shield.websites, el('website-input').value] } })) el('website-input').value = ''; };
 el('extension-folder').onclick = () => act({ type: 'browser-folder' });
 el('copy-pairing').onclick = async () => { if (await act({ type: 'copy-pairing' })) feedback('Pairing code copied. Paste it in your browser extension.'); };
+function section(name) {
+  for (const view of ['focus','blocking','appearance','notes']) el(view + '-view').hidden = view !== name;
+  for (const button of root.querySelectorAll('[data-desk-tab]')) button.setAttribute('aria-pressed', String(button.dataset.deskTab === name));
+  root.scrollIntoView({ block: 'start', behavior: 'instant' });
+}
+for (const button of root.querySelectorAll('[data-desk-tab]')) button.onclick = () => section(button.dataset.deskTab);
+el('choose-blocking').onclick = () => section('blocking');
+el('quick-monkey').onchange = () => act({ type: 'presence', value: el('quick-monkey').checked ? current.preferences.lastPresence : 'hidden' });
+for (const [id, key, factor] of [['timer-opacity','timerOpacity',1], ['monkey-size','monkeyScale',.01], ['glow-intensity','glowIntensity',1]]) el(id).oninput = () => { el(id + '-value').textContent = el(id).value + '%'; act({ type: 'preferences', values: { [key]: Number(el(id).value) * factor } }); };
+el('glow-colour').oninput = () => act({ type: 'preferences', values: { glowColor: el('glow-colour').value } });
+for (const button of root.querySelectorAll('[data-glow-colour]')) button.onclick = () => act({ type: 'preferences', values: { glowColor: button.dataset.glowColour } });
+el('reset-appearance').onclick = () => { const d = window.MischiefFocus.defaults; act({ type: 'preferences', values: { timerOpacity: d.timerOpacity, monkeyScale: d.monkeyScale, glowIntensity: d.glowIntensity, glowColor: d.glowColor } }); };
 el('start-form').addEventListener('submit', async event => {
   event.preventDefault();
   if (!await act({ type: 'preferences', values: { focusMinutes: Number(el('focus-minutes').value), breakMinutes: Number(el('break-minutes').value) } })) return;
@@ -177,5 +230,5 @@ el('marker-ink').addEventListener('change', () => act({ type: 'appearance', ink:
 el('encourage').addEventListener('click', () => act({ type: 'quote', category: 'hard' }));
 root.querySelector('.close-desk').addEventListener('click', () => api.hideFocus());
 api.onFocusState(render);
-api.onFocusView?.(view => { if (view === 'summary') el('session-summary').scrollIntoView({ block: 'center', behavior: 'instant' }); if (view === 'thought') { el('thought-input').scrollIntoView({ block: 'center', behavior: 'instant' }); el('thought-input').focus(); } });
+api.onFocusView?.(view => { section(view === 'appearance' ? 'appearance' : view === 'blocking' ? 'blocking' : view === 'thought' ? 'notes' : 'focus'); if (view === 'blocking') el('shield-tabs').scrollIntoView({ block: 'start', behavior: 'instant' }); if (view === 'summary') el('session-summary').scrollIntoView({ block: 'center', behavior: 'instant' }); if (view === 'thought') { el('thought-input').scrollIntoView({ block: 'center', behavior: 'instant' }); el('thought-input').focus(); } });
 render(await api.getFocusState());

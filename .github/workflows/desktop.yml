@@ -53,7 +53,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.7.0 — Focus Shield and configurable modes' --notes-file product/DESKTOP_RELEASE.md
+          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.8.0 — confirmed tab locks and quick controls' --notes-file product/DESKTOP_RELEASE.md
       - name: Save native test evidence
         if: always()
         uses: actions/upload-artifact@v4

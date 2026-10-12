@@ -1,4 +1,4 @@
-MISCHIEF FOCUS SHIELD 0.7.0 — CHROME / EDGE
+MISCHIEF FOCUS SHIELD 0.8.0 — CHROME / EDGE
 
 INSTALL ONCE
 1. Keep this entire FocusShield folder on your computer (do not move it later).
@@ -12,10 +12,15 @@ INSTALL ONCE
 USE
 Choose Blocker Only or Deep Focus, or enable Focus Shield individually.
 Websites & features: add domains (reddit.com), YouTube Shorts and Instagram
-Reels. Tabs & workspace: mark specific tabs Lock, or select Work tabs and
-turn Only my work tabs on. Work tabs still obey website/feature rules.
+Reels. Tabs & workspace: choose Block selected tabs and tick Block, or choose
+Only selected work tabs and tick Allow. Selection enables Focus Shield. Allowed work tabs still obey website/feature rules. You may restrict them to
+their approved websites and approve a changed website from the app panel.
 Select currently open work tabs again after a browser restart. New tabs are
 locked while Only my work tabs is active; approve needed tabs in the panel.
+Before starting, rows say Will lock when you start. During focus, Locked for
+this session is confirmed per page; Needs attention gives a refresh/site-access
+instruction. Protection is added to previously open tabs when the browser allows
+it, without closing their documents.
 Start the focus timer. Pausing, finishing, breaks and quitting release blocks.
 The extension menu has Pause timer & unlock for emergencies.
 
@@ -47,3 +52,9 @@ If something is stuck, disable this extension from the browser Extensions menu.
 To update: keep the same folder path, replace files, then click Reload on its
 extension card. Loading a different folder may need re-pairing and reselecting
 tabs. Quit Mischief with Ctrl+Alt+Q or the tray's Quit Buildlings menu.
+
+UPDATING FROM 0.7
+Update both the app and this extension. Replace files in the existing installed
+folder and Reload its card. If you use a new folder, remove the old extension
+first and pair the new one. The app releases older extension versions so they
+cannot apply conflicting rules. Your saved notes and sessions stay in the app.

@@ -45,7 +45,7 @@ test('local bridge authenticates browser origins, exposes a running-session leas
   const bridge = createShieldBridge({ token, port: 0, getState: () => f.snapshot(), action: a => f.dispatch(a) });
   await once(bridge.server, 'listening');
   const url = `http://127.0.0.1:${bridge.server.address().port}/sync`;
-  const request = (headers, values = {}) => fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json', ...headers }, body: JSON.stringify({ clientId: 'browser_123', tabs: [{ id: 5, title:'Work', url:'https://work.com/' }], ...values }) });
+  const request = (headers, values = {}) => fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json', ...headers }, body: JSON.stringify({ clientId: 'browser_123', version: '0.8.0', tabs: [{ id: 5, title:'Work', url:'https://work.com/' }], ...values }) });
   const origin = 'chrome-extension://' + 'a'.repeat(32);
   try {
     assert.equal((await request({ Origin:'https://evil.com', 'X-Mischief-Key':token })).status, 403);
@@ -59,5 +59,48 @@ test('local bridge authenticates browser origins, exposes a running-session leas
     assert.equal((await (await request(valid, { action:'pause' })).json()).active, false);
     assert.equal((await request({ ...valid, Origin:'chrome-extension://'+'b'.repeat(32) })).status, 400);
     await request(valid, { action:'save', url:'https://work.com/later' }); assert.equal(f.notes[0].text, 'For later: https://work.com/later');
+  } finally { bridge.close(); }
+});
+test('appearance settings clamp invalid input and restore without changing saved work', () => {
+  const f = new FocusCompanion({ bank });
+  f.dispatch({ type:'note-add', text:'Keep my work' });
+  f.dispatch({ type:'preferences', values:{ monkeyScale:.72, timerOpacity:30, glowIntensity:55, glowColor:'#719dcc' } });
+  f.dispatch({ type:'presence', value:'peek' }); f.dispatch({ type:'presence', value:'hidden' });
+  const restored = new FocusCompanion({ bank, saved:f.export() });
+  assert.equal(restored.preferences.monkeyScale,.72); assert.equal(restored.preferences.timerOpacity,30);
+  assert.equal(restored.preferences.glowColor,'#719dcc'); assert.equal(restored.preferences.lastPresence,'peek'); assert.equal(restored.notes[0].text,'Keep my work');
+  restored.dispatch({ type:'preferences', values:{ monkeyScale:20, timerOpacity:-5, glowIntensity:500, glowColor:'url(https://evil.com)' } });
+  assert.equal(restored.preferences.monkeyScale,1); assert.equal(restored.preferences.timerOpacity,15); assert.equal(restored.preferences.glowIntensity,100); assert.equal(restored.preferences.glowColor,'#ed873a');
+});
+test('approved work websites cannot bypass global blocking and explicit tab locks', () => {
+  const base = { active:true, shield:{ onlyWorkTabs:true, restrictWorkSites:true, workTabs:[tab], workOrigins:{ [tab]:'https://work.com' } } };
+  assert.equal(policy.reason('https://work.com/docs',tab,base),'');
+  assert.match(policy.reason('https://elsewhere.com/',tab,base),/approved website/);
+  assert.ok(policy.reason('https://work.com/',tab,{...base,shield:{...base.shield,websites:['work.com']}}));
+  assert.ok(policy.reason('https://work.com/',tab,{...base,shield:{...base.shield,lockedTabs:[tab]}}));
+});
+test('bridge never confirms a tab lock from a rule receipt alone or from a stale document', async () => {
+  const f = new FocusCompanion({ bank }); f.dispatch({ type:'shield',values:{enabled:true,lockedTabs:[tab]} }); f.dispatch({type:'start'});
+  const token = 'b'.repeat(43), bridge=createShieldBridge({token,port:0,getState:()=>f.snapshot(),action:a=>f.dispatch(a)});
+  await once(bridge.server,'listening');
+  const endpoint=`http://127.0.0.1:${bridge.server.address().port}/sync`;
+  const applied={active:true,sessionId:f.session.id,rules:JSON.stringify(f.preferences.shield)};
+  const sync = protection => fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','X-Mischief-Key':token},body:JSON.stringify({clientId:'browser_123',version:'0.8.0',tabs:[{id:5,url:'https://work.com/'}],applied,protection})});
+  try {
+    await sync([]); assert.equal(bridge.info().enforced,false); assert.equal(bridge.info().tabs[0].protection.status,'checking');
+    await sync([{id:5,url:'https://old-document.com/',status:'locked'}]); assert.equal(bridge.info().enforced,false);
+    await sync([{id:5,url:'https://work.com/',status:'locked'}]); assert.equal(bridge.info().enforced,true); assert.equal(bridge.info().tabs[0].protection.status,'locked');
+    await sync([{id:5,url:'https://work.com/',generation:1,status:'locked'}]); assert.equal(bridge.info().enforced,false,'receipt from a different document generation must not confirm a lock');
+    f.dispatch({type:'pause'}); assert.equal(bridge.info().enforced,false); assert.equal(bridge.info().tabs[0].protection.status,'paused');
+  } finally { bridge.close(); }
+});
+test('an old extension is released and cannot conflict with a connected updated extension', async () => {
+  const f=new FocusCompanion({bank}); f.dispatch({type:'shield',values:{enabled:true}}); f.dispatch({type:'start'});
+  const token='c'.repeat(43), bridge=createShieldBridge({token,port:0,getState:()=>f.snapshot(),action:a=>f.dispatch(a)});
+  await once(bridge.server,'listening');
+  const sync=async(clientId,version)=> (await fetch(`http://127.0.0.1:${bridge.server.address().port}/sync`,{method:'POST',headers:{'Content-Type':'application/json','X-Mischief-Key':token},body:JSON.stringify({clientId,version,tabs:[{id:1,url:'https://example.com/'}]})})).json();
+  try { assert.equal((await sync('old_browser','0.7.0')).active,false); assert.equal(bridge.info().outdated,true);
+    assert.equal((await sync('new_browser','0.8.0')).active,true); assert.equal(bridge.info().outdated,false); assert.equal(bridge.info().legacyCount,1);
+    assert.deepEqual(bridge.info().tabs.map(t=>t.key),['new_browser:1']);
   } finally { bridge.close(); }
 });
