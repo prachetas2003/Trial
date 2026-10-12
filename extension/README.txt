@@ -1,13 +1,15 @@
 MISCHIEF FOCUS SHIELD 0.8.0 — CHROME / EDGE
 
 INSTALL ONCE
-1. Keep this entire FocusShield folder on your computer (do not move it later).
-2. Open chrome://extensions or edge://extensions in the browser address bar.
-3. Turn Developer mode on. Click Load unpacked and choose this folder.
-4. In Mischief, press Ctrl+Alt+F, open Focus Shield > Connect your browser.
-5. Copy its pairing code. Open Mischief Focus Shield from the browser's
-   Extensions menu, paste the code, and click Connect browser.
-6. Return to Mischief: the panel should say Connected.
+1. In Chrome, open chrome://extensions. In Edge, open edge://extensions.
+2. Turn Developer mode on.
+3. Click Load unpacked.
+4. Browse to the folder where you extracted Buildlings. Select its FocusShield
+   subfolder, then click Select Folder. Keep that folder in place afterward.
+5. Open Mischief with Ctrl+Alt+F, then Blocking > Connect your browser.
+6. Copy the pairing code. Open Mischief Focus Shield from the browser's
+   Extensions button, paste it, and click Connect browser.
+7. Return to Mischief: the panel should say Connected.
 
 USE
 Choose Blocker Only or Deep Focus, or enable Focus Shield individually.

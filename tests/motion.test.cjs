@@ -219,3 +219,8 @@ test('smaller monkey keeps its foot anchor, scaled hit region, drag point and ed
   m.setPresence('peek',120); m.setEdge('top',.5); assert.equal(m.peekTarget().y,154*.6);
   m.setEdge('bottom',.5); assert.equal(m.peekTarget().y,900+118*.6);
 });
+test('returning to the edge continues while the cursor overlaps or strokes the monkey',()=>{
+ const m=make();m.pause(true,0);m.setPresence('peek',0);
+ let f;for(let t=0;t<10000;t+=1000/60){f=m.advance(t,{x:m.x,y:m.y-94});}
+ assert.equal(m.presence,'peek');const target=m.peekTarget();assert.ok(Math.hypot(f.x-target.x,f.y-target.y)<4);
+});

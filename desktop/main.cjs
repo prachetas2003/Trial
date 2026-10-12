@@ -71,10 +71,11 @@ function state(action) {
   send({ areas: areas(), activeId, cursor: screen.getCursorScreenPoint(), settings, paused, visible: !hidden, presence: mode, preferences: focus.preferences, safeMode, action });
   if (win && rendererReady) { if (!win.isVisible()) win.showInactive(); }
 }
-function broadcastFocus() { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:focus-state', snapshot()); if (focusWin && !focusWin.isDestroyed() && focusWin.isVisible()) focusWin.webContents.send('companion:focus-state', snapshot()); }
+function broadcastFocus(packet = snapshot()) { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:focus-state', packet); if (focusWin && !focusWin.isDestroyed()) focusWin.webContents.send('companion:focus-state', packet); }
 function processEvents() {
   for (const event of focus.drainEvents()) {
     if (event.type === 'quote') { send({ quote: event.quote }); nextWarmQuote = Date.now() + quoteDelay(); }
+    if (event.type === 'milestone') send({ celebration: {id:event.id + ':' + event.percent, kind:'milestone', percent:event.percent} });
     if (event.type === 'stayed') send({ action: 'ack' });
     if (event.type === 'finished' || event.type === 'break-finished') {
       highlight = { kind: event.type === 'finished' ? 'focus' : 'break', id: event.summary?.id || event.id, completed: event.summary?.completed ?? event.completed };
@@ -110,8 +111,8 @@ function applyFocus(action) {
     if (action?.type === 'preferences' && 'quoteSeconds' in (action.values || {})) nextWarmQuote = Date.now() + quoteDelay();
     if (action?.type === 'preferences' && action.values?.quotesEnabled === true) nextWarmQuote = Date.now() + 1000;
   } catch (e) { error = e.message; }
-  processEvents(); saveFocus(); state(); broadcastFocus(); updateTray();
-  return { error, state: snapshot() };
+  state(); processEvents(); saveFocus(); const packet=snapshot(); broadcastFocus(packet); updateTray();
+  return { error, state: packet };
 }
 function togglePause() { paused = !paused; state(); updateTray(); }
 function setPresence(value) { applyFocus({ type: 'presence', value }); }
@@ -142,7 +143,7 @@ async function showFocus(view = 'timer') {
   highlight = null; broadcastFocus();
   if (!focusWin || focusWin.isDestroyed()) {
     const area = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
-    focusWin = new BrowserWindow({ width: 450, height: Math.min(820, area.height - 30), minWidth: 340, minHeight: 480, icon: path.join(__dirname, 'assets', 'icon.png'), title: 'Mischief — my focus corner', backgroundColor: '#faf7ef', show: false, autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false } });
+    focusWin = new BrowserWindow({ width: 450, height: Math.min(820, area.height - 30), minWidth: 340, minHeight: 480, icon: path.join(__dirname, 'assets', 'icon.png'), title: 'Mischief — my focus corner', backgroundColor: '#faf7ef', show: false, autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false } });
     secureWindow(focusWin);
     focusWin.on('close', event => { if (!quitting) { event.preventDefault(); focusWin.hide(); } });
     focusWin.on('closed', () => { focusWin = null; });
@@ -214,8 +215,8 @@ function tickFocus() {
     nextWarmQuote = Date.now() + quoteDelay();
   }
   const hasEvents = focus.events.length > 0;
-  processEvents();
   if (finished) state();
+  processEvents();
   if (hasEvents || (focus.session?.running && Date.now() - lastSaved >= 10000)) saveFocus();
   broadcastFocus(); updateTray();
 }

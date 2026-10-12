@@ -22,20 +22,25 @@ export class OverlayBar {
   }
   async act(action) {
     try {
-      const result = await this.api.focusAction(action);
+      if (this.pending) return false;
+      this.pending=true; this.element.querySelector('#bar-pause').disabled=true;
+      const result = await this.api.focusAction({...action,...(this.state?.session && ['pause','resume','stay','end'].includes(action.type) ? {sessionId:this.state.session.id} : {})});
       this.element.querySelector('#bar-feedback').textContent = result?.error || (action.type === 'stay' ? 'Choice recorded.' : '');
       if (result?.error) this.showMessage(result.error);
       if (result?.state) this.render(result.state);
       return !result?.error;
     } catch { this.showMessage('That control did not respond. Open controls with Ctrl+Alt+F or restart from the tray.'); return false; }
+    finally {this.pending=false; if(this.state)this.render(this.state);}
   }
   showMessage(text) { this.message.textContent=text; this.message.hidden=false; clearTimeout(this.messageTimer); this.messageTimer=setTimeout(()=>{this.message.hidden=true;},8000); }
   render(state) {
+    if (!window.MischiefFocus.acceptsState(this.state,state)) return;
     this.state = state; this.boundsDirty=true;
     const prefs = state.preferences;
     this.element.style.setProperty('--timer-alpha', String(prefs.timerOpacity / 100));
-    const edges = window.MischiefFocus.focusEdges(prefs, this.theme.matches);
+    const edges = window.MischiefFocus.focusEdges(prefs, this.theme.matches || state.ink==='white');
     document.body.style.setProperty('--glow-rgb', edges.rgb);
+    document.body.style.setProperty('--edge-coverage', (prefs.edgeCoverage || 140)+'px');
     document.body.style.setProperty('--glow-alpha', String(edges.alpha));
     document.body.dataset.screenStyle = edges.style;
     this.element.hidden = state.preferences.showHud === false;
@@ -46,10 +51,10 @@ export class OverlayBar {
     this.element.dataset.running = String(!!s?.running); this.element.dataset.kind = s?.kind || 'ready'; this.element.classList.toggle('has-highlight', pending);
     this.element.querySelector('#bar-label').textContent = pending && !s ? state.highlight.kind === 'focus' ? state.highlight.completed ? 'Session complete' : 'Session saved' : state.highlight.completed ? 'Break complete' : 'Break ended' : !s ? 'Ready to focus' : !s.running ? 'Paused' : s.kind === 'break' ? 'Break' : 'Focus';
     this.element.querySelector('#bar-clock').textContent = pending && !s ? state.highlight.kind === 'focus' ? 'Highlights' : 'Focus corner' : clock;
-    const pause=this.element.querySelector('#bar-pause'); pause.hidden=!s; pause.textContent=s?.running ? 'Ⅱ' : '▶'; pause.title=s?.running ? 'Pause timer' : 'Resume timer'; pause.setAttribute('aria-label',pause.title);
+    const pause=this.element.querySelector('#bar-pause'); pause.hidden=!s; pause.disabled=!!this.pending; pause.textContent=s?.running ? 'Ⅱ' : '▶'; pause.title=s?.running ? 'Pause timer' : 'Resume timer'; pause.setAttribute('aria-label',pause.title);
     this.element.querySelector('.stay-label').textContent=s && !s.running && s.kind==='focus' ? 'Resume & stay' : 'I’m staying';
     this.element.querySelector('#bar-timer').title = pending ? 'See your session highlights' : 'Open my focus corner';
-    const stay = this.element.querySelector('#bar-stay'); stay.disabled = !s || s.kind !== 'focus' || (s.lastChoiceAt !== null && Date.now() - s.lastChoiceAt < 2000);
+    const stay = this.element.querySelector('#bar-stay'); stay.disabled = !!this.pending || !s || s.kind !== 'focus' || (s.lastChoiceAt !== null && Date.now() - s.lastChoiceAt < 2000);
     this.element.querySelector('#bar-choices').textContent = String(s?.choices || 0);
     const tuck = this.element.querySelector('#bar-tuck'), wandering = state.presence === 'wander';
     if (this.wandering !== wandering) tuck.innerHTML = `<svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="${wandering ? 'M5 5 15 15M8 15h7V8' : 'M15 15 5 5M5 12V5h7'}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;

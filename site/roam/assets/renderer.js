@@ -1,13 +1,14 @@
-import { MonkeyScene } from './monkey.js?v=0.8.2';
-import { SpeechBubble } from './bubbles.js?v=0.8.2';
-import { OverlayBar } from './hud.js?v=0.8.2';
+import { MonkeyScene } from './monkey.js?v=0.9.0';
+import { SpeechBubble } from './bubbles.js?v=0.9.0';
+import { Celebrations } from './celebrations.js?v=0.9.0';
+import { OverlayBar } from './hud.js?v=0.9.0';
 const hud = new OverlayBar(window.companion);
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
 let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true, grabZone, quotesEnabled = true, dragEnabled = true, heldPointer = null, lastInteractive = false, scale = 1;
 let lastPaint = 0, lastFrameTime = 0, frameFailures = 0, compatibility = false;
 let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const bubble = new SpeechBubble();
+const bubble = new SpeechBubble(), celebrations = new Celebrations();
 function selectPet() {
   if (scene) return;
   selected = 'monkey';
@@ -54,7 +55,7 @@ function onInput(input) {
   if (input.presence) motion.setPresence(input.presence === 'peek' ? 'peek' : 'wander', performance.now());
   if (typeof input.safeMode === 'boolean') compatibility = input.safeMode;
   if (input.preferences) {
-    scale = input.preferences.monkeyScale || 1; motion.setScale(scale);
+    scale = input.preferences.monkeyScale || 1; motion.setScale(scale); bubble.setScale(scale); celebrations.configure(input.preferences);
     quotesEnabled = input.preferences.quotesEnabled !== false;
     if (!quotesEnabled) { bubble.quote = null; bubble.element.hidden = true; }
     dragEnabled = input.preferences.dragEnabled !== false && !!scene; if (!dragEnabled) stopDrag();
@@ -63,7 +64,8 @@ function onInput(input) {
     motion.setChasing(input.preferences.chaseCursor === true, performance.now());
   }
   if (!enabled) stopDrag();
-  if (input.completion) hud.complete(input.completion);
+  if (input.completion) { hud.complete(input.completion); if(input.completion.completed && input.completion.kind==='focus') { celebrations.enqueue({id:input.completion.id+':complete',kind:'complete'},performance.now()); } }
+  if(input.celebration)celebrations.enqueue(input.celebration,performance.now());
   if (input.quote && enabled && quotesEnabled) bubble.show(input.quote, performance.now());
   bubble.element.style.display = enabled && quotesEnabled ? '' : 'none';
   if (input.action === 'call') { motion.pause(false, performance.now()); motion.pettedUntil = 0; motion.followCursor(cursor, performance.now()); }
@@ -111,6 +113,7 @@ function frame(now) {
       if (hot !== lastInteractive) { lastInteractive = hot; window.companion.setInteractive(hot); }
     }
     bubble.draw({ ...next, scale, x: next.x - area.x, y: next.y - area.y }, now, reduceMotion, bar.y - area.y + bar.height);
+    if(celebrations.draw({...next,scale,x:next.x-area.x,y:next.y-area.y,returning:motion.returning},now,enabled,reduceMotion) && enabled)motion.reach(now);
     document.body.dataset.mood = next.mode;
     window.__buildlingsFrame = { ...next, scale, pet: selected };
     window.dispatchEvent(new CustomEvent('companion-frame', { detail: window.__buildlingsFrame }));

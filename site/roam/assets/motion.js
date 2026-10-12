@@ -79,7 +79,7 @@
     }
     setPresence(value, now) {
       if (value === this.presence) return;
-      this.presence = value; this.hopStart = null; this.reachStart = null; this.wanderPath = null;
+      this.presence = value; this.pettedUntil = 0; this.strokeEnergy = 0; this.hopStart = null; this.reachStart = null; this.wanderPath = null;
       const b = safeArea(this.area(), this.scale);
       this.returning = value !== 'peek' && (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom);
       this.mode = value === 'peek' ? 'peek' : this.returning ? 'return' : 'idle';
@@ -205,7 +205,7 @@
       if (this.dragging) { this.updateHeld(dt); this.heldPose(dt); spring(this.visual.walk, 0, 14, dt); spring(this.visual.pet, 0, 10, dt); return; }
       this.heldPose(dt);
       const edgeTravel = this.presence === 'peek' || this.returning;
-      const occupied = (!edgeTravel && this.paused) || hovering || now < this.pettedUntil || this.reachStart !== null;
+      const occupied = !edgeTravel && (this.paused || hovering || now < this.pettedUntil || this.reachStart !== null);
       if (this.presence === 'peek') {
         this.target = this.peekTarget();
         if (now >= this.pettedUntil && this.reachStart === null) this.mode = 'peek';

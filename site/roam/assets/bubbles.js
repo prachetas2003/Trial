@@ -7,7 +7,12 @@ export class SpeechBubble {
     this.text = document.createElement('span'); this.text.className = 'bubble-words'; this.text.setAttribute('aria-hidden', 'true');
     this.author = document.createElement('span'); this.author.className = 'bubble-author'; this.author.setAttribute('aria-hidden', 'true');
     this.element.append(this.accessible, this.text, this.author); document.body.append(this.element);
-    this.quote = null;
+    this.quote = null; this.scale=1;
+  }
+  setScale(value) { if(value===this.scale)return; this.scale=value; this.element.style.fontSize=Math.max(15,11/value)+'px'; this.author.style.fontSize=Math.max(12,9/value)+'px'; if(this.quote)this.measure(); }
+  measure() {
+    const current=this.text.textContent; this.text.style.minHeight=''; this.text.textContent=this.quote.author ? `“${this.quote.text}”` : this.quote.text;
+    this.width=this.element.offsetWidth*this.scale; this.height=this.element.offsetHeight*this.scale; this.text.style.minHeight=this.text.offsetHeight+'px'; this.text.textContent=current;
   }
   show(quote, now) {
     this.quote = quote; this.startedAt = now; this.words = quote.text.split(' '); this.wordCount = 0;
@@ -17,8 +22,7 @@ export class SpeechBubble {
     this.text.style.minHeight = '';
     this.text.textContent = quote.author ? `“${quote.text}”` : quote.text;
     this.author.textContent = quote.author ? `— ${quote.author}` : '';
-    this.width = this.element.offsetWidth; this.height = this.element.offsetHeight;
-    this.text.style.minHeight = `${this.text.offsetHeight}px`;
+    this.measure();
     this.element.dataset.kind = quote.category;
     this.text.textContent = ''; this.author.style.opacity = '0';
   }
@@ -35,8 +39,8 @@ export class SpeechBubble {
     const headX = frame.x, headY = frame.y - (145 + frame.hop) * (frame.scale || 1);
     const left = Math.max(12, Math.min(innerWidth - this.width - 12, headX - this.width * .6));
     const top = Math.max(timerBottom + 12, Math.min(innerHeight - this.height - 18, headY - this.height - 25));
-    this.element.style.transform = `translate3d(${left}px,${top}px,0)`;
-    this.element.style.setProperty('--tail-x', `${Math.max(22, Math.min(this.width - 25, headX - left))}px`);
+    this.element.style.transform = `translate3d(${left}px,${top}px,0) scale(${this.scale})`;
+    this.element.style.setProperty('--tail-x', `${Math.max(22, Math.min(this.width/this.scale - 25, (headX - left)/this.scale))}px`);
     this.element.classList.toggle('bubble-exit', !reducedMotion && now > this.until - 350);
   }
 }

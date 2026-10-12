@@ -1,4 +1,4 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.8.2
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.9.0
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
@@ -10,11 +10,13 @@ GET STARTED
    Use the arrow in the focus corner to return to your work. The timer continues.
 
 FOCUS SHIELD AND MODES
+- Presets apply a complete setup. Change individual switches/settings to make
+  your own Custom setup; these choices are saved automatically.
 - Companion: monkey, gentle quotes and timer, with blocking off.
 - Deep Focus: blocking, a quiet edge-peeking monkey, timer and neutral focus edges.
 - Blocker Only: blocking with no monkey, quotes, timer overlay, edges or sounds.
 - Adjust individual features in the Blocking and Appearance sections.
-- Focus Shield needs the included Chrome/Edge extension. Open Focus Shield >
+- Focus Shield needs the included Chrome/Edge extension. Open Blocking >
   Connect your browser for setup, or read FocusShield/README.txt.
 - Choose website domains, Shorts/Reels, locked tabs or Only my work tabs.
   Select Work tabs before starting. New tabs lock until approved in the panel.
@@ -128,7 +130,7 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.2
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.9.0
 
 IF THE APP FREEZES ON STARTUP
 End Buildlings.exe in Windows Task Manager, then run Start-Safe-Mode.cmd
@@ -138,3 +140,16 @@ The timer now has a direct Pause/Resume control. Resume & stay resumes a
 paused focus session and records one choice. Failed controls show a message.
 The tray offers Restart desktop overlay and Open local diagnostics.
 Diagnostics stay local and contain technical events, not notes or tab URLs.
+
+POLISH AND CELEBRATIONS
+The top timer and Focus panel share the same session state. Pause brings a
+tucked monkey out; Resume restores focus tucking, unless chase is explicitly
+on or the monkey is completely hidden. Return movement is not held by hovering.
+Speech bubbles shrink with the monkey, keep small text readable, and follow
+Appearance > Screen style. Auto recognises system dark theme or white marker.
+Choose Dark manually for a dark workspace on a light-system desktop.
+Focus edge coverage is adjustable from 64 to 280 px; the centre stays clear.
+Celebrations: small local bursts at 25%, 50%, 75%; a brief screen burst and
+monkey celebration on completed focus sessions. Early Finish and breaks do
+not play completion confetti. Appearance has a celebration switch. Blocker
+Only turns celebrations off, and reduced motion uses a quiet acknowledgement.

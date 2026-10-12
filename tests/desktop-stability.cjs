@@ -4,12 +4,16 @@ const {spawnSync}=require('node:child_process');
 const {_electron}=require('playwright');
 const root=path.resolve(__dirname,'..');
 async function click(app,page,selector){
+  // Xvfb has no window manager: temporarily uncover the toolbar. Windows
+  // retains both windows so its actual always-on-top routing is exercised.
+  const uncover=process.platform==='linux' && await app.evaluate(({app})=>{const p=app.__buildlingsRuntime.getRuntime().focusWin;if(p?.isVisible()){p.hide();return true;}return false;});
   let point=await page.locator(selector).evaluate(e=>{const r=e.getBoundingClientRect(),a=window.__buildlingsEngine.area();return{x:a.x+r.x+r.width/2,y:a.y+r.y+r.height/2};});
   if(process.platform==='win32')point=await app.evaluate(({screen},p)=>screen.dipToScreenPoint(p),{x:Math.round(point.x),y:Math.round(point.y)});
   const native=(operation)=>{const r=spawnSync(process.platform==='win32'?'python':'python3',[path.join(root,'scripts/test-pointer.py'),String(Math.round(point.x)),String(Math.round(point.y)),operation],{encoding:'utf8'});if(r.status!==0)throw new Error(r.stderr);};
   native('move');
-  if(process.platform==='linux')await app.evaluate(({app,screen},p)=>{app.__linuxTestCursor=p;screen.getCursorScreenPoint=()=>app.__linuxTestCursor;app.__buildlingsRuntime.getRuntime().win.setIgnoreMouseEvents(false);},point);
+  if(process.platform==='linux')await app.evaluate(({app,screen},p)=>{app.__linuxTestCursor=p;screen.getCursorScreenPoint=()=>app.__linuxTestCursor;app.__buildlingsRuntime.getRuntime().win.setIgnoreMouseEvents(false);app.__buildlingsRuntime.getRuntime().win.moveTop();},point);
   await page.waitForTimeout(120);native('click');await page.waitForTimeout(180);
+  if(uncover)await app.evaluate(({app})=>{const p=app.__buildlingsRuntime.getRuntime().focusWin;p?.show();p?.focus();});
 }
 (async()=>{
  const temp=await fs.mkdtemp(path.join(os.tmpdir(),'mischief-stability-'));let app;
@@ -33,6 +37,20 @@ async function click(app,page,selector){
   await app.evaluate(({app})=>Promise.all([app.__buildlingsRuntime.showFocus(),app.__buildlingsRuntime.showFocus('appearance')]));
   await controls.locator('#appearance-view').waitFor({state:'visible'});
   assert.equal(await controls.locator('#appearance-view').isVisible(),true);
+  await controls.locator('[data-desk-tab=focus]').click();
+  for(let i=0;i<12;i++) {
+    if(i%2===0)await click(app,page,'#bar-pause');else await controls.locator('#session-pause').click();
+    const running=i%2===0;
+    await page.waitForFunction(r=>document.querySelector('#bar-label').textContent===(r?'Focus':'Paused'),running);
+    await controls.waitForFunction(r=>document.querySelector('#session-pause').textContent===(r?'Pause timer':'Resume timer'),running);
+    assert.equal(await page.locator('#bar-clock').textContent(),await controls.locator('#timer-clock').textContent());
+    assert.equal(await page.evaluate(()=>window.__buildlingsEngine.presence),running?'peek':'wander');
+  }
+  await click(app,page,'#bar-pause');
+  await page.waitForFunction(()=>{const m=window.__buildlingsEngine,t=m.peekTarget();return m.presence==='peek'&&Math.hypot(m.x-t.x,m.y-t.y)<4;},null,{timeout:12000});
+  await click(app,page,'#bar-pause');
+  console.log('PASS twelve alternating toolbar/panel pause cycles keep clocks synchronized and the monkey physically returns to its edge');
+  await controls.locator('[data-desk-tab=appearance]').click();
   console.log('PASS recovered paused session, real toolbar clicks, Resume & stay, direct pause/resume and concurrently opened controls');
   const saves=await app.evaluate(async({app})=>{
    const r=app.__buildlingsRuntime;await r.getRuntime().storage.flush();const before=r.getRuntime().storage.stats().writes;
@@ -69,6 +87,6 @@ async function click(app,page,selector){
   assert.equal(await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().focus.notes[0].text),'Preserve this idea');
   assert.equal(await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().focus.session.choices),6);
   console.log('PASS Safe Mode starts without hardware acceleration and preserves session, notes and real toolbar controls');
-  console.log('6 native stability checks passed. Windows evidence requires a Windows run.');
+  console.log('7 native stability checks passed. Windows evidence requires a Windows run.');
  }finally{if(app)await app.close();await fs.rm(temp,{recursive:true,force:true});}
 })().catch(error=>{console.error(error);if(process.env.GITHUB_ACTIONS)console.log('::error title=Native stability::'+error.stack.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'));process.exitCode=1;});

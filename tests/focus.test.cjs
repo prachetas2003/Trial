@@ -113,7 +113,7 @@ test('pausing brings a tucked monkey out, resuming restores tuck, and explicit h
     f.dispatch({type:'presence',value:'peek'},2500); assert.equal(f.presence(),'peek');
     f.dispatch({type:'resume'},3000); assert.equal(f.presence(),'peek');
     f.dispatch({type:'presence',value:'wander'},3500); f.dispatch({type:'pause'},4000); f.dispatch({type:'resume'},4500);
-    assert.equal(f.presence(),'wander','manual running-session override survives pause');
+    assert.equal(f.presence(),'peek','resume restores automatic focus tucking');
     f.dispatch({type:'presence',value:'hidden'},5000); f.dispatch({type:'pause'},6000); assert.equal(f.presence(),'hidden');
   }
 });
@@ -137,3 +137,15 @@ test('neutral edges follow system theme or manual override and old colours canno
   f.dispatch({type:'preferences',values:{screenStyle:'light',glowIntensity:0}},1000);
   assert.deepEqual(focusEdges(f.preferences,true),{style:'light',rgb:'40 40 40',alpha:0});
 });
+test('focus milestones fire once per threshold, exclude paused time and survive recovery',()=>{
+ const f=make();f.dispatch({type:'preferences',values:{focusMinutes:1}},1000);f.dispatch({type:'start'},1000);f.drainEvents();
+ for(const [at,percent]of [[16000,25],[31000,50],[46000,75]]){f.tick(at);assert.equal(f.drainEvents().find(e=>e.type==='milestone').percent,percent);f.tick(at+1);assert.equal(f.drainEvents().length,0);}
+ const restored=make(f.export(46001));restored.dispatch({type:'resume'},50000);restored.tick(51000);assert.equal(restored.drainEvents().filter(e=>e.type==='milestone').length,0);
+ restored.dispatch({type:'pause'},52000);restored.tick(90000);assert.equal(restored.drainEvents().length,0);restored.dispatch({type:'resume'},100000);restored.tick(114000);assert.equal(restored.history[0].completed,true);assert.equal(restored.drainEvents().filter(e=>e.type==='finished').length,1);
+});
+test('twenty pause/resume cycles restore focus peeking and stale state cannot roll either view back',()=>{
+ const {acceptsState}=require('../desktop/focus.js'),f=make();f.dispatch({type:'start'},1000);
+ for(let i=0;i<20;i++){f.dispatch({type:'pause'},2000+i*20);const paused=f.snapshot(2000+i*20);assert.equal(paused.presence,'wander');f.dispatch({type:'resume'},2001+i*20);const resumed=f.snapshot(2001+i*20);assert.equal(resumed.presence,'peek');assert.equal(acceptsState(resumed,paused),false);assert.equal(acceptsState(paused,resumed),true);}
+});
+
+test('upgrading a fully silent setup does not introduce celebrations',()=>{const f=make({version:2,preferences:{presence:'hidden',quotesEnabled:false,showHud:false,completionSound:false}});assert.equal(f.preferences.celebrations,false);f.dispatch({type:'preferences',values:{celebrations:true}},1000);assert.equal(f.preferences.celebrations,true);});

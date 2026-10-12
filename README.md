@@ -10,7 +10,7 @@ Drag the monkey by its head or body. Empty screen areas and speech bubbles
 let clicks through; a compact timer bar stays at the top of the screen.
 This release contains one doodle character.
 
-Version 0.8.2 includes click-and-drag with body and leg momentum, dragging along
+Version 0.9.0 includes click-and-drag with body and leg momentum, dragging along
 all four screen margins while peeking, and a continuous cursor-chase toggle.
 The top bar shows the timer, an “I’m staying” button, thought capture, tuck/bring
 back, and chase controls. Click the timer to open the focus corner. Completion
@@ -57,6 +57,15 @@ bounds reduce rendering work during scrolling.
 Try the [movement playground](https://prachetas2003.github.io/Trial/roam/).
 The browser preview stays within its page. The desktop application moves
 over other applications without a visible rectangular background.
+
+Version 0.9.0 uses one versioned timer snapshot for the toolbar and panel;
+resume restores automatic tucking, and cursor hovering cannot hold that return
+in place. Speech bubbles shrink with the monkey, retain readable minimum text,
+and use the selected screen theme (Auto also recognises white-marker mode).
+Appearance offers a 64–280px coverage slider for neutral focus edges. Milestone
+confetti stays beside the monkey at 25%, 50% and 75%; completed focus sessions
+bring the monkey back and add a brief screen celebration. Celebrations have an
+independent switch, respect reduced motion, and are off in Blocker Only.
 
 The 0.8.2 stability repair restores native timer hiding, adds direct Pause/Resume
 and Resume & stay, and removes the full-screen shadow layer and timer blur.
