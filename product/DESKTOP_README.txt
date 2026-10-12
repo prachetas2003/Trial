@@ -1,4 +1,4 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.8.0
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.8.1
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
@@ -11,9 +11,9 @@ GET STARTED
 
 FOCUS SHIELD AND MODES
 - Companion: monkey, gentle quotes and timer, with blocking off.
-- Deep Focus: blocking, a quiet edge-peeking monkey, timer and amber glow.
-- Blocker Only: blocking with no monkey, quotes, timer overlay, glow or sounds.
-- Adjust individual features in Focus Shield and Customize individually.
+- Deep Focus: blocking, a quiet edge-peeking monkey, timer and neutral focus edges.
+- Blocker Only: blocking with no monkey, quotes, timer overlay, edges or sounds.
+- Adjust individual features in the Blocking and Appearance sections.
 - Focus Shield needs the included Chrome/Edge extension. Open Focus Shield >
   Connect your browser for setup, or read FocusShield/README.txt.
 - Choose website domains, Shorts/Reels, locked tabs or Only my work tabs.
@@ -23,11 +23,14 @@ FOCUS SHIELD AND MODES
 - Blocker Only can be controlled from the tray or Ctrl+Alt+F.
 
 QUICK CONTROLS
+Quotes on restores automatic encouragement even after a silent mode.
+Pausing brings a tucked monkey back; resuming restores the tuck. A monkey
+you explicitly hid, including Blocker Only, stays hidden.
 The panel has Focus, Blocking, Appearance and Notes destinations.
-Monkey, Quotes, Timer and Glow switches are always visible at the top.
+Monkey, Quotes, Timer and Edges switches are always visible at the top.
 Focus > Choose tabs & sites opens the blocking picker directly.
-Appearance has a timer background slider, monkey size (60-100%), glow brightness
-and colour, and Reset. Settings save automatically and preview immediately.
+Appearance has a timer background slider, monkey size (60-100%), focus edge strength
+and Auto/Light/Dark screen style, and Reset. Settings save automatically and preview immediately.
 The timer's settings button and right-clicking the draggable monkey open
 Appearance directly. Right-click the tray icon for Show/Hide timer, Show/Hide
 monkey, and Open controls. Ctrl+Alt+F always opens the panel.
@@ -125,4 +128,4 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.0
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.1

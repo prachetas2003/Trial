@@ -131,6 +131,7 @@ async function clickOverlay(app, page, selector) {
     await focusPage.locator('[data-desk-tab=focus]').click();
     await focusPage.locator('#session-pause').click();
     await focusPage.waitForFunction(() => document.querySelector('#session-pause').textContent === 'Resume timer');
+    await page.waitForFunction(() => window.__buildlingsEngine.presence === 'wander');
     await focusPage.screenshot({ path: path.join(output, 'native-focus-desk.png') });
     await focusPage.locator('.close-desk').click();
     assert.equal(await app.evaluate(({ app }) => app.__buildlingsRuntime.getRuntime().focusWin.isVisible()), false);
@@ -264,7 +265,7 @@ async function clickOverlay(app, page, selector) {
     await focusPanel.locator('.close-desk').click();
     await app.evaluate(({ app }) => {
       const r = app.__buildlingsRuntime;
-      r.applyFocus({ type:'preferences', values:{monkeyScale:.6,timerOpacity:35,vignette:true,glowColor:'#719dcc',glowIntensity:70} });
+      r.applyFocus({ type:'preferences', values:{monkeyScale:.6,timerOpacity:35,vignette:true,screenStyle:'dark',glowIntensity:70} });
       r.applyFocus({type:'start'}); r.applyFocus({type:'presence',value:'wander'});
       if (!r.getRuntime().paused) r.togglePause();
     });
@@ -285,12 +286,23 @@ async function clickOverlay(app, page, selector) {
     await restored.waitForFunction(()=>document.querySelector('#timer-bar').hidden);
     await app.evaluate(({app})=>{const r=app.__buildlingsRuntime;r.getRuntime().trayMenu.items.find(i=>i.label==='Show timer bar').click();});
     await restored.waitForFunction(()=>!document.querySelector('#timer-bar').hidden);
-    await focusPanel.locator('#glow-colour').evaluate(e=>{e.value='#9e8edb';e.dispatchEvent(new Event('input',{bubbles:true}));});
-    await restored.waitForFunction(()=>document.body.style.getPropertyValue('--glow-rgb')==='158 142 219');
+    await focusPanel.locator('#screen-style').selectOption('light');
+    await restored.waitForFunction(()=>document.body.style.getPropertyValue('--glow-rgb')==='40 40 40');
     await focusPanel.screenshot({path:path.join(output,'native-quick-appearance.png')});
+    await app.evaluate(({app})=>{const r=app.__buildlingsRuntime;r.applyFocus({type:'preset',name:'deep'});r.applyFocus({type:'shield',values:{enabled:false}});});
+    await focusPanel.locator('#quotes-enabled').check();
+    await restored.waitForFunction(()=>!document.querySelector('#speech-bubble').hidden,{},{timeout:5000});
+    const speech = await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().focus.preferences);
+    assert.equal(speech.autoQuotes,true); assert.equal(speech.quietFocus,false);
+    await app.evaluate(({app})=>app.__buildlingsRuntime.applyFocus({type:'pause'}));
+    await restored.waitForFunction(()=>window.__buildlingsEngine.presence==='wander');
+    await app.evaluate(({app})=>app.__buildlingsRuntime.applyFocus({type:'resume'}));
+    await restored.waitForFunction(()=>window.__buildlingsEngine.presence==='peek');
+    console.log('PASS native Quotes switch resumes automatic speech after Deep Focus and pause/resume retrieves/restores monkey');
+
     await app.evaluate(({app})=>app.__buildlingsRuntime.applyFocus({type:'end'}));
     await restored.waitForFunction(()=>!document.body.classList.contains('focus-vignette'));
-    console.log('PASS native scaled drag capture, direct appearance controls, tray timer restoration and session glow colour');
-    console.log('19 native desktop checks passed. Windows results apply only when this script runs on Windows.');
+    console.log('PASS native scaled drag capture, direct appearance controls, tray timer restoration and neutral focus edges');
+    console.log('20 native desktop checks passed. Windows results apply only when this script runs on Windows.');
   } finally { await app.close(); await fs.rm(temp, { recursive: true, force: true }); }
 })().catch(error => { console.error(error); if(process.env.GITHUB_ACTIONS)console.log('::error title=Native desktop check::'+error.stack.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')); process.exitCode = 1; });

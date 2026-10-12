@@ -1,40 +1,29 @@
-Buildlings 0.8.0 fixes tab locking and makes everyday controls easier to reach.
+Buildlings 0.8.1 makes the focus edges calmer and fixes controls after changing modes.
 
-- Protection is added to previously open tabs when the browser permits it;
-  existing documents stay beneath a cover, preserving unfinished work.
-- Each tab shows Scheduled, Locked, Paused, Applying or Needs attention.
-  A navigation-rule receipt alone cannot claim an existing page is locked.
-- The picker offers **Block selected tabs** and **Only selected work tabs**.
-  Selecting a tab enables blocking. Optional approved websites stop a work tab
-  becoming an unrelated browsing tab; approve a changed website in the panel.
-  Global website and Shorts/Reels blocks still apply inside allowed tabs.
-- **Focus**, **Blocking**, **Appearance**, and **Notes** are directly accessible.
-  Monkey, Quotes, Timer and Glow switches stay visible at the top.
-- **Appearance** has live sliders for timer background, monkey size (60–100%),
-  and glow brightness, plus a colour strip/custom picker and Reset.
-- Resizing preserves the foot anchor and scales dragging, hit areas, bubbles
-  and screen-edge positioning.
-- The timer settings button and right-clicking the draggable monkey open
-  Appearance. The tray has direct Show/Hide timer and Show/Hide monkey controls.
-  Ctrl+Alt+F always opens the panel; Ctrl+Alt+Q quits completely.
+- Focus edges use a still neutral shadow: faint grey on light workspaces and
+  black on dark workspaces. Choose Auto (system theme), Light or Dark, and
+  adjust Edge strength. Edges gently fade in/out; the coloured arrival
+  animation and colour picker are removed. Edges turn off on pause/end.
+- Pausing brings a tucked monkey back. Resuming restores the focus tuck.
+  A monkey you explicitly hid, including Blocker Only, remains hidden.
+- Turning Quotes on restores automatic speech even after a silent mode and
+  clears the preset's quiet-during-focus setting. Speech resumes shortly,
+  then follows the saved frequency (12 seconds by default). Advanced quiet
+  and automatic-quote options remain available; the panel explains their state.
+- Timer ticks no longer rewrite unchanged appearance controls or browser-tab
+  rows. Offscreen tab rows render only when needed, tab status lookup is linear,
+  and overlay hit testing/speech reuse measured timer bounds instead of forcing
+  layout every animation frame. Large tab lists retain their scroll position.
+- Notes, session history, blocking rules, size and timer opacity are preserved.
+  Existing colour choices migrate to neutral edges. No screen capture is used
+  to infer theme; Auto follows the system theme and manual overrides stay saved.
 
-Download Buildlings-Windows-x64.zip, quit the old app, extract the whole ZIP and
-run Buildlings.exe. Saved notes and session history are preserved.
+Quit the old app with Ctrl+Alt+Q, extract the whole ZIP and run Buildlings.exe.
+FocusShield remains version 0.8.0: if you already updated it for Buildlings 0.8.0,
+no extension update or re-pairing is needed. Older copies still need the included
+FocusShield files and Reload at chrome://extensions or edge://extensions.
 
-**Update the browser extension too.** Copy the new FocusShield files over the
-folder your browser already loads, then Reload its card at chrome://extensions
-or edge://extensions. Keeping the same path preserves pairing. Alternatively
-remove the old extension, load the new FocusShield folder and pair again from
-Blocking > Connect your browser. Older extensions receive a release signal to
-avoid conflicting rules. FocusShield/README.txt includes complete instructions.
-
-Pausing, finishing, breaks and disconnection release restrictions. Browser tab
-buttons remain clickable; protected browser pages cannot be covered. This is
-an optional focus aid in installed/paired Chrome/Edge profiles. Website feature
-selectors may need updates as those sites change. No data is sent to a service;
-current tab inventory travels only over an authenticated local connection.
-
-Windows 10/11 x64 unsigned preview. Archive checksum: SHA256SUMS.txt.
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.0
-The website demonstrates settings and visuals; real blocking needs the app and
-extension. The balanced 120/43 quote bank and 12-second default remain.
+Windows 10/11 x64 unsigned preview. SHA256SUMS.txt accompanies the archive.
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.8.1
+The website demonstrates controls and visuals; real browser blocking needs the
+app and paired extension. Blocking releases on pause, finish, break or disconnect.

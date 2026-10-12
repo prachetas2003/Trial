@@ -91,6 +91,7 @@ function applyFocus(action) {
     if (action?.type === 'start') highlight = null;
     if (action?.type === 'chase' && focus.preferences.chaseCursor) paused = false;
     if (action?.type === 'preferences' && 'quoteSeconds' in (action.values || {})) nextWarmQuote = Date.now() + quoteDelay();
+    if (action?.type === 'preferences' && action.values?.quotesEnabled === true) nextWarmQuote = Date.now() + 1000;
   } catch (e) { error = e.message; }
   processEvents(); saveFocus(); state(); broadcastFocus(); updateTray();
   return { error, state: snapshot() };
@@ -184,7 +185,7 @@ function tickFocus() {
   const finished = focus.events.some(e => e.type === 'finished' || e.type === 'break-finished');
   if (Date.now() >= nextWarmQuote && !focus.events.some(e => e.type === 'quote')) {
     const s = focus.session, p = focus.preferences;
-    if (p.autoQuotes && !hidden && (!s || s.kind === 'break' || !p.quietFocus)) focus.quote('everyday');
+    if (p.autoQuotes && !hidden && (!s || s.kind === 'break' || !s.running || !p.quietFocus)) focus.quote('everyday');
     nextWarmQuote = Date.now() + quoteDelay();
   }
   const hasEvents = focus.events.length > 0;

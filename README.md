@@ -10,7 +10,7 @@ Drag the monkey by its head or body. Empty screen areas and speech bubbles
 let clicks through; a compact timer bar stays at the top of the screen.
 This release contains one doodle character.
 
-Version 0.8.0 includes click-and-drag with body and leg momentum, dragging along
+Version 0.8.1 includes click-and-drag with body and leg momentum, dragging along
 all four screen margins while peeking, and a continuous cursor-chase toggle.
 The top bar shows the timer, an “I’m staying” button, thought capture, tuck/bring
 back, and chase controls. Click the timer to open the focus corner. Completion
@@ -29,25 +29,30 @@ Tab locking now injects protection into already-open pages and confirms each
 page's status. The picker distinguishes **Block selected tabs** and **Only
 selected work tabs**, with an optional approved-website restriction. Scheduled,
 paused, confirmed and unsupported states are visible; navigation-rule receipts
-alone cannot confirm an existing page lock. Update the included extension too.
+alone cannot confirm an existing page lock. FocusShield stays at 0.8.0; existing
+updated extensions remain compatible.
 
 The panel has **Focus**, **Blocking**, **Appearance**, and **Notes** destinations,
-with Monkey/Quotes/Timer/Glow switches at the top. Quick Appearance opens from
+with Monkey/Quotes/Timer/Edges switches at the top. Quick Appearance opens from
 the timer settings button or right-clicking the draggable monkey. Its sliders
-adjust timer background transparency, monkey size (60–100%), and glow brightness;
-a palette/custom picker changes glow colour. The tray has direct Show/Hide timer
+adjust timer background transparency, monkey size (60–100%), and focus edge strength.
+Choose Auto (system theme), Light or Dark for a still neutral shadow. The tray has direct Show/Hide timer
 and Show/Hide monkey controls. Resizing also scales drag hits and edge placement.
 
 Choose **Companion**, **Deep Focus**, or **Blocker Only**, then customize
 individual settings in grouped sections. Blocker Only hides every desktop
 visual and sound. Quotes have a master switch, so the monkey can remain
-without speech. Optional amber focus edges glow once then settle. The monkey,
-timer bar, glow and sound have independent controls. Your notes and session
+without speech. Turning Quotes on restores automatic speech after silent modes.
+Pausing brings a tucked monkey out; resuming restores focus tucking. Explicitly
+hidden monkeys stay hidden. Focus edges fade gently without a moving glow. The
+monkey, timer bar, edges and sound have independent controls. Your notes and session
 history remain local. Press **Ctrl+Alt+F** to open the panel even with everything
 hidden. **Ctrl+Alt+Q** quits completely.
 
 The balanced quote bank remains 120 everyday lines and 43 attributed quotations,
-with a 12-second default interval. Prior saved data is preserved.
+with a 12-second default interval. Prior saved data is preserved. Panel updates
+keep unchanged controls and tab rows intact; offscreen rows and cached overlay
+bounds reduce rendering work during scrolling.
 
 Try the [movement playground](https://prachetas2003.github.io/Trial/roam/).
 The browser preview stays within its page. The desktop application moves

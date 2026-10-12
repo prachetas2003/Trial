@@ -64,13 +64,13 @@ test('local bridge authenticates browser origins, exposes a running-session leas
 test('appearance settings clamp invalid input and restore without changing saved work', () => {
   const f = new FocusCompanion({ bank });
   f.dispatch({ type:'note-add', text:'Keep my work' });
-  f.dispatch({ type:'preferences', values:{ monkeyScale:.72, timerOpacity:30, glowIntensity:55, glowColor:'#719dcc' } });
+  f.dispatch({ type:'preferences', values:{ monkeyScale:.72, timerOpacity:30, glowIntensity:55, screenStyle:'dark' } });
   f.dispatch({ type:'presence', value:'peek' }); f.dispatch({ type:'presence', value:'hidden' });
   const restored = new FocusCompanion({ bank, saved:f.export() });
   assert.equal(restored.preferences.monkeyScale,.72); assert.equal(restored.preferences.timerOpacity,30);
-  assert.equal(restored.preferences.glowColor,'#719dcc'); assert.equal(restored.preferences.lastPresence,'peek'); assert.equal(restored.notes[0].text,'Keep my work');
-  restored.dispatch({ type:'preferences', values:{ monkeyScale:20, timerOpacity:-5, glowIntensity:500, glowColor:'url(https://evil.com)' } });
-  assert.equal(restored.preferences.monkeyScale,1); assert.equal(restored.preferences.timerOpacity,15); assert.equal(restored.preferences.glowIntensity,100); assert.equal(restored.preferences.glowColor,'#ed873a');
+  assert.equal(restored.preferences.screenStyle,'dark'); assert.equal(restored.preferences.lastPresence,'peek'); assert.equal(restored.notes[0].text,'Keep my work');
+  restored.dispatch({ type:'preferences', values:{ monkeyScale:20, timerOpacity:-5, glowIntensity:500, screenStyle:'invalid' } });
+  assert.equal(restored.preferences.monkeyScale,1); assert.equal(restored.preferences.timerOpacity,15); assert.equal(restored.preferences.glowIntensity,100); assert.equal(restored.preferences.screenStyle,'auto');
 });
 test('approved work websites cannot bypass global blocking and explicit tab locks', () => {
   const base = { active:true, shield:{ onlyWorkTabs:true, restrictWorkSites:true, workTabs:[tab], workOrigins:{ [tab]:'https://work.com' } } };

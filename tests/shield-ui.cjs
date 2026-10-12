@@ -1,11 +1,28 @@
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
+const { createServer } = require('../server.cjs');
+const fs = require('node:fs/promises');
 (async () => {
-  const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true });
+  const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || (process.platform === 'win32' ? chromium.executablePath() : '/usr/bin/chromium'), headless: true });
+  const server = process.env.TEST_URL ? null : createServer();
+  if (server) await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const testURL = process.env.TEST_URL || `http://127.0.0.1:${server.address().port}/`;
+  await fs.mkdir('test-results', {recursive:true});
   const page = await browser.newPage({ viewport: { width: 1200, height: 950 } }), errors = [];
   page.on('pageerror', e => errors.push(e.message));
   try {
-    await page.clock.install(); await page.goto(new URL('roam/', process.env.TEST_URL || 'http://127.0.0.1:3000/').href);
+    await page.addInitScript(() => {
+      const descriptor = { configurable:true, set(api) {
+        Object.defineProperty(window,'companion',{configurable:true,writable:true,value:api});
+        let register;
+        Object.defineProperty(api,'onFocusState',{configurable:true,
+          set(fn){register=fn;},
+          get(){return callback=>{window.__renderPanelForTest=callback;return register(state=>callback(window.__manyTabs ? {...state,browser:{...state.browser,tabs:window.__manyTabs}} : state));};}
+        });
+      }};
+      Object.defineProperty(window,'companion',descriptor);
+    });
+    await page.clock.install(); await page.goto(new URL('roam/', testURL).href);
     await page.waitForFunction(() => window.__mischiefFocus && window.__buildlingsFrame); await page.locator('#focus-open').click();
     await page.locator('[data-mode="blocker"]').click();
     assert.equal(await page.locator('[data-mode="blocker"]').getAttribute('aria-pressed'), 'true');
@@ -26,6 +43,16 @@ const { chromium } = require('playwright');
     await page.clock.runFor(1200); assert.equal(await page.locator('body').evaluate(e => e.classList.contains('focus-vignette')), true);
     assert.equal(await page.locator('body').evaluate(e => getComputedStyle(e, '::after').pointerEvents), 'none');
     await page.locator('#stay-button').click(); assert.equal(await page.locator('#speech-bubble').isVisible(), false);
+    await page.locator('#session-pause').click();
+    assert.equal(await page.evaluate(() => window.__mischiefFocus.presence()), 'wander');
+    await page.locator('#session-pause').click();
+    assert.equal(await page.evaluate(() => window.__mischiefFocus.presence()), 'peek');
+    await page.locator('#quotes-enabled').check();
+    assert.equal(await page.evaluate(() => window.__mischiefFocus.preferences.autoQuotes), true);
+    assert.equal(await page.evaluate(() => window.__mischiefFocus.preferences.quietFocus), false);
+    await page.clock.runFor(2500); assert.equal(await page.locator('#speech-bubble').isVisible(), true);
+    await page.locator('#quotes-enabled').uncheck();
+    await page.clock.runFor(12000); assert.equal(await page.locator('#speech-bubble').isVisible(), false);
     await page.locator('#session-pause').click(); assert.equal(await page.locator('body').evaluate(e => e.classList.contains('focus-vignette')), false);
     await page.locator('#session-end').click();
     await page.locator('[data-desk-tab=appearance]').click(); await page.locator('#vignette').uncheck(); await page.locator('#presence').selectOption('wander');
@@ -49,26 +76,59 @@ const { chromium } = require('playwright');
     await page.locator('#timer-opacity').focus(); await page.locator('#timer-opacity').press('Home');
     assert.equal(await page.locator('#timer-bar').evaluate(e=>e.style.getPropertyValue('--timer-alpha')),'0.15');
     assert.equal(await page.locator('#timer-bar').evaluate(e=>getComputedStyle(e).opacity),'1');
-    await page.locator('#vignette').check(); await page.getByRole('button',{name:'Lavender',exact:true}).click();
+    await page.locator('#vignette').check(); await page.locator('#screen-style').selectOption('dark');
     await page.locator('#glow-intensity').focus(); await page.locator('#glow-intensity').press('End');
-    assert.equal(await page.locator('body').evaluate(e=>e.style.getPropertyValue('--glow-rgb')),'158 142 219');
+    assert.equal(await page.locator('body').evaluate(e=>e.style.getPropertyValue('--glow-rgb')),'0 0 0');
     assert.equal(await page.evaluate(()=>window.__mischiefFocus.preferences.glowIntensity),100);
+    await page.locator('#screen-style').selectOption('auto');
+    await page.emulateMedia({colorScheme:'dark'}); await page.clock.runFor(100);
+    assert.equal(await page.locator('body').evaluate(e=>e.style.getPropertyValue('--glow-rgb')),'0 0 0');
+    await page.emulateMedia({colorScheme:'light'}); await page.clock.runFor(100);
+    assert.equal(await page.locator('body').evaluate(e=>e.style.getPropertyValue('--glow-rgb')),'40 40 40');
+    assert.equal(await page.locator('body').evaluate(e=>getComputedStyle(e,'::after').animationName),'none');
+    await page.locator('#screen-style').selectOption('dark');
     await page.locator('#quick-monkey').uncheck(); assert.equal(await page.locator('#companion-host').isVisible(),false);
     await page.locator('#quick-monkey').check(); assert.equal(await page.locator('#companion-host').isVisible(),true);
     await page.reload(); await page.locator('#focus-open').click(); await page.locator('[data-desk-tab=appearance]').click();
     assert.equal(await page.locator('#monkey-size').inputValue(),'60'); assert.equal(await page.locator('#timer-opacity').inputValue(),'15');
-    assert.equal(await page.locator('#glow-colour').inputValue(),'#9e8edb');
+    assert.equal(await page.locator('#screen-style').inputValue(),'dark');
     await page.getByRole('button',{name:'Reset',exact:true}).click();
     assert.equal(await page.locator('#monkey-size').inputValue(),'100'); assert.equal(await page.locator('#timer-opacity').inputValue(),'95');
-    assert.equal(await page.locator('#glow-colour').inputValue(),'#ed873a');
+    assert.equal(await page.locator('#screen-style').inputValue(),'auto');
     await page.locator('.close-desk').click(); await page.locator('#bar-settings').click();
     assert.equal(await page.locator('#appearance-view').isVisible(),true);
     await page.screenshot({path:'test-results/quick-appearance.png'});
-    console.log('PASS direct visibility switches, anchored size slider, timer background transparency, glow palette/brightness, persistence, reset and timer settings button');
+    console.log('PASS direct visibility switches, anchored size slider, timer background transparency, neutral edges/theme/strength, persistence, reset and timer settings button');
 
+    await page.evaluate(() => {
+      window.__panelMutations = 0;
+      window.__panelObserver = new MutationObserver(records => { window.__panelMutations += records.length; });
+      window.__panelObserver.observe(document.querySelector('#appearance-view'), {subtree:true,childList:true,attributes:true,characterData:true});
+    });
+    await page.clock.runFor(5000);
+    assert.equal(await page.evaluate(() => window.__panelMutations), 0);
+    await page.evaluate(() => window.__panelObserver.disconnect());
+    await page.locator('[data-desk-tab=blocking]').click();
+    await page.evaluate(() => {
+      const get = window.companion.getFocusState;
+      window.__manyTabs = Array.from({length:200}, (_,i) => ({key:`test_browser:${i}`, title:`Work tab ${i}`, url:`https://work.test/${i}`, protection:{status:'available',reason:''}}));
+      window.companion.getFocusState = async () => { const s=await get(); return {...s,browser:{...s.browser,tabs:window.__manyTabs}}; };
+    });
+    const many = await page.evaluate(() => window.companion.getFocusState());
+    // Use the existing state subscription so the actual renderer, not a mock
+    // list, builds all rows. The preview exposes listeners only through API.
+    await page.evaluate(state => window.__renderPanelForTest(state), many);
+    await page.locator('#browser-tabs li').first().scrollIntoViewIfNeeded();
+    await page.mouse.move(650,650); await page.mouse.wheel(0,550); await page.clock.runFor(250);
+    const scrolled = await page.locator('#focus-dialog').evaluate(e=>e.scrollTop);
+    assert.ok(scrolled > 100);
+    await page.evaluate(state => window.__renderPanelForTest(state), many);
+    assert.equal(await page.locator('#focus-dialog').evaluate(e=>e.scrollTop), scrolled);
+    assert.equal(await page.locator('#browser-tabs li').count(),200);
+    console.log('PASS automatic quotes after silent preset, pause/resume presence, automatic neutral theme and stable 200-tab scrolling');
     await page.locator('[data-desk-tab=focus]').click();
     await page.screenshot({ path: 'test-results/focus-shield-panel.png', fullPage: true });
     for (const width of [320, 390, 768]) { await page.setViewportSize({ width, height: 950 }); await page.clock.runFor(100); assert.equal(await page.locator('#focus-desk').evaluate(e => e.scrollWidth <= e.clientWidth), true); }
     assert.deepEqual(errors, []); console.log('PASS organized panel at 320px, 390px and 768px');
-  } finally { await browser.close(); }
-})().catch(error => { console.error(error); process.exitCode = 1; });
+  } finally { await browser.close(); if (server) await new Promise(resolve => server.close(resolve)); }
+})().catch(error => { console.error(error); if(process.env.GITHUB_ACTIONS) console.log('::error title=Focus controls regression::'+error.stack.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')); process.exitCode = 1; });

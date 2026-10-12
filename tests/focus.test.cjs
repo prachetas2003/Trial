@@ -105,3 +105,35 @@ test('updating a version-1 installation switches to 12-second quotes and refresh
   updated.dispatch({ type: 'preferences', values: { quoteSeconds: 25 } }, 10000);
   const restarted = make(updated.export(10000)); assert.equal(restarted.preferences.quoteSeconds, 25); assert.deepEqual(restarted.decks, updated.decks);
 });
+test('pausing brings a tucked monkey out, resuming restores tuck, and explicit hiding stays hidden', () => {
+  for (const setup of ['default','deep']) {
+    const f = make(); if (setup === 'deep') f.dispatch({type:'preset',name:'deep'},1000);
+    f.dispatch({type:'start'},1000); assert.equal(f.presence(),'peek');
+    f.dispatch({type:'pause'},2000); assert.equal(f.presence(),'wander');
+    f.dispatch({type:'presence',value:'peek'},2500); assert.equal(f.presence(),'peek');
+    f.dispatch({type:'resume'},3000); assert.equal(f.presence(),'peek');
+    f.dispatch({type:'presence',value:'wander'},3500); f.dispatch({type:'pause'},4000); f.dispatch({type:'resume'},4500);
+    assert.equal(f.presence(),'wander','manual running-session override survives pause');
+    f.dispatch({type:'presence',value:'hidden'},5000); f.dispatch({type:'pause'},6000); assert.equal(f.presence(),'hidden');
+  }
+});
+test('Quotes on overrides silent preset settings and advanced quiet preferences remain explicit', () => {
+  for (const preset of ['deep','blocker']) {
+    const f=make(); f.dispatch({type:'preset',name:preset},1000);
+    f.dispatch({type:'preferences',values:{quotesEnabled:true}},2000);
+    assert.equal(f.preferences.autoQuotes,true); assert.equal(f.preferences.quietFocus,false);
+    f.quote(); assert.ok(f.drainEvents().some(e=>e.type==='quote'));
+    f.dispatch({type:'preferences',values:{quietFocus:true}},3000); assert.equal(f.preferences.quietFocus,true);
+    f.dispatch({type:'preferences',values:{quotesEnabled:false}},4000); f.quote(); assert.equal(f.drainEvents().length,0);
+    f.dispatch({type:'preferences',values:{quotesEnabled:true,autoQuotes:false}},5000); assert.equal(f.preferences.autoQuotes,false);
+  }
+});
+test('neutral edges follow system theme or manual override and old colours cannot affect rendering', () => {
+  const {focusEdges, defaults}=require('../desktop/focus.js');
+  const f=make({version:2,preferences:{glowColor:'#ed873a',glowIntensity:37},notes:[{id:'saved',text:'Keep this'}]});
+  assert.equal(f.preferences.screenStyle,'auto'); assert.equal(f.notes[0].text,'Keep this');
+  assert.deepEqual(focusEdges(defaults,false),{style:'light',rgb:'40 40 40',alpha:.075});
+  assert.deepEqual(focusEdges(defaults,true),{style:'dark',rgb:'0 0 0',alpha:.125});
+  f.dispatch({type:'preferences',values:{screenStyle:'light',glowIntensity:0}},1000);
+  assert.deepEqual(focusEdges(f.preferences,true),{style:'light',rgb:'40 40 40',alpha:0});
+});
