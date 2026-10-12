@@ -2,13 +2,14 @@ export class OverlayBar {
   constructor(api) {
     this.api = api; this.state = null; this.sound = new Audio(new URL('./completion.wav', import.meta.url)); this.sound.preload = 'auto'; this.lastCompletion = null;
     this.element = document.createElement('nav'); this.element.id = 'timer-bar'; this.element.setAttribute('aria-label', 'Mischief focus controls');
-    this.element.innerHTML = `<button type="button" id="bar-timer" title="Open my focus corner"><span class="record-dot" aria-hidden="true"></span><span class="bar-time"><span id="bar-label">Ready to focus</span><output id="bar-clock">25:00</output></span></button><span class="bar-divider" aria-hidden="true"></span><button type="button" id="bar-stay" title="Feeling distracted? Record a choice to stay" disabled><span aria-hidden="true">✦</span><span>I’m staying</span><span id="bar-choices">0</span></button><button type="button" id="bar-thought" title="Keep a thought for later" aria-label="Keep a thought for later">✎</button><button type="button" id="bar-tuck" title="Tuck monkey to the edge" aria-label="Tuck monkey to the edge"></button><button type="button" id="bar-chase" aria-pressed="false" title="Chase my cursor until switched off">Chase</button><span id="bar-feedback" class="sr-only" role="status" aria-live="polite"></span>`;
+    this.element.innerHTML = `<button type="button" id="bar-timer" title="Open my focus corner"><span class="record-dot" aria-hidden="true"></span><span class="bar-time"><span id="bar-label">Ready to focus</span><output id="bar-clock">25:00</output></span></button><span class="bar-divider" aria-hidden="true"></span><button type="button" id="bar-stay" title="Feeling distracted? Record a choice to stay" disabled><span aria-hidden="true">✦</span><span>I’m staying</span><span id="bar-choices">0</span></button><button type="button" id="bar-thought" title="Keep a thought for later" aria-label="Keep a thought for later">✎</button><button type="button" id="bar-tuck" title="Tuck monkey to the edge" aria-label="Tuck monkey to the edge"></button><button type="button" id="bar-chase" aria-pressed="false" title="Chase my cursor until switched off">Chase</button><button type="button" id="bar-settings" title="Quick controls" aria-label="Quick controls"><svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14M7 3v4M13 8v4M7 13v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><span id="bar-feedback" class="sr-only" role="status" aria-live="polite"></span>`;
     document.body.append(this.element);
     this.element.querySelector('#bar-timer').addEventListener('click', () => api.openFocus(this.state?.highlight?.kind === 'focus' ? 'summary' : 'timer'));
     this.element.querySelector('#bar-thought').addEventListener('click', () => api.openFocus('thought'));
     this.element.querySelector('#bar-stay').addEventListener('click', async () => { if (await this.act({ type: 'stay' })) { this.element.classList.remove('choice-ack'); void this.element.offsetWidth; this.element.classList.add('choice-ack'); } });
     this.element.querySelector('#bar-tuck').addEventListener('click', () => this.act({ type: 'presence', value: this.state?.presence === 'wander' ? 'peek' : 'wander' }));
     this.element.querySelector('#bar-chase').addEventListener('click', () => this.act({ type: 'chase' }));
+    this.element.querySelector('#bar-settings').addEventListener('click', () => api.openFocus('appearance'));
     api.onFocusState(state => this.render(state));
     api.getFocusState().then(state => this.render(state)).catch(() => {});
   }
@@ -22,6 +23,11 @@ export class OverlayBar {
   }
   render(state) {
     this.state = state;
+    const prefs = state.preferences;
+    this.element.style.setProperty('--timer-alpha', String(prefs.timerOpacity / 100));
+    const color = prefs.glowColor;
+    document.body.style.setProperty('--glow-rgb', `${parseInt(color.slice(1,3),16)} ${parseInt(color.slice(3,5),16)} ${parseInt(color.slice(5,7),16)}`);
+    document.body.style.setProperty('--glow-alpha', String(prefs.glowIntensity * .006));
     this.element.hidden = state.preferences.showHud === false;
     document.body.classList.toggle('focus-vignette', !!state.preferences.vignette && state.session?.kind === 'focus' && state.session.running);
     const s = state.session, p = state.preferences, pending = !!state.highlight;

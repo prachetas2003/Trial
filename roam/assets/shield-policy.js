@@ -16,6 +16,8 @@
     const keys = items => Array.isArray(items) ? [...new Set(items.filter(x => typeof x === 'string' && /^[a-zA-Z0-9_-]{8,80}:\d+$/.test(x)))].slice(0, 200) : [];
     return { enabled: value.enabled === true, onlyWorkTabs: value.onlyWorkTabs === true,
       websites: [...new Set((Array.isArray(value.websites) ? value.websites : []).map(domain).filter(Boolean))].slice(0, 50),
+      restrictWorkSites: value.restrictWorkSites === true,
+      workOrigins: Object.fromEntries(Object.entries(value.workOrigins && typeof value.workOrigins === 'object' ? value.workOrigins : {}).filter(([key, origin]) => keys([key]).length && typeof origin === 'string' && (() => { try { const u = new URL(origin); return ['http:', 'https:'].includes(u.protocol) && !u.username && !u.password && u.origin === origin && origin.length <= 400; } catch { return false; } })()).slice(0, 200)),
       features: { shorts: value.features?.shorts !== false, reels: value.features?.reels !== false },
       workTabs: keys(value.workTabs), lockedTabs: keys(value.lockedTabs) };
   }
@@ -23,6 +25,9 @@
     if (!state?.active) return '';
     const p = settings(state.shield);
     if (p.onlyWorkTabs && !p.workTabs.includes(tabKey)) return 'This tab is outside your work tabs.';
+    if (p.onlyWorkTabs && p.restrictWorkSites && p.workTabs.includes(tabKey)) {
+      try { if (new URL(url).origin !== p.workOrigins[tabKey]) return 'This website is outside this work tab’s approved website.'; } catch { return 'This website is outside this work tab’s approved website.'; }
+    }
     if (p.lockedTabs.includes(tabKey)) return 'You locked this tab for your session.';
     try {
       const u = new URL(url), host = u.hostname.toLowerCase().replace(/^www\./, '');

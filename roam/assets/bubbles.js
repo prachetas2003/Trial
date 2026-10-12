@@ -32,7 +32,7 @@ export class SpeechBubble {
       this.text.textContent = this.quote.author ? `“${content}${count === this.words.length ? '”' : ''}` : content;
       this.author.style.opacity = count === this.words.length ? '1' : '0';
     }
-    const headX = frame.x, headY = frame.y - 145 - frame.hop;
+    const headX = frame.x, headY = frame.y - (145 + frame.hop) * (frame.scale || 1);
     const left = Math.max(12, Math.min(innerWidth - this.width - 12, headX - this.width * .6));
     const top = Math.max((document.querySelector('#timer-bar')?.getBoundingClientRect().bottom || 0) + 12, Math.min(innerHeight - this.height - 18, headY - this.height - 25));
     this.element.style.transform = `translate3d(${left}px,${top}px,0)`;
