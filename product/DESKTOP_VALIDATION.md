@@ -1,3 +1,62 @@
+# Confirmed tab locks and quick controls — 0.8.0
+
+Release: [desktop-preview-16](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-16)
+
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38190947589)
+passed for source `4f37054`: fresh installation, **65 unit/server checks**,
+**19 native Windows checks**, **eight real-browser extension check groups**,
+packaging, checksum generation and release upload. Every workflow step passed.
+
+The browser regression creates tabs before installing the extension through
+Chrome's unpacked-extension API. The already-open locked tab preserves its
+unfinished input and is confirmed protected by the local app. Its fixture
+rejects inline styles/scripts and requires Trusted Types with no HTML policies;
+protection uses browser-injected CSS and DOM construction without HTML sinks.
+The confirmed cover fills the viewport. Network-rule receipts alone, mismatched
+URLs and stale document generations cannot confirm a lock. Older extensions
+are released and excluded from the modern tab picker to prevent conflicts.
+
+Additional extension checks cover website/Shorts/Reels navigation, link hiding,
+SPA routes, Save for later, individual locks, strict workspaces, new tabs,
+approving additional tabs, approved work websites, precedence of global blocks,
+emergency pause, restored new tabs, end/break release and disconnect cleanup.
+The fixture server is local HTTPS; only its test certificate's SPKI is trusted
+by the isolated browser. No test trust configuration ships in the application.
+The cloud's managed system browser still prohibits unpacked extensions;
+Windows CI verifies that workflow instead.
+
+Local unit, focus, overlay, quote, quick-panel and native virtual-display checks
+passed. The quick-panel checks exercise direct visibility controls, anchored
+resizing, timer background opacity while text remains opaque, palette/brightness,
+persistence, Reset, the timer settings button and widths of 320/390/768 pixels.
+Native Windows checks add real mouse capture on the smaller monkey, the direct
+Appearance route, tray timer restoration and session-only glow colour. The
+Linux virtual-display run retains the cursor-cache accommodation below.
+
+Downloaded public ZIP verification:
+
+- **163,567,745 bytes**; all ZIP CRCs passed.
+- SHA-256: `91a3f312c2332018cc168ded713c6c7a8809f292ebff64af56ab947fab13cf6a`.
+- The application version and root instructions are 0.8.0.
+- All **24 tracked desktop files** in app.asar and all **11 FocusShield files**
+  match the tested source, normalizing only Windows text line endings.
+- Binary assets match exactly; both quotation reference files are included.
+
+Pages deployment `1d7e54a59f48c93c2db316a5b1635a33ba62a2d0` matches all
+**19 checked live website/preview assets**, including the new controls and
+versioned shared policy. Both website download links point to preview 16.
+The preview demonstrates settings/visuals; browser blocking needs the native
+app and updated extension. Saved notes/session data remain on the device.
+
+The supported target remains Windows 10/11 x64 with the updated extension in
+paired Chrome/Edge profiles. Protected browser pages cannot be covered. Feature
+selectors may need maintenance as sites change; controlled fixtures do not
+prove the current live-site DOM. Perceived sound, motion and glow still need a
+physical-computer check. The release instructions cover updating the extension
+in place or replacing/re-pairing it.
+
+---
+
 # Focus Shield and mode validation — 0.7.0
 
 Release: [desktop-preview-14](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-14)
