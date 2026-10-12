@@ -7,7 +7,7 @@
     deep: { presence: 'peek', quotesEnabled: false, autoQuotes: false, quietFocus: true, peekDuringFocus: true, chaseCursor: false, showHud: true, vignette: true, completionSound: true, shieldEnabled: true },
     blocker: { presence: 'hidden', quotesEnabled: false, autoQuotes: false, quietFocus: true, peekDuringFocus: false, chaseCursor: false, showHud: false, vignette: false, completionSound: false, shieldEnabled: true }
   };
-  const defaults = { focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, presence: 'wander', peekDuringFocus: true, autoQuotes: true, quietFocus: false, quoteSeconds: 12, dragEnabled: true, chaseCursor: false, completionSound: true, returnAfterSession: true, edge: 'right', edgePosition: .85, quotesEnabled: true, showHud: true, vignette: false, shield: shieldPolicy.settings(), timerOpacity: 95, monkeyScale: 1, glowIntensity: 37, glowColor: '#ed873a', lastPresence: 'wander' };
+  const defaults = { focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, presence: 'wander', peekDuringFocus: true, autoQuotes: true, quietFocus: false, quoteSeconds: 12, dragEnabled: true, chaseCursor: false, completionSound: true, returnAfterSession: true, edge: 'right', edgePosition: .85, quotesEnabled: true, showHud: true, vignette: false, shield: shieldPolicy.settings(), timerOpacity: 95, monkeyScale: 1, glowIntensity: 25, screenStyle: 'auto', lastPresence: 'wander' };
   const integer = (value, lo, hi, fallback) => Number.isFinite(value) ? Math.max(lo, Math.min(hi, Math.round(value))) : fallback;
   const line = (value, length) => typeof value === 'string' ? value.trim().slice(0, length) : '';
   const copy = value => JSON.parse(JSON.stringify(value));
@@ -23,7 +23,7 @@
     out.timerOpacity = integer(saved.timerOpacity, 15, 100, defaults.timerOpacity);
     out.monkeyScale = Number.isFinite(saved.monkeyScale) ? Math.max(.6, Math.min(1, saved.monkeyScale)) : defaults.monkeyScale;
     out.glowIntensity = integer(saved.glowIntensity, 0, 100, defaults.glowIntensity);
-    if (typeof saved.glowColor === 'string' && /^#[a-fA-F0-9]{6}$/.test(saved.glowColor)) out.glowColor = saved.glowColor.toLowerCase();
+    if (['auto', 'light', 'dark'].includes(saved.screenStyle)) out.screenStyle = saved.screenStyle;
     if (['wander', 'peek'].includes(saved.lastPresence)) out.lastPresence = saved.lastPresence;
     out.shield = shieldPolicy.settings(saved.shield);
     return out;
@@ -53,6 +53,7 @@
     presence() {
       const p = this.preferences;
       if (p.presence === 'hidden') return 'hidden';
+      if (this.session?.kind === 'focus' && !this.session.running) return this.session.pausedPresence || 'wander';
       if (this.session?.kind === 'focus' && this.session.presenceOverride) return this.session.presenceOverride;
       if (p.chaseCursor) return 'wander';
       return p.presence === 'peek' || (p.peekDuringFocus && this.session?.kind === 'focus') ? 'peek' : 'wander';
@@ -104,10 +105,10 @@
         }
         case 'pause':
           if (!this.session?.running) break;
-          this.session.elapsedMs = this.elapsed(now); this.session.running = false; break;
+          this.session.elapsedMs = this.elapsed(now); this.session.running = false; this.session.pausedPresence = null; break;
         case 'resume':
           if (!this.session || this.session.running) break;
-          this.session.running = true; this.session.segmentStartedAt = now; this.recovered = false; break;
+          this.session.running = true; this.session.segmentStartedAt = now; this.session.pausedPresence = null; this.recovered = false; break;
         case 'end': this.finish(now, false); break;
         case 'stay': {
           const s = this.session;
@@ -124,7 +125,8 @@
           if (action.value !== 'wander') this.preferences.chaseCursor = false;
           if (action.value !== 'hidden' && this.session?.kind === 'focus') {
             if (this.preferences.presence === 'hidden') this.preferences.presence = 'wander';
-            this.session.presenceOverride = action.value;
+            if (this.session.running) this.session.presenceOverride = action.value;
+            else this.session.pausedPresence = action.value;
           } else this.preferences.presence = action.value;
           break;
         }
@@ -150,7 +152,13 @@
           this.preferences.shield = shieldPolicy.settings({ ...this.preferences.shield, ...values, features: { ...this.preferences.shield.features, ...values.features } });
           break;
         }
-        case 'preferences': this.preferences = preferences({ ...this.preferences, ...action.values }); break;
+        case 'preferences': {
+          const values = action.values || {};
+          // The main Quotes switch is an explicit request for regular speech,
+          // including after a silent preset. Advanced choices can still override it.
+          const speech = values.quotesEnabled === true ? { autoQuotes: true, quietFocus: false } : {};
+          this.preferences = preferences({ ...this.preferences, ...speech, ...values }); break;
+        }
         case 'note-add': {
           const text = line(action.text, 1000);
           if (!text) throw new Error('Write the thought you want to save.');
@@ -170,7 +178,11 @@
       return copy({ version: 2, preferences: this.preferences, notes: this.notes, history: this.history, completedSessions: this.completedSessions, decks: this.decks, lastQuotes: this.lastQuotes, session: this.session ? { ...this.session, elapsedMs: this.elapsed(now), segmentStartedAt: now } : null });
     }
   }
-  const api = { FocusCompanion, defaults, presets, MINUTE };
+  function focusEdges(p, dark = false) {
+    const style = p.screenStyle === 'auto' ? dark ? 'dark' : 'light' : p.screenStyle;
+    return { style, rgb: style === 'dark' ? '0 0 0' : '40 40 40', alpha: p.glowIntensity * (style === 'dark' ? .005 : .003) };
+  }
+  const api = { FocusCompanion, defaults, presets, MINUTE, focusEdges };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MischiefFocus = api;
 })(typeof window !== 'undefined' ? window : globalThis);

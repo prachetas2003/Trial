@@ -1,9 +1,14 @@
 export class OverlayBar {
   constructor(api) {
-    this.api = api; this.state = null; this.sound = new Audio(new URL('./completion.wav', import.meta.url)); this.sound.preload = 'auto'; this.lastCompletion = null;
+    this.api = api; this.state = null; this.theme = matchMedia('(prefers-color-scheme: dark)');
+    this.theme.addEventListener('change', () => { if (this.state) this.render(this.state); });
+    this.sound = new Audio(new URL('./completion.wav', import.meta.url)); this.sound.preload = 'auto'; this.lastCompletion = null;
     this.element = document.createElement('nav'); this.element.id = 'timer-bar'; this.element.setAttribute('aria-label', 'Mischief focus controls');
     this.element.innerHTML = `<button type="button" id="bar-timer" title="Open my focus corner"><span class="record-dot" aria-hidden="true"></span><span class="bar-time"><span id="bar-label">Ready to focus</span><output id="bar-clock">25:00</output></span></button><span class="bar-divider" aria-hidden="true"></span><button type="button" id="bar-stay" title="Feeling distracted? Record a choice to stay" disabled><span aria-hidden="true">✦</span><span>I’m staying</span><span id="bar-choices">0</span></button><button type="button" id="bar-thought" title="Keep a thought for later" aria-label="Keep a thought for later">✎</button><button type="button" id="bar-tuck" title="Tuck monkey to the edge" aria-label="Tuck monkey to the edge"></button><button type="button" id="bar-chase" aria-pressed="false" title="Chase my cursor until switched off">Chase</button><button type="button" id="bar-settings" title="Quick controls" aria-label="Quick controls"><svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14M7 3v4M13 8v4M7 13v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><span id="bar-feedback" class="sr-only" role="status" aria-live="polite"></span>`;
     document.body.append(this.element);
+    const measure = () => { this.rect = this.element.getBoundingClientRect(); };
+    new ResizeObserver(measure).observe(this.element);
+    addEventListener('resize', measure);
     this.element.querySelector('#bar-timer').addEventListener('click', () => api.openFocus(this.state?.highlight?.kind === 'focus' ? 'summary' : 'timer'));
     this.element.querySelector('#bar-thought').addEventListener('click', () => api.openFocus('thought'));
     this.element.querySelector('#bar-stay').addEventListener('click', async () => { if (await this.act({ type: 'stay' })) { this.element.classList.remove('choice-ack'); void this.element.offsetWidth; this.element.classList.add('choice-ack'); } });
@@ -25,9 +30,10 @@ export class OverlayBar {
     this.state = state;
     const prefs = state.preferences;
     this.element.style.setProperty('--timer-alpha', String(prefs.timerOpacity / 100));
-    const color = prefs.glowColor;
-    document.body.style.setProperty('--glow-rgb', `${parseInt(color.slice(1,3),16)} ${parseInt(color.slice(3,5),16)} ${parseInt(color.slice(5,7),16)}`);
-    document.body.style.setProperty('--glow-alpha', String(prefs.glowIntensity * .006));
+    const edges = window.MischiefFocus.focusEdges(prefs, this.theme.matches);
+    document.body.style.setProperty('--glow-rgb', edges.rgb);
+    document.body.style.setProperty('--glow-alpha', String(edges.alpha));
+    document.body.dataset.screenStyle = edges.style;
     this.element.hidden = state.preferences.showHud === false;
     document.body.classList.toggle('focus-vignette', !!state.preferences.vignette && state.session?.kind === 'focus' && state.session.running);
     const s = state.session, p = state.preferences, pending = !!state.highlight;
@@ -40,7 +46,8 @@ export class OverlayBar {
     const stay = this.element.querySelector('#bar-stay'); stay.disabled = !s?.running || s.kind !== 'focus' || (s.lastChoiceAt !== null && Date.now() - s.lastChoiceAt < 2000);
     this.element.querySelector('#bar-choices').textContent = String(s?.choices || 0);
     const tuck = this.element.querySelector('#bar-tuck'), wandering = state.presence === 'wander';
-    tuck.innerHTML = `<svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="${wandering ? 'M5 5 15 15M8 15h7V8' : 'M15 15 5 5M5 12V5h7'}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`; tuck.title = wandering ? 'Tuck monkey to the edge' : 'Bring monkey back'; tuck.setAttribute('aria-label', tuck.title);
+    if (this.wandering !== wandering) tuck.innerHTML = `<svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="${wandering ? 'M5 5 15 15M8 15h7V8' : 'M15 15 5 5M5 12V5h7'}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    tuck.title = wandering ? 'Tuck monkey to the edge' : 'Bring monkey back'; tuck.setAttribute('aria-label', tuck.title); this.wandering = wandering;
     this.element.querySelector('#bar-chase').setAttribute('aria-pressed', String(p.chaseCursor));
   }
   complete(event) {
@@ -54,7 +61,7 @@ export class OverlayBar {
     });
   }
   rectangle(area) {
-    const r = this.element.getBoundingClientRect();
+    const r = this.element.hidden ? { x: 0, y: 0, width: 0, height: 0 } : this.rect || this.element.getBoundingClientRect();
     return { x: r.x + area.x, y: r.y + area.y, width: r.width, height: r.height };
   }
 }

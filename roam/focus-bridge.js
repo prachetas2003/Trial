@@ -38,6 +38,7 @@
       if (action.type === 'start') highlight = null;
       if (action.type === 'chase' && focus.preferences.chaseCursor) window.dispatchEvent(new Event('companion-chase-start'));
       if (action.type === 'preferences' && 'quoteSeconds' in (action.values || {})) nextQuote = Date.now() + quoteDelay();
+      if (action.type === 'preferences' && action.values?.quotesEnabled === true) nextQuote = Date.now() + 1000;
     } catch (e) { error = e.message; }
     events(); save(); state(); return { error, state: snapshot() };
   };
@@ -53,7 +54,7 @@
     focus.tick(Date.now());
     if (Date.now() >= nextQuote && !focus.events.some(e => e.type === 'quote')) {
       const s = focus.session, p = focus.preferences;
-      if (p.autoQuotes && mode() !== 'hidden' && (!s || s.kind === 'break' || !p.quietFocus)) focus.quote();
+      if (p.autoQuotes && mode() !== 'hidden' && (!s || s.kind === 'break' || !s.running || !p.quietFocus)) focus.quote();
       nextQuote = Date.now() + quoteDelay();
     }
     const changed = focus.events.length > 0;

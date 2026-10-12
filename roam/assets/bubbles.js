@@ -22,7 +22,7 @@ export class SpeechBubble {
     this.element.dataset.kind = quote.category;
     this.text.textContent = ''; this.author.style.opacity = '0';
   }
-  draw(frame, now, reducedMotion) {
+  draw(frame, now, reducedMotion, timerBottom = 0) {
     if (!this.quote) return;
     if (now > this.until) { this.element.hidden = true; this.quote = null; return; }
     const count = reducedMotion ? this.words.length : Math.min(this.words.length, Math.floor((now - this.startedAt) / 55) + 1);
@@ -34,7 +34,7 @@ export class SpeechBubble {
     }
     const headX = frame.x, headY = frame.y - (145 + frame.hop) * (frame.scale || 1);
     const left = Math.max(12, Math.min(innerWidth - this.width - 12, headX - this.width * .6));
-    const top = Math.max((document.querySelector('#timer-bar')?.getBoundingClientRect().bottom || 0) + 12, Math.min(innerHeight - this.height - 18, headY - this.height - 25));
+    const top = Math.max(timerBottom + 12, Math.min(innerHeight - this.height - 18, headY - this.height - 25));
     this.element.style.transform = `translate3d(${left}px,${top}px,0)`;
     this.element.style.setProperty('--tail-x', `${Math.max(22, Math.min(this.width - 25, headX - left))}px`);
     this.element.classList.toggle('bubble-exit', !reducedMotion && now > this.until - 350);
