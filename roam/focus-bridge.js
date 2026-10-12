@@ -20,6 +20,7 @@
   function events() {
     for (const event of focus.drainEvents()) {
       if (event.type === 'quote') { api.send({ quote: event.quote }); nextQuote = Date.now() + quoteDelay(); }
+      if (event.type === 'milestone') api.send({celebration:{id:event.id + ':' + event.percent,kind:'milestone',percent:event.percent}});
       if (event.type === 'stayed') api.send({ action: 'ack' });
       if (event.type === 'finished' || event.type === 'break-finished') {
         highlight = { kind: event.type === 'finished' ? 'focus' : 'break', id: event.summary?.id || event.id, completed: event.summary?.completed ?? event.completed };
@@ -40,7 +41,7 @@
       if (action.type === 'preferences' && 'quoteSeconds' in (action.values || {})) nextQuote = Date.now() + quoteDelay();
       if (action.type === 'preferences' && action.values?.quotesEnabled === true) nextQuote = Date.now() + 1000;
     } catch (e) { error = e.message; }
-    events(); save(); state(); return { error, state: snapshot() };
+    state(); events(); save(); const packet=snapshot(); for(const listener of listeners) listener(packet); return { error, state: packet };
   };
   api.getFocusState = async () => snapshot();
   api.onFocusState = callback => { listeners.add(callback); callback(snapshot()); return () => listeners.delete(callback); };
@@ -58,7 +59,7 @@
       nextQuote = Date.now() + quoteDelay();
     }
     const changed = focus.events.length > 0;
-    events(); if (changed || (focus.session?.running && Date.now() - lastSave >= 10000)) save(); state();
+    state(); events(); if (changed || (focus.session?.running && Date.now() - lastSave >= 10000)) save(); state();
   }, 1000);
   window.addEventListener('pagehide', () => { focus.dispatch({ type: 'pause' }); save(); });
   document.addEventListener('keydown', event => {
