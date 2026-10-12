@@ -15,7 +15,7 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
   const cert = fs.readFileSync(path.join(__dirname, 'fixtures/shield-local-cert.pem'));
   const localKey = fs.readFileSync(path.join(__dirname, 'fixtures/shield-local-key.pem'));
   const spki = crypto.createHash('sha256').update(crypto.createPublicKey(cert).export({ type: 'spki', format: 'der' })).digest('base64');
-  const web = https.createServer({ key: localKey, cert }, (req, res) => { res.setHeader('Content-Type', 'text/html'); if(req.url==='/feed')res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'none'; script-src 'none'"); res.end(`<!doctype html><title>${req.url === '/work' ? 'My work' : 'Other page'}</title><body><input id="draft" value="unfinished work"><a id="shorts" href="/shorts/example">Shorts</a><a id="normal" href="/watch?v=lesson">Lesson</a><p>Preserve this page.</p></body>`); });
+  const web = https.createServer({ key: localKey, cert }, (req, res) => { res.setHeader('Content-Type', 'text/html'); if(req.url==='/feed')res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'none'; script-src 'none'; require-trusted-types-for 'script'; trusted-types 'none'"); res.end(`<!doctype html><title>${req.url === '/work' ? 'My work' : 'Other page'}</title><body><input id="draft" value="unfinished work"><a id="shorts" href="/shorts/example">Shorts</a><a id="normal" href="/watch?v=lesson">Lesson</a><p>Preserve this page.</p></body>`); });
   web.listen(0, '127.0.0.1'); await once(web, 'listening');
   const port = web.address().port, url = (host, pathname) => `https://${host}:${port}${pathname}`;
   let context, worker;
@@ -49,6 +49,9 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     assert.equal(await distraction.locator('[data-mischief-locked]').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(250, 247, 239)');
     assert.equal(await distraction.locator('#draft').inputValue(),'Keep my unfinished draft');
     focus.dispatch({type:'shield',values:{lockedTabs:[],websites:['distraction.test']}});
+    await pairingPopup.reload();
+    for(let attempt=0;attempt<30&&!bridge.info().enforced;attempt++)await new Promise(r=>setTimeout(r,100));
+    assert.equal(bridge.info().enforced,true,'wait for the changed website rule and page protection to be confirmed before navigating');
     console.log('PASS locking a tab opened before extension installation, acknowledged protection and preserved unfinished work');
     await distraction.locator('[data-mischief-locked]').waitFor(); assert.equal(await work.locator('[data-mischief-locked]').count(), 0);
     assert.equal(await work.locator('#draft').inputValue(), 'My unsaved paragraph');
@@ -104,7 +107,7 @@ const { createShieldBridge } = require('../desktop/shield-bridge.cjs');
     assert.deepEqual(errors, []);
     await work.screenshot({ path: 'test-results/shield-work-tab.png' });
   } catch (error) {
-    error.stack += '\n' + JSON.stringify({ rejections, browserState: worker ? await worker.evaluate(() => chrome.storage.session.get('shieldState')).catch(() => ({})) : {} });
+    error.stack += '\n' + JSON.stringify({ rejections, browserState: worker ? await worker.evaluate(async () => ({ ...(await chrome.storage.session.get('shieldState')), protection: tabProtection, rules: await chrome.declarativeNetRequest.getSessionRules() })).catch(() => ({})) : {} });
     throw error;
   } finally { if (context) await context.close(); bridge.close(); web.close(); fs.rmSync(profile, { recursive: true, force: true }); }
 })().catch(error => { console.error(error); if (process.env.GITHUB_ACTIONS) console.log('::error title=Focus Shield extension::' + error.stack.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')); if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\nFocus Shield extension check failed:\n\n\`\`\`text\n${error.stack}\n\`\`\`\n`); process.exitCode = 1; });
