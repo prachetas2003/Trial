@@ -82,7 +82,7 @@ function render(state) {
   const prefKey = JSON.stringify([p, state.ink, state.presence]);
   if (prefKey !== lastPrefs) {
     lastPrefs = prefKey;
-    for (const [id, value] of [['focus-minutes', p.focusMinutes], ['break-minutes', p.breakMinutes], ['long-break-minutes', p.longBreakMinutes], ['presence', state.presence || p.presence], ['quote-seconds', p.quoteSeconds], ['marker-ink', state.ink || 'black']]) if (document.activeElement !== el(id)) el(id).value = value;
+    for (const [id, value] of [['focus-minutes', p.focusMinutes], ['break-minutes', p.breakMinutes], ['long-break-minutes', p.longBreakMinutes], ['presence', state.presence || p.presence], ['quote-seconds', p.quoteSeconds], ['marker-ink', state.ink || 'black']]) if (document.activeElement !== el(id) || ['presence','marker-ink'].includes(id)) el(id).value = value;
     for (const [id, value] of [['peek-focus', p.peekDuringFocus], ['auto-quotes', p.autoQuotes], ['quiet-focus', p.quietFocus], ['drag-enabled', p.dragEnabled], ['chase-cursor', p.chaseCursor], ['completion-sound', p.completionSound], ['return-session', p.returnAfterSession], ['quotes-enabled', p.quotesEnabled], ['show-hud', p.showHud], ['vignette', p.vignette], ['celebrations', p.celebrations]]) el(id).checked = value;
   }
   el('quick-monkey').checked = state.presence !== 'hidden';

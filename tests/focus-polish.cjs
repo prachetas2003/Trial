@@ -5,6 +5,10 @@ const page=await browser.newPage({viewport:{width:1300,height:1000}}),errors=[];
 try{
  await fs.mkdir('test-results',{recursive:true});await page.clock.install();await page.goto(`http://127.0.0.1:${server.address().port}/roam/`);await page.waitForFunction(()=>window.__buildlingsFrame);
  await page.locator('#focus-open').click();await page.locator('[data-mode=companion]').click();await page.locator('#focus-minutes').fill('1');await page.getByRole('button',{name:'Start my focus session'}).click();
+ await page.locator('[data-desk-tab=appearance]').click();await page.locator('#presence').focus();
+ await page.evaluate(()=>document.querySelector('#bar-pause').click());assert.equal(await page.locator('#presence').inputValue(),'wander');
+ await page.evaluate(()=>document.querySelector('#bar-pause').click());assert.equal(await page.locator('#presence').inputValue(),'peek');
+ assert.equal(await page.locator('#presence').evaluate(e=>document.activeElement===e),true);await page.locator('[data-desk-tab=focus]').click();
  for(let i=0;i<10;i++){if(i%2===0)await page.evaluate(()=>document.querySelector('#bar-pause').click());else await page.locator('#session-pause').click();const running=i%2===1;assert.equal(await page.locator('#bar-label').textContent(),running?'Focus':'Paused');assert.equal(await page.locator('#session-pause').textContent(),running?'Pause timer':'Resume timer');assert.equal(await page.locator('#bar-clock').textContent(),await page.locator('#timer-clock').textContent());assert.equal(await page.evaluate(()=>window.__mischiefFocus.presence()),running?'peek':'wander');}
  console.log('PASS repeated mixed timer controls immediately agree on clock, pause state and focus presence');
  await page.locator('#session-end').click();await page.locator('[data-desk-tab=appearance]').click();
