@@ -1,3 +1,62 @@
+# Synchronized focus, themed bubbles and celebrations — 0.9.0
+
+Release: [desktop-preview-21](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-21)
+
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38325157479)
+passed for source `6a19cbd`: fresh install, **75 unit/server checks**, **20 native
+interaction checks**, **seven native stability checks**, **four panel/browser
+groups**, **five focus-polish groups**, **eight real-browser extension groups**,
+packaging, checksum generation and release upload. All workflow steps passed.
+
+Native stability alternates real toolbar clicks and panel clicks through twelve
+pause/resume transitions, comparing both clocks and pause labels after each
+transition. It then resumes and verifies the monkey physically arrives at its
+edge target. Windows keeps both native windows visible, exercising its real
+always-on-top input routing. The isolated Xvfb desktop lacks a window manager,
+so its Linux test temporarily uncovers the toolbar; Windows has no such shim.
+Existing render-crash recovery, saved-data, software graphics and native input
+checks remain active. Unit checks cover twenty cycles, stale-state rejection,
+hover/petting during edge travel and non-repeating milestone checkpoints.
+
+Both timer views receive one versioned snapshot per action/tick; older packets
+cannot replace newer state. The panel avoids background throttling. Resume
+restores auto-peeking unless continuous chase or explicit hiding is selected.
+Edge return has priority over cursor hover/petting. Manual retrieval remains
+available during a running session and auto-peek can be disabled separately.
+
+Browser polish verifies immediate agreement after mixed timer controls, bubble
+width reducing with monkey size, readable minimum text, light/dark/automatic
+backgrounds, a still-focused Presence dropdown updating after toolbar pause/resume,
+coverage up to 280px, ordered Developer mode / Load unpacked /
+FocusShield selection / pairing instructions, and preset/custom explanations.
+Milestone confetti is local (10 pieces) at 25%, 50%, 75%. Completed focus returns
+the monkey by default and plays 14 local plus 34 screen pieces, removed within
+2.4 seconds. No full-screen canvas or blurred shadow layer is used. Pieces are
+click-through. Celebration-off and reduced-motion acknowledgement are checked;
+fully silent existing settings migrate with celebrations off. Early Finish and
+breaks do not trigger completion confetti. Milestones persist through recovery.
+
+Local validation passed: 75 unit/server checks, 20 native interaction checks,
+seven native stability checks, four panel/browser groups, five polish groups,
+five focus groups, seven overlay groups and two quote groups. Screenshots include
+`test-results/completion-confetti.png` and `test-results/scaled-dark-bubble.png`.
+Safe Mode and all v0.8.2 recovery measures remain included. The underlying cause
+of the earlier user's machine-specific startup freeze remains unconfirmed.
+
+The public ZIP was downloaded back. SHA256 and CRC checks passed. It includes
+the Safe Mode launcher, matching quote references and all 11 FocusShield files.
+The ASAR reports 0.9.0 and all **26 tracked desktop files** match tested source.
+FocusShield remains 0.8.0; already updated installed extensions stay compatible.
+
+Archive size: **163,574,873 bytes**. SHA256:
+`f0f75fa13e340ec8e3284f867bce61afe0adea555231731af396bc2a36227ec7`.
+
+After deployment, all 20 checked live website/preview assets match source.
+Pages commit: `c91c427`. The preview cache key refreshes the final focused-control
+fix, and download links point to the verified final release above.
+
+---
+
 # Native timer repair, recovery and Safe Mode — 0.8.2
 
 Release: [desktop-preview-19](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-19)
