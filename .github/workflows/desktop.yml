@@ -24,6 +24,9 @@ jobs:
           python-version: '3.12'
       - run: npm ci
       - run: npm test
+      - name: Verify reported native position and unlock regressions
+        timeout-minutes: 3
+        run: npm run test:regressions
       - name: Verify native Windows interaction
         timeout-minutes: 3
         run: npm run test:desktop
@@ -69,7 +72,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.10.0 — separate desktop surfaces and hands-on play' --notes-file product/DESKTOP_RELEASE.md
+          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.10.1 — native position, overlay visibility and timer unlock fixes' --notes-file product/DESKTOP_RELEASE.md
       - name: Save native test evidence
         if: always()
         uses: actions/upload-artifact@v4

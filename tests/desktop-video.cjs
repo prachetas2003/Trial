@@ -3,8 +3,19 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),http=require('node:http');
 const {_electron,chromium}=require('playwright');
+const {spawnSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const {pages,click,hidePanel,pointer,point,action}=require('./native-helpers.cjs');
+async function assertWindowOrder(app,at,role){
+ if(process.platform!=='win32')return;
+ const data=await app.evaluate(({app,screen},at)=>{const r=app.__buildlingsRuntime.getRuntime();return{handles:[r.win,r.timerWin,r.effectsWin].map(w=>{const b=w.getNativeWindowHandle();return String(b.length===8?b.readBigUInt64LE():b.readUInt32LE());}),point:screen.dipToScreenPoint({x:Math.round(at.x),y:Math.round(at.y)})};},at);
+ const result=spawnSync('python',[path.join(root,'scripts/test-window-order.py'),...data.handles,String(data.point.x),String(data.point.y)],{encoding:'utf8'});assert.equal(result.status,0,result.stderr);
+ const order=JSON.parse(result.stdout);
+ assert.match(order.foregroundTitle,/Mischief video fixture/,'The video browser must retain foreground focus');
+ assert.ok(order.windows.every(w=>w.visible&&w.topmost&&w.aboveForeground),'Overlay was demoted behind the foreground browser: '+JSON.stringify(order));
+ assert.equal(order.hit,data.handles[role==='pet'?0:1],'Native input hit the browser instead of the '+role);
+ assert.ok(!data.handles.includes(order.foreground),'An overlay stole foreground focus');
+}
 // Select a video pixel by geometry, before examining its colour. A doodle's
 // black ink is expected to occlude pixels underneath the doodle, not a video fault.
 async function sampleDesktop(app){return app.evaluate(async({app,desktopCapturer,screen})=>{
@@ -24,20 +35,29 @@ async function sampleDesktop(app){return app.evaluate(async({app,desktopCapturer
 (async()=>{
  const clip=await fs.readFile(path.join(__dirname,'fixtures/focus-video.webm'));
  const server=http.createServer((req,res)=>{if(req.url==='/clip.webm'){res.writeHead(200,{'Content-Type':'video/webm'});res.end(clip);return;}
- res.writeHead(200,{'Content-Type':'text/html'});res.end('<!doctype html><style>html,body{margin:0;background:#176b9b;width:100%;height:100%}video{width:100vw;height:100vh;object-fit:fill}button{position:fixed;top:40%;left:40%}</style><video id="video" src="/clip.webm" autoplay muted loop playsinline></video><button id="play">Play fullscreen</button><script>const v=document.querySelector("video");window.framesPresented=0;function frame(){window.framesPresented++;v.requestVideoFrameCallback(frame)}v.requestVideoFrameCallback(frame);document.querySelector("button").onclick=()=>{v.play();document.querySelector("button").remove()}</script>');});
+ res.writeHead(200,{'Content-Type':'text/html'});res.end('<!doctype html><title>Mischief video fixture</title><style>html,body{margin:0;background:#176b9b;width:100%;height:100%}video{width:100vw;height:100vh;object-fit:fill}button{position:fixed;top:40%;left:40%}</style><video id="video" src="/clip.webm" autoplay muted loop playsinline></video><button id="play">Play fullscreen</button><script>const v=document.querySelector("video");window.framesPresented=0;function frame(){window.framesPresented++;v.requestVideoFrameCallback(frame)}v.requestVideoFrameCallback(frame);document.querySelector("button").onclick=()=>{v.play();document.querySelector("button").remove()}</script>');});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
- const temp=await fs.mkdtemp(path.join(os.tmpdir(),'mischief-video-'));let browser,app;
- try{
+ const temp=await fs.mkdtemp(path.join(os.tmpdir(),'mischief-video-'));let browser,app,video;
+ async function openBrowser(){
   browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||(process.platform==='win32'?chromium.executablePath():'/usr/bin/chromium'),headless:false,args:['--window-position=0,0','--autoplay-policy=no-user-gesture-required']});
-  const video=await browser.newPage({viewport:null});await video.goto(`http://127.0.0.1:${server.address().port}/`);await video.locator('#play').click();await video.waitForFunction(()=>window.framesPresented>10);
+  video=await browser.newPage({viewport:null});await video.goto(`http://127.0.0.1:${server.address().port}/`);await video.locator('#play').click();await video.waitForFunction(()=>window.framesPresented>10);
+ }
+ try{
+  // Xvfb has no window manager to honour raising an older native surface.
+  // Its decode/input baseline keeps the original launch order. Windows tests
+  // open Chrome afterward and assert actual desktop z-order and native hits.
+  if(process.platform!=='win32')await openBrowser();
   app=await _electron.launch({executablePath:require('electron'),args:['.',...(process.platform==='linux'?['--disable-setuid-sandbox','--use-angle=swiftshader']:[])],cwd:root,env:{...process.env,BUILDLINGS_TEST_DATA:temp},timeout:25000});
   const p=await pages(app),overlay=p.timer;
   await app.evaluate(async({app})=>{for(let i=0;i<200&&!app.__buildlingsRuntime.getRuntime().focusWin?.isVisible();i++)await new Promise(r=>setTimeout(r,25));const r=app.__buildlingsRuntime;r.getRuntime().focusWin.setBounds({x:10,y:100,width:450,height:650});r.applyFocus({type:'preferences',values:{autoQuotes:false,completionSound:false}});r.applyFocus({type:'start'});});
+  // Open the browser AFTER the overlay, matching the reported desktop -> Chrome path.
+  if(process.platform==='win32')await openBrowser();
   const display=await app.evaluate(({screen})=>screen.getPrimaryDisplay().workArea);const cdp=await video.context().newCDPSession(video),{windowId}=await cdp.send('Browser.getWindowForTarget');await cdp.send('Browser.setWindowBounds',{windowId,bounds:{left:display.x,top:display.y,width:display.width,height:display.height,windowState:'normal'}});
   const panel=app.windows().find(p=>p.url().endsWith('/focus.html'));await panel.locator('#session-controls').waitFor({state:'visible'});
   const count=await video.evaluate(()=>window.framesPresented);
   for(let i=0;i<6;i++){
-   await click(app,overlay,'#bar-pause');await overlay.waitForFunction(r=>document.querySelector('#bar-label').textContent===(r?'Paused':'Focus'),i%2===0);
+   console.log('Video interaction: pause/resume '+(i+1));
+   await click(app,overlay,'#bar-pause');await overlay.waitForFunction(r=>document.querySelector('#bar-label').textContent===(r?'Paused':'Focus'),i%2===0,{timeout:5000});
    await panel.locator('[data-desk-tab=appearance]').click();await panel.locator('#timer-opacity').focus();await panel.locator('#timer-opacity').press(i%2?'ArrowRight':'ArrowLeft');
    await click(app,overlay,'#bar-tuck');
    const sample=await sampleDesktop(app);
@@ -47,6 +67,14 @@ async function sampleDesktop(app){return app.evaluate(async({app,desktopCapturer
    assert.equal(await video.locator('video').evaluate(v=>v.paused),false);
   }
   await hidePanel(app);await action(app,{type:'pause'});await action(app,{type:'presence',value:'wander'});await p.pet.waitForFunction(()=>!window.__buildlingsEngine.returning);await app.evaluate(({app})=>{const r=app.__buildlingsRuntime;if(!r.getRuntime().paused)r.togglePause();});
+  if(process.platform==='win32')await video.bringToFront();
+  for(const role of process.platform==='win32'?['pet','timer']:[]){
+   const f=await p.pet.evaluate(()=>window.__buildlingsFrame),at=role==='timer'?await point(app,p.timer,'#bar-lock'):{x:f.x,y:f.y-65*f.scale},target=role==='timer'?p.timer:p.pet;
+   await pointer(app,at,'move',target);await target.waitForTimeout(150);await assertWindowOrder(app,at,role);
+   await pointer(app,at,'click',target);await target.waitForTimeout(150);await assertWindowOrder(app,at,role);
+  }
+  await action(app,{type:'preferences',values:{timerLocked:false}});
+  console.log(process.platform==='win32'?'PASS real topmost styles, z-order and native input over a browser opened after the app; clicking overlays preserves browser focus':'UNRUN Windows z-order assertions: requires the Windows desktop');
   for(const kind of ['body','head','timer']){
     const f=await p.pet.evaluate(()=>window.__buildlingsFrame),at=kind==='timer'?await point(app,p.timer,'#bar-grip'):{x:f.x,y:f.y-(kind==='head'?155:65)*f.scale},target=kind==='timer'?p.timer:p.pet;
     await pointer(app,at,'move',target);await target.waitForTimeout(140);const start=await video.evaluate(()=>window.framesPresented);await pointer(app,at,'down',target);const colours=[];
@@ -70,5 +98,8 @@ async function sampleDesktop(app){return app.evaluate(async({app,desktopCapturer
   console.log('PASS a separate Chromium video keeps decoding coloured frames through native pause/resume, monkey tucking and panel slider changes');
   console.log(process.platform==='win32'?'PASS native Windows desktop pixels retain visible video throughout overlay interaction':'UNRUN native desktop pixel assertions: Xvfb has no compositing window manager; Windows CI runs these assertions');
   console.log('Video test uses a local VP8 clip. YouTube hardware decoding and physical GPU-driver faults require testing on the affected laptop.');
+ }catch(error){
+  if(app){const details=await app.evaluate(({app})=>{const r=app.__buildlingsRuntime.getRuntime();return{session:r.focus.snapshot().session,diagnostics:r.diagnostics,windows:[r.win,r.timerWin,r.effectsWin].map(w=>({bounds:w.getBounds(),visible:w.isVisible(),topmost:w.isAlwaysOnTop()}))};});console.error('Video failure state:',JSON.stringify(details));await fs.mkdir('test-results',{recursive:true});await fs.writeFile('test-results/video-failure-state.json',JSON.stringify(details,null,2));}
+  throw error;
  }finally{if(app)await app.close();if(browser)await browser.close();await new Promise(r=>server.close(r));await fs.rm(temp,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);if(process.env.GITHUB_ACTIONS)console.log('::error title=Video overlay::'+e.stack.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'));process.exitCode=1;});

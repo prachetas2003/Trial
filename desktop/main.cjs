@@ -1,7 +1,10 @@
 const { app, BrowserWindow, screen, Tray, Menu, nativeImage, globalShortcut, ipcMain, powerMonitor, shell, clipboard } = require('electron');
 const fs = require('node:fs'), path = require('node:path');
 const windowOptions = require('./window-options.cjs');
-const {PET,petBounds,timerBounds,timerPosition}=require('./surfaces.cjs');
+const {PET,nativePoint,petBounds,timerBounds,timerPosition}=require('./surfaces.cjs');
+// On Windows, 'floating' calls MoveBehindTaskBarIfNeeded and can demote the
+// surface out of the topmost band. This level retains topmost without activation.
+const overlayLevel=process.platform==='win32'?'pop-up-menu':'floating';
 const { FocusCompanion } = require('./focus.js');
 const bank = require('./quotes.js');
 const { createShieldBridge } = require('./shield-bridge.cjs');
@@ -276,7 +279,7 @@ function pollCursor(){
  if(timerGrab&&timerWin){const a=screen.getDisplayNearestPoint(cursor).workArea,b=timerWin.getBounds();let x=cursor.x-timerGrab.x,y=cursor.y-timerGrab.y;const right=a.x+a.width-b.width,bottom=a.y+a.height-b.height;
   x=Math.max(a.x,Math.min(right,x));y=Math.max(a.y,Math.min(bottom,y));
   if(Math.abs(x-a.x)<14)x=a.x;if(Math.abs(x-right)<14)x=right;if(Math.abs(y-a.y)<14)y=a.y;if(Math.abs(y-bottom)<14)y=bottom;
-  if(b.x!==Math.round(x)||b.y!==Math.round(y))timerWin.setPosition(Math.round(x),Math.round(y),false);
+  const p=nativePoint(x,y);if(p&&(b.x!==p.x||b.y!==p.y))timerWin.setPosition(p.x,p.y,false);
  }
  updateInteractive(cursor);
  if(!lastCursor||cursor.x!==lastCursor.x||cursor.y!==lastCursor.y){lastCursor=cursor;post(win,'companion:input',{cursor});}
@@ -301,14 +304,14 @@ function createOverlayWindow(area) {
   const surface=new BrowserWindow(windowOptions(b.x,b.y,PET.width,PET.height));
   surface.webContents.on('render-process-gone', (_event, details) => { if (win===surface) { diagnostic('overlay-gone', {reason:details.reason}); restartOverlay(); } });
   surface.on('unresponsive', () => { if (win===surface) { diagnostic('overlay-unresponsive'); restartOverlay(); } });
-  secureWindow(surface); surface.setHasShadow(false); surface.setAlwaysOnTop(true,'floating');
+  secureWindow(surface); surface.setHasShadow(false); surface.setAlwaysOnTop(true,overlayLevel);
   surface.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true}); surface.setIgnoreMouseEvents(true,{forward:true});
   surface.on('closed', () => { if (win===surface) {win=null;clearInterval(inputTimer);app.quit();} });
   return surface;
 }
 function auxiliaryWindow(bounds,role){
  const w=new BrowserWindow(windowOptions(bounds.x,bounds.y,bounds.width,bounds.height));secureWindow(w);
- w.setAlwaysOnTop(true,'floating');w.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true});w.setIgnoreMouseEvents(true,role==='effects'?undefined:{forward:true});
+ w.setAlwaysOnTop(true,overlayLevel);w.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true});w.setIgnoreMouseEvents(true,role==='effects'?undefined:{forward:true});
  w.webContents.on('render-process-gone',()=>{if([timerWin,effectsWin].includes(w)&&!quitting)restartOverlay(false,role);});
  w.on('unresponsive',()=>{if([timerWin,effectsWin].includes(w)&&!quitting)restartOverlay(false,role);});
  const contentsId=w.webContents.id;w.on('closed',()=>readySurfaces.delete(contentsId));return w;
@@ -365,9 +368,10 @@ async function createCompanion() {
     if (suspended || event.sender !== win?.webContents || !report || typeof report !== 'object') return;
     if (report.error) { if (tray) tray.setToolTip('Buildlings — Doodle drawing unavailable'); return; }
     if (![report.x, report.y, report.hop, report.sparkleId].every(Number.isFinite) || !areas().some(a => a.id === report.areaId)) return;
+    const pb=petBounds(report);if(!pb||!win||win.isDestroyed())return;
     lastFrameAt=Date.now();
     if(lastFrameAt-overlayHealthySince>60000){overlayRecoveries=0;recoveryLimitNotified=false;}
-    const pb=petBounds(report),old=win.getBounds();if(old.x!==pb.x||old.y!==pb.y)win.setPosition(pb.x,pb.y,false);
+    const old=win.getBounds();if(old.x!==pb.x||old.y!==pb.y)win.setPosition(pb.x,pb.y,false);
     post(effectsWin,'companion:input',{petFrame:{x:report.x,y:report.y,scale:report.scale,hop:report.hop,returning:!!report.returning}});
     lastFrame = { edge:report.edge, scale: Number.isFinite(report.scale) && report.scale >= .6 && report.scale <= 1 ? report.scale : 1, x: report.x, y: report.y, hop: report.hop, sparkleId: report.sparkleId, areaId: report.areaId, mode: String(report.mode).slice(0, 24), renderer: report.renderer === 'canvas2d' ? 'canvas2d' : 'unavailable' };
     updateInteractive();

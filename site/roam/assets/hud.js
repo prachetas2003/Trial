@@ -42,7 +42,12 @@ export class OverlayBar {
   render(state) {
     if (!window.MischiefFocus.acceptsState(this.state,state)) return;
     this.state = state; this.boundsDirty=true;
-    const lock=this.element.querySelector('#bar-lock');lock.setAttribute('aria-pressed',String(!!state.preferences.timerLocked));lock.innerHTML=`<svg width="17" height="18" viewBox="0 0 20 22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="10" width="14" height="10" rx="3"/><path d="${state.preferences.timerLocked?'M6 10V6a4 4 0 0 1 8 0v4':'M6 10V6a4 4 0 0 1 8-1'}"/><path d="M10 14v2"/></g></svg>`;lock.title=state.preferences.timerLocked?'Unlock timer position':'Lock timer position';lock.setAttribute('aria-label',lock.title);this.element.querySelector('#bar-grip').disabled=!!state.preferences.timerLocked;
+    const lock=this.element.querySelector('#bar-lock'),locked=!!state.preferences.timerLocked;
+    // Preserve the pressed SVG node across clock updates; replacing it between
+    // pointerdown and pointerup prevents Chromium from dispatching the click.
+    if(this.locked!==locked){
+      lock.setAttribute('aria-pressed',String(locked));lock.innerHTML=`<svg width="17" height="18" viewBox="0 0 20 22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="10" width="14" height="10" rx="3"/><path d="${locked?'M6 10V6a4 4 0 0 1 8 0v4':'M6 10V6a4 4 0 0 1 8-1'}"/><path d="M10 14v2"/></g></svg>`;lock.title=locked?'Unlock timer position':'Lock timer position';lock.setAttribute('aria-label',lock.title);this.element.querySelector('#bar-grip').disabled=locked;this.locked=locked;
+    }
     if(!this.api.native&&state.preferences.timerPosition===null&&!this.gripPointer){this.element.style.left='';this.element.style.top='';this.element.style.transform='';}
 
     const prefs = state.preferences;

@@ -1,3 +1,35 @@
+# Native positioning, overlay visibility and timer unlocking — 0.10.1
+
+The screenshot's error was reproduced with the actual Electron native API:
+`setPosition(-0, 50)` throws the exact argument-0 conversion failure, while
+`setPosition(0, 50)` succeeds. Pet movement can generate `-0` from rounding a
+position just left of its native-window origin. All native pet/timer positions
+now canonicalize zero; nonfinite and out-of-int32-range pet reports are rejected.
+
+The matching Electron Windows implementation sends the `floating` level through
+`MoveBehindTaskBarIfNeeded`, which can demote an overlay into the ordinary window
+band. All three surfaces now use `pop-up-menu` on Windows, retaining topmost
+without activating the window; other platforms keep their previous level.
+
+The timer lock SVG is preserved across unrelated state/clock updates. Previously
+replacing the pressed node could prevent a click from being dispatched. A new
+native regression holds each of four alternating lock/unlock presses across a
+forced state broadcast and a clock tick, then verifies dragging after unlock.
+
+Local checks passed: **83 unit/server/model tests**, **three native regression
+groups**, play/navigation and video decoding through held input. Native position
+checks move the actual pet window across both zero axes and inject an overflowing
+report, then confirm the timer still opens controls. Xvfb has no compositor/window
+manager; its video baseline keeps the original browser-first launch order. It
+explicitly leaves Windows z-order and desktop-pixel assertions unrun locally.
+
+Windows CI must open Chromium after the app and verify actual Win32 topmost
+styles, window order and mouse hit targets over the browser, plus foreground
+focus retention and the existing changing desktop-video pixels during holds.
+Windows results and the release download will be recorded after verification.
+
+---
+
 # Separate input surfaces, clearer categories and five play interactions — 0.10.0
 
 Release: [desktop-preview-28](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-28).

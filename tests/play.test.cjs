@@ -1,6 +1,14 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {PlayPhysics}=require('../desktop/play.js');const {CompanionMotion}=require('../desktop/motion.js');const {petBounds,timerBounds,timerPosition}=require('../desktop/surfaces.cjs');
+const {PlayPhysics}=require('../desktop/play.js');const {CompanionMotion}=require('../desktop/motion.js');const {nativePoint,petBounds,timerBounds,timerPosition}=require('../desktop/surfaces.cjs');
 const areas=[{id:1,x:0,y:0,width:1440,height:900},{id:2,x:-1280,y:0,width:1280,height:800}];
+test('native coordinates cross zero without negative zero and reject values Electron cannot convert',()=>{
+ for(const x of [-.49,-.1,-0,0,.1,.49]){const p=nativePoint(x,x);assert.deepEqual(p,{x:0,y:0});assert.equal(Object.is(p.x,-0),false);assert.equal(Object.is(p.y,-0),false);}
+ assert.deepEqual(petBounds({x:209.8,y:349.8}),{x:0,y:0,width:420,height:400});
+ assert.deepEqual(nativePoint(-1.4,1.4),{x:-1,y:1});
+ for(const n of [NaN,Infinity,-Infinity,2147483648,-2147483649,1e50]){assert.equal(nativePoint(n,0),null);assert.equal(nativePoint(0,n),null);}
+ assert.equal(petBounds({x:1e50,y:350}),null);
+ const b=timerBounds([{id:1,x:-.1,y:-4.1,width:660,height:124}],null,1);assert.equal(Object.is(b.x,-0),false);assert.equal(Object.is(b.y,-0),false);
+});
 test('squish compresses, rebounds and settles without unbounded deformation',()=>{const p=new PlayPhysics();p.press('squish',{x:0,y:0},0);let f;for(let t=0;t<=500;t+=8)f=p.advance(t);assert.ok(f.squash>.14&&f.squash<.22);p.release();let rebound=false;for(let t=508;t<2800;t+=8){f=p.advance(t);if(f.squash<-.005)rebound=true;assert.ok(Math.abs(f.squash)<.23);}assert.ok(rebound);assert.ok(Math.abs(f.squash)<.001);});
 test('tail pull is bounded, oscillates on release, settles, and reduced motion damps it',()=>{const p=new PlayPhysics();p.press('tail',{x:0,y:0},0);p.move({x:5000,y:-5000},100);let f;for(let t=0;t<600;t+=8)f=p.advance(t,0,.6);assert.ok(f.tailPullX>30&&f.tailPullX<=58);p.release();let reversed=false;for(let t=600;t<3500;t+=8){f=p.advance(t);reversed||=f.tailPullX<0;assert.ok(Math.abs(f.tailPullX)<=58);}assert.ok(reversed);assert.ok(Math.abs(f.tailPullX)<.1);});
 test('release velocity uses recent deliberate movement, rejects stale motion and is capped',()=>{const p=new PlayPhysics();p.press('dangle',{x:0,y:0},0);p.move({x:400,y:300},50);assert.deepEqual(p.velocity(50),{x:420,y:360});assert.deepEqual(p.velocity(500),{x:0,y:0});});
