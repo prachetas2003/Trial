@@ -1,9 +1,9 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.9.0
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.9.1
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
 2. Extract the entire ZIP into a folder. Keep all its files together.
-3. Open Buildlings.exe. No Node.js, account, or API key is needed.
+3. Open Buildlings.exe. The focus controls open immediately, even if you previously hid the timer or monkey. No Node.js, account, or API key is needed.
 4. Click the timer bar at the top, or double-click the monkey icon in the Windows notification area to open
    your focus corner. It may be under the hidden-icons arrow.
 5. Write one intention, choose your focus/break lengths, and start.
@@ -66,9 +66,16 @@ YOUR LITTLE CORNER
 - Your summary shows timer time and choices recorded, including early finishes.
   These counts do not measure your attention or discipline.
 - Recent history keeps the last 50 focus sessions. Thoughts stay until removed.
-- Timers pause when you quit, sleep, or lock your screen. Reopen and resume
+- Timers pause when you quit, sleep, or lock your screen. On wake, the overlay and controls are rebuilt; the timer stays paused until you resume. Reopen and resume
   when ready. A sudden shutdown restores the last saved paused checkpoint
   (checkpoints are saved every 10 seconds during a running timer).
+
+WINDOWS STABILITY
+Windows now uses software graphics by default for the transparent 2D companion.
+Safe Mode additionally limits drawing to 30 fps at 1x pixel resolution.
+If the overlay stops reporting frames, it is replaced and your timer is paused.
+The controls panel also recovers from a crashed or unresponsive renderer.
+Right-click the tray > Open local diagnostics for graphics/recovery events.
 
 THE TOP BAR
 - Click the clock to open the focus corner.
@@ -130,7 +137,7 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.9.0
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.9.1
 
 IF THE APP FREEZES ON STARTUP
 End Buildlings.exe in Windows Task Manager, then run Start-Safe-Mode.cmd

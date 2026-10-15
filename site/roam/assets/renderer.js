@@ -1,7 +1,7 @@
-import { MonkeyScene } from './monkey.js?v=0.9.0';
-import { SpeechBubble } from './bubbles.js?v=0.9.0';
-import { Celebrations } from './celebrations.js?v=0.9.0';
-import { OverlayBar } from './hud.js?v=0.9.0';
+import { MonkeyScene } from './monkey.js?v=0.9.1';
+import { SpeechBubble } from './bubbles.js?v=0.9.1';
+import { Celebrations } from './celebrations.js?v=0.9.1';
+import { OverlayBar } from './hud.js?v=0.9.1';
 const hud = new OverlayBar(window.companion);
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
@@ -102,7 +102,7 @@ function frame(now) {
     const next = motion.advance(now, cursor), area = motion.area(), bar = hud.rectangle(area);
     host.style.transform = `translate3d(${next.x - area.x - (scene?.footX ?? WINDOW.footX)}px,${next.y - area.y - (scene?.footY ?? WINDOW.footY)}px,0) scale(${scale})`;
     host.style.transformOrigin = `${scene?.footX ?? WINDOW.footX}px ${scene?.footY ?? WINDOW.footY}px`;
-    if (enabled && (!compatibility || now-lastPaint >= 1000/30)) {
+    if (enabled && now-lastPaint >= 1000/(compatibility?30:60)-.5) {
       try { scene?.draw(next, now); lastPaint=now; }
       catch { scene=null; dragEnabled=false; if(grabZone)grabZone.hidden=true; window.companion.diagnostic?.({type:'renderer-error'}); hud.showMessage('The monkey drawing failed. The timer still works; restart the overlay from the tray.'); }
     }

@@ -34,8 +34,9 @@ async function clickOverlay(app, page, selector) {
     const page = await app.firstWindow();
     page.on('pageerror', error => errors.push(error.message));
     await page.waitForFunction(() => window.__buildlingsFrame);
-    const config = await app.evaluate(({ BrowserWindow }) => {
-      const win = BrowserWindow.getAllWindows()[0];
+    await app.evaluate(async({app})=>{for(let i=0;i<200&&!app.__buildlingsRuntime.getRuntime().focusWin?.isVisible();i++)await new Promise(r=>setTimeout(r,25));const p=app.__buildlingsRuntime.getRuntime().focusWin;if(!p?.isVisible())throw new Error('Startup controls did not appear');p.hide();});
+    const config = await app.evaluate(({ app }) => {
+      const win = app.__buildlingsRuntime.getRuntime().win;
       return { background: win.getBackgroundColor(), top: win.isAlwaysOnTop(), focusable: win.isFocusable(), resizable: win.isResizable(), shadow: win.hasShadow(), focused: win.isFocused(), bounds: win.getBounds() };
     });
     assert.match(config.background, /^#000000(?:00)?$/); assert.equal(config.top, true);
@@ -112,7 +113,7 @@ async function clickOverlay(app, page, selector) {
     assert.ok(await page.evaluate(() => window.__buildlingsRenderer.handScale) > 1.6);
     await page.screenshot({ path: path.join(output, 'native-monkey-reach.png'), omitBackground: true });
     console.log('PASS tray command drives an enlarged reaching hand with foreshortening');
-    const focusPagePromise = app.waitForEvent('window');
+    const focusPagePromise = Promise.resolve(app.windows().find(p=>p.url().endsWith('/focus.html')));
     await clickOverlay(app, page, '#bar-timer');
     const focusPage = await focusPagePromise; focusPage.on('pageerror', error => errors.push(error.message));
     await focusPage.locator('#start-form').waitFor({ state: 'visible' });
@@ -141,6 +142,7 @@ async function clickOverlay(app, page, selector) {
 
     await app.close(); app = await launch();
     const restored = await app.firstWindow(); await restored.waitForFunction(() => window.__buildlingsFrame);
+    await app.evaluate(async({app})=>{for(let i=0;i<200&&!app.__buildlingsRuntime.getRuntime().focusWin?.isVisible();i++)await new Promise(r=>setTimeout(r,25));const p=app.__buildlingsRuntime.getRuntime().focusWin;if(!p?.isVisible())throw new Error('Startup controls did not appear');p.hide();});
     const recovered = await app.evaluate(({ app }) => {
       const r = app.__buildlingsRuntime.getRuntime(); return r.focus.snapshot();
     });
@@ -155,7 +157,7 @@ async function clickOverlay(app, page, selector) {
     assert.equal(await restored.evaluate(() => window.__completionSound.attempts), 1);
     assert.equal(await restored.locator('#timer-bar').evaluate(e => e.classList.contains('has-highlight')), true);
     assert.equal(await restored.evaluate(() => window.__buildlingsEngine.presence), 'wander');
-    const summaryPromise = app.waitForEvent('window'); await clickOverlay(app, restored, '#bar-timer');
+    const summaryPromise = Promise.resolve(app.windows().find(p=>p.url().endsWith('/focus.html'))); await clickOverlay(app, restored, '#bar-timer');
     const summaryPage = await summaryPromise; await summaryPage.locator('#session-summary').waitFor({ state: 'visible' });
     assert.equal(await summaryPage.locator('#summary-choices').textContent(), '1');
     assert.equal(await restored.locator('#timer-bar').evaluate(e => e.classList.contains('has-highlight')), false);

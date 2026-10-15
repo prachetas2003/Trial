@@ -22,6 +22,7 @@ async function click(app,page,selector){
   const now=Date.now();
   await fs.writeFile(path.join(temp,'focus-data.json'),JSON.stringify({version:2,preferences:{presence:'peek',showHud:true,quotesEnabled:false,autoQuotes:false,vignette:true},notes:[{id:'saved-note',text:'Preserve this idea',createdAt:now,done:false}],session:{id:'saved-session',kind:'focus',planMs:1500000,elapsedMs:149000,startedAt:now-149000,choices:5,intention:'Continue my work'}}));
   app=await launch(false);const page=await app.firstWindow();await page.waitForFunction(()=>window.__buildlingsFrame);
+  await app.evaluate(async({app})=>{for(let i=0;i<200&&!app.__buildlingsRuntime.getRuntime().focusWin?.isVisible();i++)await new Promise(r=>setTimeout(r,25));const p=app.__buildlingsRuntime.getRuntime().focusWin;if(!p?.isVisible())throw new Error('Startup controls did not appear');p.hide();});
   assert.equal(await page.locator('#bar-label').textContent(),'Paused');assert.equal(await page.locator('#bar-clock').textContent(),'22:31');
   await app.evaluate(({app})=>app.__buildlingsRuntime.applyFocus({type:'preferences',values:{showHud:false}}));
   await page.locator('#timer-bar').waitFor({state:'hidden'});
@@ -32,7 +33,7 @@ async function click(app,page,selector){
   await click(app,page,'#bar-stay');
   await page.waitForFunction(()=>document.querySelector('#bar-choices').textContent==='6'&&document.querySelector('#bar-label').textContent==='Focus');
   await click(app,page,'#bar-pause');await page.waitForFunction(()=>document.querySelector('#bar-label').textContent==='Paused');
-  const controlsPromise=app.waitForEvent('window');await click(app,page,'#bar-settings');const controls=await controlsPromise;await controls.locator('#appearance-view').waitFor({state:'visible'});
+  const controlsPromise=Promise.resolve(app.windows().find(p=>p.url().endsWith('/focus.html')));await click(app,page,'#bar-settings');const controls=await controlsPromise;await controls.locator('#appearance-view').waitFor({state:'visible'});
   assert.equal(await app.evaluate(({globalShortcut})=>globalShortcut.isRegistered('CommandOrControl+Alt+F')),true);
   await app.evaluate(({app})=>Promise.all([app.__buildlingsRuntime.showFocus(),app.__buildlingsRuntime.showFocus('appearance')]));
   await controls.locator('#appearance-view').waitFor({state:'visible'});
@@ -83,7 +84,8 @@ async function click(app,page,selector){
   assert.equal(await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().safeMode),true);
   assert.doesNotMatch(await app.evaluate(({app})=>app.getGPUFeatureStatus().gpu_compositing),/^enabled/);
   assert.equal(await safe.evaluate(()=>window.__buildlingsRenderer.pixelRatio),1);
-  const safeControlsPromise=app.waitForEvent('window');await click(app,safe,'#bar-settings');const safeControls=await safeControlsPromise;await safeControls.locator('#appearance-view').waitFor({state:'visible'});
+  await app.evaluate(async({app})=>{for(let i=0;i<200&&!app.__buildlingsRuntime.getRuntime().focusWin?.isVisible();i++)await new Promise(r=>setTimeout(r,25));const p=app.__buildlingsRuntime.getRuntime().focusWin;if(!p?.isVisible())throw new Error('Startup controls did not appear');p.hide();});
+  const safeControlsPromise=Promise.resolve(app.windows().find(p=>p.url().endsWith('/focus.html')));await click(app,safe,'#bar-settings');const safeControls=await safeControlsPromise;await safeControls.locator('#appearance-view').waitFor({state:'visible'});
   assert.equal(await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().focus.notes[0].text),'Preserve this idea');
   assert.equal(await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().focus.session.choices),6);
   console.log('PASS Safe Mode starts without hardware acceleration and preserves session, notes and real toolbar controls');

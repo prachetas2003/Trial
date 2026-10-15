@@ -7,9 +7,12 @@ const { createShieldBridge } = require('./shield-bridge.cjs');
 const crypto = require('node:crypto');
 const { createStorage } = require('./storage.cjs');
 const safeMode = process.argv.includes('--safe-mode');
-if (safeMode) app.disableHardwareAcceleration();
-let storage, quitReady = false, overlayRecoveries = 0, recovering = false;
-let shieldBridge, trayMenu;
+// A 2D companion does not need a GPU-backed transparent Windows surface.
+// Use software compositing by default to avoid competing with browser video planes.
+const softwareGraphics = safeMode || process.platform === 'win32';
+if (softwareGraphics) app.disableHardwareAcceleration();
+let storage, quitReady = false, overlayRecoveries = 0, recovering = false, overlayHealthySince = 0, recoveryLimitNotified = false;
+let shieldBridge, trayMenu, displayAreas, wakeTimer, lastFrameAt = 0, suspended = false, panelBeforeSleep = false;
 if (process.env.BUILDLINGS_TEST_DATA) app.setPath('userData', process.env.BUILDLINGS_TEST_DATA);
 const gotLock = app.requestSingleInstanceLock();
 let win, focusWin, tray, inputTimer, focusTimer, focus, activeId, lastCursor, lastFrame, paused = false, hidden = false, rendererReady = false, quitting = false;
@@ -18,26 +21,55 @@ let dragging = false, interactive = false, hudRect = null, highlight = null;
 const quoteDelay = () => focus.preferences.quoteSeconds * 1000;
 let settings = { pet: 'monkey', ink: 'black', chasing: true, hopping: true };
 const dataPath = name => path.join(app.getPath('userData'), name);
-function areas() { return screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })); }
+function areas() { return displayAreas ||= screen.getAllDisplays().map(display => ({ id: display.id, ...display.workArea })); }
 function writeData(name, data) { storage.write(name, data); }
 const diagnostics = [];
 function diagnostic(type, details = {}) {
   diagnostics.push({ at: new Date().toISOString(), type, ...details });
   if (diagnostics.length > 100) diagnostics.shift();
-  storage?.write('diagnostics.json', { version: app.getVersion(), platform: process.platform, safeMode, events: diagnostics });
+  storage?.write('diagnostics.json', { version: app.getVersion(), platform: process.platform, safeMode, softwareGraphics, events: diagnostics });
 }
-async function restartOverlay(manual = false) {
+async function restartOverlay(manual = false, reason = 'renderer') {
   if (quitting || recovering || !win || win.isDestroyed()) return;
-  if (manual) overlayRecoveries = 0;
-  if (overlayRecoveries >= 2) { diagnostic('overlay-recovery-limit'); return; }
-  overlayRecoveries++; recovering = true; rendererReady = false;
+  if (manual) {overlayRecoveries=0;recoveryLimitNotified=false;}
+  if (reason !== 'wake' && overlayRecoveries >= 2) { if(!recoveryLimitNotified)diagnostic('overlay-recovery-limit'); recoveryLimitNotified=true; return; }
+  if (reason !== 'wake') overlayRecoveries++;
+  recovering = true; rendererReady = false; lastFrameAt = Date.now();
+  clearInterval(inputTimer);
   dragging = false; hudRect = null; lastFrame = null; lastCursor = null;
   interactive = false; win.setIgnoreMouseEvents(true, { forward: true });
   focus.dispatch({ type: 'pause' }); saveFocus(); broadcastFocus(); updateTray();
-  const previous=win; win=createOverlayWindow(previous.getBounds()); previous.destroy();
-  try { await win.loadFile(path.join(__dirname, 'renderer.html')); diagnostic('overlay-reloaded'); }
-  catch (error) { diagnostic('overlay-load-failed', { code: error.code || 'load' }); }
+  const previous=win;
+  try {
+    const area=areas().find(a=>a.id===activeId) || areas()[0];
+    if(!area)throw new Error('No active display');
+    activeId=area.id; win=createOverlayWindow(area); previous.destroy();
+    await win.loadFile(path.join(__dirname, 'renderer.html')); diagnostic('overlay-reloaded', {reason});
+  }
+  catch (error) { diagnostic('overlay-load-failed', { code: error.code || 'load' }); if(!previous.isDestroyed()){win=previous;win.webContents.reload();} }
   finally { recovering = false; }
+}
+function sleepDesktop(reason) {
+  if (suspended) return;
+  suspended=true; panelBeforeSleep=!!focusWin?.isVisible();
+  applyFocus({type:'pause'}); clearInterval(inputTimer); dragging=false; interactive=false;
+  if(win && !win.isDestroyed()){win.setIgnoreMouseEvents(true,{forward:true});win.hide();}
+  send({visible:false}); focusWin?.hide(); diagnostic('desktop-suspended', {reason});
+}
+function wakeDesktop() {
+  // Windows can send resume, unlock and display changes together. Rebuild once.
+  clearTimeout(wakeTimer);
+  wakeTimer=setTimeout(async()=>{
+    if(quitting)return;
+    suspended=false; displayAreas=null; nextWarmQuote=Date.now()+quoteDelay();
+    const reopen=panelBeforeSleep; panelBeforeSleep=false;
+    const stale=focusWin; focusWin=null; focusLoading=null; stale?.destroy();
+    try {
+      await restartOverlay(false,'wake');
+      if(reopen)await showFocus();
+      diagnostic('desktop-resumed');
+    } catch(error) {diagnostic('wake-failed',{code:error.code||'wake'});showFocus();}
+  },250);
 }
 function readData(name) {
   try { return JSON.parse(fs.readFileSync(dataPath(name), 'utf8')); }
@@ -65,11 +97,11 @@ function loadSettings() {
 }
 function send(input) { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:input', input); }
 function presence() { return focus.presence(); }
-function snapshot() { return { ...focus.snapshot(), safeMode, ink: settings.ink, saveError, highlight, browser: shieldBridge?.info() }; }
+function snapshot() { return { ...focus.snapshot(), safeMode, softwareGraphics, ink: settings.ink, saveError, highlight, browser: shieldBridge?.info() }; }
 function state(action) {
   const mode = presence(); hidden = mode === 'hidden';
-  send({ areas: areas(), activeId, cursor: screen.getCursorScreenPoint(), settings, paused, visible: !hidden, presence: mode, preferences: focus.preferences, safeMode, action });
-  if (win && rendererReady) { if (!win.isVisible()) win.showInactive(); }
+  send({ areas: areas(), activeId, cursor: screen.getCursorScreenPoint(), settings, paused, visible: !hidden && !suspended, presence: mode, preferences: focus.preferences, safeMode, action });
+  if (win && rendererReady && !suspended) { if (!win.isVisible()) win.showInactive(); }
 }
 function broadcastFocus(packet = snapshot()) { if (rendererReady && win && !win.isDestroyed()) win.webContents.send('companion:focus-state', packet); if (focusWin && !focusWin.isDestroyed()) focusWin.webContents.send('companion:focus-state', packet); }
 function processEvents() {
@@ -138,24 +170,36 @@ function secureWindow(window) {
   window.webContents.on('will-navigate', event => event.preventDefault());
   window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
 }
-let focusLoading;
-async function showFocus(view = 'timer') {
+let focusLoading, panelRecoveries = 0;
+function discardPanel(panel) {
+  if (focusWin!==panel) return;
+  const reopen=panel.isVisible(); focusWin=null; focusLoading=null; panel.destroy();
+  if(reopen && !suspended && panelRecoveries++<2)showFocus('timer',true);
+}
+async function showFocus(view = 'timer', recovery = false) {
+  if(!recovery)panelRecoveries=0;
   highlight = null; broadcastFocus();
   if (!focusWin || focusWin.isDestroyed()) {
     const area = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
     focusWin = new BrowserWindow({ width: 450, height: Math.min(820, area.height - 30), minWidth: 340, minHeight: 480, icon: path.join(__dirname, 'assets', 'icon.png'), title: 'Mischief — my focus corner', backgroundColor: '#faf7ef', show: false, autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false } });
     secureWindow(focusWin);
-    focusWin.on('close', event => { if (!quitting) { event.preventDefault(); focusWin.hide(); } });
-    focusWin.on('closed', () => { focusWin = null; });
+    const panel=focusWin;
+    panel.on('close', event => { if (!quitting) { event.preventDefault(); panel.hide(); } });
+    panel.on('closed', () => { if(focusWin===panel){focusWin=null;focusLoading=null;} });
     focusLoading = focusWin.loadFile(path.join(__dirname, 'focus.html'));
-    focusWin.webContents.on('render-process-gone', (_event, details) => { diagnostic('panel-gone', { reason: details.reason }); const failed=focusWin; focusWin=null; focusLoading=null; failed?.destroy(); });
-    focusWin.on('unresponsive', () => diagnostic('panel-unresponsive'));
+    panel.webContents.on('render-process-gone', (_event, details) => { diagnostic('panel-gone', { reason: details.reason }); discardPanel(panel); });
+    panel.on('unresponsive', () => {diagnostic('panel-unresponsive');discardPanel(panel);});
   }
-  try { if (focusLoading) await focusLoading; }
-  catch (error) { diagnostic('panel-load-failed', { code: error.code || 'load' }); focusWin?.destroy(); focusWin = null; focusLoading = null; return; }
-  if (!focusWin || focusWin.isDestroyed()) return;
-  if (focusWin.isMinimized()) focusWin.restore();
-  focusWin.show(); focusWin.focus(); broadcastFocus(); focusWin.webContents.send('companion:focus-view', view);
+  const panel=focusWin, loading=focusLoading;
+  try { if (loading) await loading; }
+  catch (error) {
+    diagnostic('panel-load-failed', { code: error.code || 'load' });
+    if(focusWin===panel){focusWin=null;focusLoading=null;panel?.destroy();}
+    return;
+  }
+  if (focusWin!==panel || !panel || panel.isDestroyed() || suspended) return;
+  if (panel.isMinimized()) panel.restore();
+  panel.show(); panel.focus(); broadcastFocus(); panel.webContents.send('companion:focus-view', view);
 }
 function stay() { const result = applyFocus({ type: 'stay' }); if (result.error && !focus.session) showFocus(); }
 function updateTray() {
@@ -193,6 +237,7 @@ function updateTray() {
 }
 function setInteractive(value) {
   if (!win || win.isDestroyed() || value === interactive) return;
+  value = !suspended && value;
   interactive = value; win.setIgnoreMouseEvents(!value, { forward: true });
 }
 function updateInteractive(cursor = screen.getCursorScreenPoint()) {
@@ -201,7 +246,7 @@ function updateInteractive(cursor = screen.getCursorScreenPoint()) {
   setInteractive(!!(dragging || inBar || inPet));
 }
 function pollCursor() {
-  if (!rendererReady) return;
+  if (!rendererReady || suspended) return;
   const cursor = screen.getCursorScreenPoint();
   updateInteractive(cursor);
   if (!lastCursor || cursor.x !== lastCursor.x || cursor.y !== lastCursor.y) { lastCursor = cursor; send({ cursor }); }
@@ -224,7 +269,7 @@ function createOverlayWindow(area) {
   const surface=new BrowserWindow(windowOptions(area.x, area.y, area.width, area.height));
   surface.webContents.on('render-process-gone', (_event, details) => { if (win===surface) { diagnostic('overlay-gone', {reason:details.reason}); restartOverlay(); } });
   surface.on('unresponsive', () => { if (win===surface) { diagnostic('overlay-unresponsive'); restartOverlay(); } });
-  secureWindow(surface); surface.setHasShadow(false); surface.setAlwaysOnTop(true,'screen-saver');
+  secureWindow(surface); surface.setHasShadow(false); surface.setAlwaysOnTop(true,'floating');
   surface.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true}); surface.setIgnoreMouseEvents(true,{forward:true});
   surface.on('closed', () => { if (win===surface) {win=null;clearInterval(inputTimer);app.quit();} });
   return surface;
@@ -242,12 +287,13 @@ async function createCompanion() {
   writeData('browser-pairing.json', { token });
   shieldBridge = createShieldBridge({ token, getState: () => focus.snapshot(), action: applyFocus });
   const cursor = screen.getCursorScreenPoint(), display = screen.getDisplayNearestPoint(cursor);
-  activeId = display.id; const area = display.workArea;
+  activeId = display.id; lastFrameAt=Date.now(); const area = display.workArea;
   win = createOverlayWindow(area);
   ipcMain.on('companion:ready', event => {
     if (event.sender !== win?.webContents) return;
-    rendererReady = true; state(); broadcastFocus(); win.showInactive();
-    clearInterval(inputTimer); inputTimer = setInterval(pollCursor, 8);
+    rendererReady = true; overlayHealthySince=lastFrameAt=Date.now(); state(); broadcastFocus();
+    if(!suspended)win.showInactive();
+    clearInterval(inputTimer); if(!suspended)inputTimer = setInterval(pollCursor, 8);
   });
   ipcMain.handle('companion:focus-state', event => {
     if (event.sender !== focusWin?.webContents && event.sender !== win?.webContents) throw new Error('Unknown companion window.');
@@ -259,27 +305,30 @@ async function createCompanion() {
   });
   ipcMain.on('companion:open-focus', (event, view) => { if (event.sender === win?.webContents) showFocus(['timer', 'thought', 'summary', 'appearance', 'blocking'].includes(view) ? view : 'timer'); });
   ipcMain.on('companion:dragging', (event, value) => { if (event.sender !== win?.webContents || typeof value !== 'boolean') return; dragging = value; updateInteractive(); });
-  ipcMain.on('companion:interactive', (event, value) => { if (event.sender !== win?.webContents || typeof value !== 'boolean') return; setInteractive(dragging || value); });
+  ipcMain.on('companion:interactive', (event, value) => { if (event.sender !== win?.webContents || typeof value !== 'boolean') return; updateInteractive(); });
   ipcMain.on('companion:focus-hide', event => { if (event.sender === focusWin?.webContents) focusWin.hide(); });
   ipcMain.on('companion:diagnostic', (event, value) => {
     if (event.sender !== win?.webContents || !value || typeof value !== 'object') return;
     if (['frame-stall','renderer-error'].includes(value.type)) diagnostic(value.type, { duration: Number.isFinite(value.duration) ? Math.min(60000, value.duration) : 0 });
   });
   ipcMain.on('companion:report', (event, report) => {
-    if (event.sender !== win?.webContents || !report || typeof report !== 'object') return;
+    if (suspended || event.sender !== win?.webContents || !report || typeof report !== 'object') return;
     if (report.error) { if (tray) tray.setToolTip('Buildlings — Doodle drawing unavailable'); return; }
     if (![report.x, report.y, report.hop, report.sparkleId].every(Number.isFinite) || !areas().some(a => a.id === report.areaId)) return;
+    lastFrameAt=Date.now();
+    if(lastFrameAt-overlayHealthySince>60000){overlayRecoveries=0;recoveryLimitNotified=false;}
     lastFrame = { scale: Number.isFinite(report.scale) && report.scale >= .6 && report.scale <= 1 ? report.scale : 1, x: report.x, y: report.y, hop: report.hop, sparkleId: report.sparkleId, areaId: report.areaId, mode: String(report.mode).slice(0, 24), renderer: report.renderer === 'canvas2d' ? 'canvas2d' : 'unavailable' };
     const r = report.hudRect, a = areas().find(a => a.id === report.areaId);
     if (r && [r.x, r.y, r.width, r.height].every(Number.isFinite) && r.width > 0 && r.width <= a.width && r.height > 0 && r.height <= 120 && r.x >= a.x && r.y >= a.y && r.x + r.width <= a.x + a.width) hudRect = { ...r };
     updateInteractive();
     if (report.areaId !== activeId) moveToDisplay(report.areaId);
   });
-  const refreshDisplays = () => { moveToDisplay(activeId); state(); };
+  const refreshDisplays = () => { displayAreas=null; if(!suspended){moveToDisplay(activeId); state();} };
   for (const event of ['display-added', 'display-removed', 'display-metrics-changed']) screen.on(event, refreshDisplays);
-  powerMonitor.on('suspend', () => applyFocus({ type: 'pause' }));
-  powerMonitor.on('lock-screen', () => applyFocus({ type: 'pause' }));
-  powerMonitor.on('resume', () => state('resume'));
+  powerMonitor.on('suspend', () => sleepDesktop('sleep'));
+  powerMonitor.on('lock-screen', () => sleepDesktop('lock'));
+  powerMonitor.on('resume', wakeDesktop);
+  powerMonitor.on('unlock-screen', wakeDesktop);
   if (process.platform === 'darwin') app.dock.hide();
   tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png')));
   updateTray(); tray.on('double-click', () => showFocus());
@@ -287,9 +336,14 @@ async function createCompanion() {
     if (!globalShortcut.register(keys, action)) { diagnostic('shortcut-unavailable', {keys}); console.warn(`Shortcut unavailable: ${keys}. Use the tray menu.`); }
   }
   let lastTick=Date.now();
-  focusTimer = setInterval(() => { const now=Date.now(); if (now-lastTick > 2000) diagnostic('main-stall', {duration:now-lastTick}); lastTick=now; tickFocus(); }, 1000);
+  focusTimer = setInterval(() => { const now=Date.now(); if (!suspended && now-lastTick > 2000) diagnostic('main-stall', {duration:now-lastTick}); lastTick=now;
+    if(suspended)return;
+    if(!recovering && now-lastFrameAt>8000)restartOverlay(false,'heartbeat');
+    tickFocus(); }, 1000);
   diagnostic('graphics-status', { features: app.getGPUFeatureStatus(), displays: screen.getAllDisplays().map(d=>({width:d.size.width,height:d.size.height,scale:d.scaleFactor})) });
   await win.loadFile(path.join(__dirname, 'renderer.html'));
+  // Always provide a visible entry point, even when saved settings hide every overlay.
+  await showFocus();
 }
 app.on('child-process-gone', (_event, details) => diagnostic('child-gone', {reason:details.reason,kind:details.type}));
 if (!gotLock) app.quit();
@@ -302,10 +356,10 @@ app.on('before-quit', event => {
   event.preventDefault();
   if (quitting) return;
   quitting = true;
-  clearInterval(inputTimer); clearInterval(focusTimer); globalShortcut.unregisterAll(); shieldBridge?.close();
+  clearInterval(inputTimer); clearInterval(focusTimer); clearTimeout(wakeTimer); globalShortcut.unregisterAll(); shieldBridge?.close();
   if (focus) { focus.dispatch({ type: 'pause' }); saveFocus(); }
   diagnostic('quit');
   Promise.resolve(storage?.flush()).finally(() => { quitReady = true; app.quit(); });
 });
-module.exports = { getRuntime: () => ({ win, focusWin, focus, trayMenu, settings, hidden, paused, lastFrame, dragging, interactive, hudRect, highlight, nextWarmQuote, storage, safeMode, diagnostics }), togglePause, toggleHidden, command, state, moveToDisplay, applyFocus, showFocus, tickFocus };
+module.exports = { getRuntime: () => ({ win, focusWin, focus, trayMenu, settings, hidden, paused, lastFrame, dragging, interactive, hudRect, highlight, nextWarmQuote, storage, safeMode, softwareGraphics, suspended, diagnostics }), togglePause, toggleHidden, command, state, moveToDisplay, applyFocus, showFocus, tickFocus };
 if (process.env.BUILDLINGS_TEST_DATA) app.__buildlingsRuntime = module.exports;
