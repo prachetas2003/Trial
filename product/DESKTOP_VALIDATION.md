@@ -63,6 +63,9 @@ quote references and all 11 unchanged FocusShield files match. Archive size:
 **163,576,102 bytes**. SHA256:
 `8d20b5cf7f15dd459982d08de6d61c358d3d279d734c5afe7584d1063405aaaa`.
 
+After deployment, all 20 checked live website/preview assets match source.
+Pages commit: `7cdb015`. Download links point to the verified release above.
+
 ---
 
 # Synchronized focus, themed bubbles and celebrations — 0.9.0
