@@ -23,10 +23,26 @@ report, then confirm the timer still opens controls. Xvfb has no compositor/wind
 manager; its video baseline keeps the original browser-first launch order. It
 explicitly leaves Windows z-order and desktop-pixel assertions unrun locally.
 
-Windows CI must open Chromium after the app and verify actual Win32 topmost
-styles, window order and mouse hit targets over the browser, plus foreground
-focus retention and the existing changing desktop-video pixels during holds.
-Windows results and the release download will be recorded after verification.
+Source: `4c637ec`. [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38773089834)
+passed all **25 steps**, including fresh install, all **83 unit checks**, the new
+three native regression groups, existing interaction/recovery/wake/UI/play checks,
+video checks, eight extension groups, packaging and release publication.
+
+Chromium opened after the app. Actual Win32 topmost styles, window order and
+native mouse hits over the browser passed for the monkey and timer before and
+after clicks. The foreground window remained the video browser. All three
+surfaces retained topmost and stayed above that browser. Visible desktop-video
+pixels stayed coloured and changed during stationary body holds, captured head
+drags and timer drags. These Windows assertions were executed, with no skips.
+
+Release: [desktop-preview-29](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-29).
+Physical laptop/GPU/YouTube hardware decoding remains a device-specific check.
+
+The public ZIP was downloaded back: SHA256 and all archive CRCs passed. All
+**32 tracked desktop files** in its ASAR match source, version is **0.10.1**,
+and Safe Mode plus all 11 unchanged extension files match. Download size:
+**163,586,686 bytes**. SHA256:
+`c186c556a90c8078090536b4dbf1bba46e3ce2f26f8c8dd17202e7849f2206b6`.
 
 ---
 
