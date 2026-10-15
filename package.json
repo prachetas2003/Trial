@@ -1,6 +1,6 @@
 {
   "name": "buildlings",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "private": true,
   "main": "desktop/main.cjs",
   "description": "Mischief: a transparent marker monkey with focus sessions, saved thoughts, and encouragement.",

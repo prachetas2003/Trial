@@ -1,24 +1,17 @@
-Buildlings 0.10.1 fixes native movement, overlay visibility and timer unlocking.
+Buildlings 0.10.2 updates the quote bank and adds a little more milestone confetti.
 
-- Fixed the main-process error when the monkey crosses a screen-coordinate zero.
-  JavaScript can round a small negative coordinate to negative zero; Electron's
-  integer converter rejects that value. Pet and timer positions now normalize
-  zero, and invalid/out-of-range pet reports are rejected before native calls.
-- Monkey, timer and passive effects use a Windows topmost level that does not
-  place them behind the taskbar. They stay above ordinary application windows
-  when Chrome opens afterward, without taking keyboard focus from your work.
-- The timer's lock icon remains the same DOM node during clock updates. Presses
-  held across a timer tick can now complete, including repeated lock/unlock.
-  Unlock restores the drag grip; saved position and reset remain available.
+- Uses the exact MONKEY_QUOTE_BANK.md from balanced-mischief-quotes, commit
+  54aee4b: 120 everyday/reassurance/science-informed lines and 43 attributed quotes.
+  Research notes for the science-informed paraphrases are included as
+  QUOTE_EVIDENCE_NOTES.md.
+- At 25%, 50% and 75%, the local confetti burst has 16 pieces instead of 10.
+  It stays around the monkey with the same size, timing, spread and cleanup.
+  The end-of-session celebration, reduced-motion behavior and celebration switch
+  are unchanged.
 
-Regression checks exercise real native movement across both zero axes, repeated
-lock/unlock presses spanning clock updates, and dragging after unlocking. Windows
-video checks open Chromium after the app, inspect actual topmost styles and
-z-order, test native hit targets over the browser, and verify the browser retains
-foreground focus. Existing video checks remain active during held clicks/drags.
-Your physical laptop, GPU and YouTube hardware decoding still need device testing.
+No other app behavior changes. Quotes keep the existing frequency and settings.
+The 0.10.1 crash, overlay visibility and timer unlock fixes are retained.
 
-Quit the old app with Ctrl+Alt+Q, extract the entire ZIP into a fresh folder and
-run Buildlings.exe. Existing notes, history, settings and browser pairing remain.
-FocusShield is unchanged at 0.8.0; no extension reinstall is required.
-Windows 10/11 x64 preview. SHA256SUMS.txt accompanies the download.
+Quit the previous app, extract the entire ZIP into a fresh folder, and open
+Buildlings.exe. Saved notes, history, settings and browser pairing are retained.
+FocusShield is unchanged; no extension reinstall is required.

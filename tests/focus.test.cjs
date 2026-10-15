@@ -100,7 +100,7 @@ test('updating a version-1 installation switches to 12-second quotes and refresh
   assert.equal(updated.preferences.quoteSeconds, 12); assert.equal(updated.preferences.quietFocus, true); assert.equal(updated.preferences.completionSound, false);
   assert.equal(updated.notes[0].text, 'Keep my idea'); assert.equal(updated.session.intention, 'Continue my project'); assert.equal(updated.session.choices, 1); assert.equal(updated.session.elapsedMs, 8000); assert.equal(updated.session.running, false);
   assert.deepEqual(updated.decks.everyday, []); updated.quote(); assert.equal(updated.decks.everyday.length, 119);
-  assert.equal(bank.everyday.length, 120); assert.equal(bank.hard.length, 43); assert.equal(bank.everyday.find(q => q.id === 'A120').text, "You can end the day unfinished and still let the day be over.");
+  assert.equal(bank.everyday.length, 120); assert.equal(bank.hard.length, 43); assert.equal(bank.everyday.find(q => q.id === 'A120').text, "Tomorrow does not need you exhausted. It needs you able to come back.");
   assert.equal(bank.hard.find(q => q.id === 'H043').author, 'James Dyson');
   updated.dispatch({ type: 'preferences', values: { quoteSeconds: 25 } }, 10000);
   const restarted = make(updated.export(10000)); assert.equal(restarted.preferences.quoteSeconds, 25); assert.deepEqual(restarted.decks, updated.decks);

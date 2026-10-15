@@ -25,7 +25,7 @@ try{
  const instructions=await page.locator('#shield-setup ol li').allTextContents();assert.equal(instructions.length,5);assert.match(instructions[0],/chrome:\/\/extensions/);assert.match(instructions[1],/Developer mode/);assert.match(instructions[2],/Load unpacked/);assert.match(instructions[3],/FocusShield/);assert.match(instructions[4],/pairing code/);
  assert.match(await page.locator('.mode-card .quiet-copy').textContent(),/Custom setup/);console.log('PASS wider adjustable focus coverage, clear section labels and ordered browser setup instructions');
  await page.locator('[data-desk-tab=focus]').click();await page.evaluate(()=>window.companion.focusAction({type:'preferences',values:{focusMinutes:1,presence:'peek',celebrations:true,returnAfterSession:true,completionSound:false,autoQuotes:false,chaseCursor:false}}));await page.getByRole('button',{name:'Start my focus session'}).click();
- for(const percent of [25,50,75]){await page.clock.fastForward(15100);await page.clock.runFor(100);assert.equal(await page.evaluate(()=>window.__mischiefCelebration.percent),percent);assert.equal(await page.locator('.celebration-piece[data-scope=monkey]').count(),10);assert.equal(await page.locator('.celebration-piece[data-scope=screen]').count(),0);assert.match(await page.locator('.celebration-badge').textContent(),new RegExp(percent+'% complete'));
+ for(const percent of [25,50,75]){await page.clock.fastForward(15100);await page.clock.runFor(100);assert.equal(await page.evaluate(()=>window.__mischiefCelebration.percent),percent);assert.equal(await page.locator('.celebration-piece[data-scope=monkey]').count(),16);assert.equal(await page.locator('.celebration-piece[data-scope=screen]').count(),0);assert.match(await page.locator('.celebration-badge').textContent(),new RegExp(percent+'% complete'));
  const bounds=await page.locator('.celebration-piece').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return{left:r.left,top:r.top,right:r.right,bottom:r.bottom,z:+getComputedStyle(e).zIndex};}));assert.ok(bounds.every(r=>r.left>=0&&r.top>=0&&r.right<=1300&&r.bottom<=1000&&r.z>9990));assert.equal(await page.locator('.celebration-piece').first().evaluate(e=>getComputedStyle(e).pointerEvents),'none');}
  await page.clock.fastForward(15100);for(let i=0;i<45;i++){if(await page.evaluate(()=>window.__mischiefCelebration?.kind==='complete'))break;await page.clock.runFor(100);}
  assert.equal(await page.evaluate(()=>window.__mischiefCelebration.kind),'complete');assert.equal(await page.evaluate(()=>window.__mischiefCelebration.screen),34);assert.equal(await page.evaluate(()=>window.__mischiefFocus.presence()),'wander');
@@ -41,7 +41,7 @@ try{
  });
  await page.clock.runFor(500);
  const edgePieces=await page.locator('.celebration-piece').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return{left:r.left,top:r.top,right:r.right,bottom:r.bottom};}));
- assert.equal(edgePieces.length,40);assert.ok(edgePieces.every(r=>r.left>=0&&r.top>=0&&r.right<=1300&&r.bottom<=1000));
+ assert.equal(edgePieces.length,64);assert.ok(edgePieces.every(r=>r.left>=0&&r.top>=0&&r.right<=1300&&r.bottom<=1000));
  await page.screenshot({path:'test-results/visible-edge-milestones.png'});await page.clock.runFor(2500);assert.equal(await page.locator('.celebration-piece,.celebration-badge').count(),0);
  console.log('PASS milestones remain on-screen at all four margins with a 60% monkey and clean up');
  assert.deepEqual(errors,[]);console.log('PASS independent celebration switch, quiet preset compatibility and reduced-motion acknowledgement');

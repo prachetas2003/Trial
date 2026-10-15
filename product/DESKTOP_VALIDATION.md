@@ -1,3 +1,28 @@
+# Updated quote bank and fuller milestone confetti — 0.10.2
+
+The quote bank is byte-for-byte the file from the user-linked
+`balanced-mischief-quotes` branch at `54aee4b`: 120 everyday/reassurance/science
+paraphrases and 43 attributed quotations. Both desktop and preview bundles are
+regenerated from that bank. Its companion evidence notes are included in the ZIP
+as `QUOTE_EVIDENCE_NOTES.md`. Existing saved quote IDs remain valid.
+
+The only celebration behavior change is **16 local particles instead of 10** at
+25%, 50% and 75%. Size, spread, duration, badge and cleanup stay unchanged. These
+milestones still create zero screen-wide particles. The session-end burst remains
+14 local + 34 screen particles. Off switches and reduced-motion behavior remain.
+Main process, timer controls, movement, layout, focus model and extension sources
+are unchanged from 0.10.1; renderer edits only update asset-cache version strings.
+
+Local checks: all **83 unit/server/model tests** and all **six polish groups**
+passed. Polish verifies 16 local pieces at every threshold, no screen burst at
+milestones, on-screen bounds at all four margins, complete cleanup, and unchanged
+completion/off/reduced-motion behavior. The quote/cadence check uses the existing
+Monkey category for the moved frequency selector; no app navigation was changed.
+
+Windows results and the final verified release link will be added after CI.
+
+---
+
 # Native positioning, overlay visibility and timer unlocking — 0.10.1
 
 The screenshot's error was reproduced with the actual Electron native API:

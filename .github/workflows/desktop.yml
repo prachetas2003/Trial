@@ -57,6 +57,7 @@ jobs:
           Copy-Item product/DESKTOP_README.txt dist/Buildlings-win32-x64/README.txt
           Copy-Item product/MONKEY_QUOTE_SOURCES.md dist/Buildlings-win32-x64/QUOTE_SOURCES.md
           Copy-Item product/MONKEY_QUOTE_SOURCES_ADDITIONS.md dist/Buildlings-win32-x64/QUOTE_SOURCES_ADDITIONS.md
+          Copy-Item product/MONKEY_EVIDENCE_NOTES.md dist/Buildlings-win32-x64/QUOTE_EVIDENCE_NOTES.md
           Compress-Archive -Path dist/Buildlings-win32-x64/* -DestinationPath dist/Buildlings-Windows-x64.zip
           $digest = (Get-FileHash dist/Buildlings-Windows-x64.zip -Algorithm SHA256).Hash.ToLower()
           "$digest  Buildlings-Windows-x64.zip" | Set-Content -Encoding ascii dist/SHA256SUMS.txt
@@ -72,7 +73,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.10.1 — native position, overlay visibility and timer unlock fixes' --notes-file product/DESKTOP_RELEASE.md
+          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.10.2 — updated quotes and fuller milestone confetti' --notes-file product/DESKTOP_RELEASE.md
       - name: Save native test evidence
         if: always()
         uses: actions/upload-artifact@v4

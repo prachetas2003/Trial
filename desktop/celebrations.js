@@ -11,7 +11,7 @@ export class Celebrations {
     const event=this.pending;if(!event)return;
     if(event.kind==='complete' && visible && now-event.at<4000 && (frame.returning || now-event.at<300))return;
     this.pending=null;
-    const local=visible ? (event.kind==='complete'?14:10) : 0, screen=event.kind==='complete'?34:0;
+    const local=visible ? (event.kind==='complete'?14:16) : 0, screen=event.kind==='complete'?34:0;
     if(!local&&!screen)return;
     // Peeking feet can lie outside the work area: keep the whole local burst inside.
     const margin=Math.min(100,innerWidth/3), top=Math.min(160,innerHeight/3);

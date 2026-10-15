@@ -1,7 +1,7 @@
-import { MonkeyScene } from './monkey.js?v=0.10.1';
-import { SpeechBubble } from './bubbles.js?v=0.10.1';
-import { Celebrations } from './celebrations.js?v=0.10.1';
-import { OverlayBar } from './hud.js?v=0.10.1';
+import { MonkeyScene } from './monkey.js?v=0.10.2';
+import { SpeechBubble } from './bubbles.js?v=0.10.2';
+import { Celebrations } from './celebrations.js?v=0.10.2';
+import { OverlayBar } from './hud.js?v=0.10.2';
 const native=window.companion.native;
 const hud = native?null:new OverlayBar(window.companion);
 const play=new window.MischiefPlay.PlayPhysics();
