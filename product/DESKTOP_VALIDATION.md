@@ -34,6 +34,9 @@ All **32 tracked desktop files** in its ASAR match source and report version
 match source. Size: **163,589,653 bytes**. SHA256:
 `b340fe8881cc68d03a8b96bcbb2bb13b17a55e55248cbcb4ec2761c96d6cb38c`.
 
+All **21 checked live website/preview assets** match source after deployment.
+Pages commit: `148a88c`. Both download links point to the verified 0.10.2 ZIP.
+
 ---
 
 # Native positioning, overlay visibility and timer unlocking — 0.10.1
