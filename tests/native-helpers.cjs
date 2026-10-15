@@ -2,7 +2,22 @@ const assert=require('node:assert/strict'),path=require('node:path'),{spawnSync}
 const root=path.resolve(__dirname,'..');
 async function until(check,timeout=15000){const end=Date.now()+timeout;do{if(await check())return;await new Promise(r=>setTimeout(r,70));}while(Date.now()<end);assert.fail('Native condition timed out');}
 async function launch(temp,safe=false){const app=await _electron.launch({executablePath:require('electron'),args:['.',...(safe?['--safe-mode']:[]),...(process.platform==='linux'?['--disable-setuid-sandbox',...(safe?[]:['--use-angle=swiftshader'])]:[])],cwd:root,env:{...process.env,BUILDLINGS_TEST_DATA:temp},timeout:25000});await until(()=>app.evaluate(({app})=>!!app.__buildlingsRuntime?.getRuntime().focusWin?.isVisible()));return app;}
-async function pages(app){await until(()=>app.windows().some(p=>p.url().endsWith('/timer.html'))&&app.windows().some(p=>p.url().endsWith('/renderer.html')));const get=name=>app.windows().find(p=>p.url().endsWith('/'+name+'.html'));const p={pet:get('renderer'),timer:get('timer'),effects:get('effects'),panel:get('focus')};await p.pet.waitForFunction(()=>window.__buildlingsFrame);await p.timer.locator('#bar-timer').waitFor({state:'attached'});return p;}
+async function pages(app){
+ // Electron creates replacements before Playwright has removed every closed page.
+ // Bind to the current native window IDs, not the first page with the same URL.
+ const end=Date.now()+15000;
+ while(Date.now()<end){
+  const ids=await app.evaluate(({app})=>{const r=app.__buildlingsRuntime.getRuntime(),id=w=>w&&!w.isDestroyed()?w.id:null;return{pet:id(r.win),timer:id(r.timerWin),effects:id(r.effectsWin),panel:id(r.focusWin)};});
+  const entries=await Promise.all(app.windows().map(async page=>{try{const w=await app.browserWindow(page),id=await w.evaluate(w=>w.id);await w.dispose();return{id,page};}catch{return null;}}));
+  const current=Object.fromEntries(Object.entries(ids).map(([role,id])=>[role,entries.find(e=>e&&e.id===id&&!e.page.isClosed())?.page]));
+  if(current.pet&&current.timer&&current.effects&&(!ids.panel||current.panel)){
+   try{await current.pet.waitForFunction(()=>window.__buildlingsFrame,null,{timeout:3000});await current.timer.locator('#bar-timer').waitFor({state:'attached',timeout:3000});const stable=await app.evaluate(({app},ids)=>{const r=app.__buildlingsRuntime.getRuntime();return r.win?.id===ids.pet&&r.timerWin?.id===ids.timer&&r.effectsWin?.id===ids.effects&&(!ids.panel||r.focusWin?.id===ids.panel);},ids);if(stable)return current;}
+   catch(error){const replaced=await app.evaluate(({app},id)=>app.__buildlingsRuntime.getRuntime().win?.id!==id,ids.pet);if(!replaced&&!current.pet.isClosed()&&!current.timer.isClosed())throw error;}
+  }
+  await new Promise(r=>setTimeout(r,70));
+ }
+ assert.fail('Current native replacement windows did not become ready');
+}
 async function pointer(app,point,op='move',page){
  if(process.platform==='linux')await app.evaluate(({app,screen},p)=>{app.__cursor=p;screen.getCursorScreenPoint=()=>app.__cursor;},point);
  let physical=point;if(process.platform==='win32')physical=await app.evaluate(({screen},p)=>screen.dipToScreenPoint(p),{x:Math.round(point.x),y:Math.round(point.y)});
