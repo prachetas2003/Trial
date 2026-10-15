@@ -1,0 +1,10 @@
+import {SpeechBubble} from './bubbles.js';
+import {Celebrations} from './celebrations.js';
+const bubble=new SpeechBubble(),celebrations=new Celebrations(),theme=matchMedia('(prefers-color-scheme: dark)'),reduce=matchMedia('(prefers-reduced-motion: reduce)');
+let state,pet,area={x:0,y:0},visible=true;
+for(const side of ['top','bottom','left','right']){const e=document.createElement('div');e.className='focus-edge';e.dataset.side=side;document.body.append(e);}
+function style(){if(!state)return;const p=state.preferences,e=window.MischiefFocus.focusEdges(p,theme.matches||state.ink==='white');document.body.dataset.screenStyle=e.style;document.body.style.setProperty('--glow-rgb',e.rgb);document.body.style.setProperty('--glow-alpha',e.alpha);document.body.style.setProperty('--edge-coverage',p.edgeCoverage+'px');document.body.classList.toggle('focus-vignette',p.vignette&&state.session?.kind==='focus'&&state.session.running);bubble.setScale(p.monkeyScale);celebrations.configure(p);if(!p.quotesEnabled){bubble.quote=null;bubble.element.hidden=true;}}
+window.companion.onFocusState(s=>{if(window.MischiefFocus.acceptsState(state,s)){state=s;style();}});theme.addEventListener('change',style);
+window.companion.onInput(i=>{if(i.areas)area=i.areas.find(a=>a.id===i.activeId)||i.areas[0];if(i.petFrame)pet=i.petFrame;if(typeof i.visible==='boolean')visible=i.visible;if(i.quote&&visible&&state?.preferences.quotesEnabled)bubble.show(i.quote,performance.now());if(i.celebration)celebrations.enqueue(i.celebration,performance.now());if(i.completion?.completed&&i.completion.kind==='focus')celebrations.enqueue({id:i.completion.id+':complete',kind:'complete'},performance.now());});
+function frame(now){requestAnimationFrame(frame);bubble.element.style.display=visible&&state?.preferences.quotesEnabled?'':'none';if(!pet)return;const f={...pet,x:pet.x-area.x,y:pet.y-area.y};bubble.draw(f,now,reduce.matches,90);celebrations.draw(f,now,visible,reduce.matches);}
+requestAnimationFrame(frame);window.companion.ready();

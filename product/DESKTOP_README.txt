@@ -1,4 +1,4 @@
-BUILDLINGS — MISCHIEF FOCUS COMPANION 0.9.1
+BUILDLINGS — MISCHIEF FOCUS COMPANION 0.10.0
 
 GET STARTED
 1. Quit the previous Buildlings version from its notification-area menu.
@@ -14,31 +14,32 @@ FOCUS SHIELD AND MODES
   your own Custom setup; these choices are saved automatically.
 - Companion: monkey, gentle quotes and timer, with blocking off.
 - Deep Focus: blocking, a quiet edge-peeking monkey, timer and neutral focus edges.
-- Blocker Only: blocking with no monkey, quotes, timer overlay, edges or sounds.
-- Adjust individual features in the Blocking and Appearance sections.
-- Focus Shield needs the included Chrome/Edge extension. Open Blocking >
+- Browser rules only: blocking with no monkey, quotes, timer overlay, edges or sounds.
+- Adjust individual features in Websites & tabs, Monkey and Appearance.
+- Focus Shield needs the included Chrome/Edge extension. Open Websites & tabs >
   Connect your browser for setup, or read FocusShield/README.txt.
 - Choose website domains, Shorts/Reels, locked tabs or Only my work tabs.
   Select Work tabs before starting. New tabs lock until approved in the panel.
 - Pause, finish, quit or take a break to release restrictions. The extension
   popup also has Pause timer & unlock. Browser settings pages cannot be covered.
-- Blocker Only can be controlled from the tray or Ctrl+Alt+F.
+- Browser rules only can be controlled from the tray or Ctrl+Alt+F.
 
 QUICK CONTROLS
 Quotes on restores automatic encouragement even after a silent mode.
 Pausing brings a tucked monkey back; resuming restores the tuck. A monkey
-you explicitly hid, including Blocker Only, stays hidden.
-The panel has Focus, Blocking, Appearance and Notes destinations.
+you explicitly hid, including Browser rules only, stays hidden.
+The top tabs are Focus timer, Websites & tabs, Monkey, Appearance, and Notes & history.
+Use arrow keys, Home or End when a tab is focused. Tabs stay visible while scrolling.
 Monkey, Quotes, Timer and Edges switches are always visible at the top.
-Focus > Choose tabs & sites opens the blocking picker directly.
-Appearance has a timer background slider, monkey size (60-100%), focus edge strength
+Focus timer > Choose tabs & sites opens the blocking picker directly.
+Monkey has size (60-100%), movement, quotes and hands-on play.
+Appearance has timer position/lock/reset, timer background, focus edge strength
 and Auto/Light/Dark screen style, and Reset. Settings save automatically and preview immediately.
-The timer's settings button and right-clicking the draggable monkey open
-Appearance directly. Right-click the tray icon for Show/Hide timer, Show/Hide
+The timer settings button opens Appearance. Right-click the monkey for Monkey settings. Right-click the tray icon for Show/Hide timer, Show/Hide
 monkey, and Open controls. Ctrl+Alt+F always opens the panel.
 
 TAB PROTECTION
-Choose Block selected tabs or Only selected work tabs in Blocking.
+Choose Block selected tabs or Only selected work tabs in Websites & tabs.
 Selecting a block/allowed tab enables Focus Shield. Before a timer starts,
 rows say Will lock when you start. During focus, Locked for this session means
 the browser confirmed protection for that page. Needs attention gives a refresh
@@ -77,6 +78,22 @@ If the overlay stops reporting frames, it is replaced and your timer is paused.
 The controls panel also recovers from a crashed or unresponsive renderer.
 Right-click the tray > Open local diagnostics for graphics/recovery events.
 
+HANDS-ON PLAY
+- Grab the head or drag the body: dangle with swinging paws.
+- Hold the shirt without moving: squish; release for a soft rebound.
+- Pull the curled tail and let go: spring and settle.
+- Stroke back and forth: marker ink sheen, a relaxed face and sparkles.
+- Release a moving drag: a short, bounded toss and gentle landing.
+- Monkey > Play interactions turns play off while ordinary dragging remains.
+- Reduced motion suppresses throws and damps the spring; edge peeking never throws.
+
+THE FLOATING TIMER
+- Drag its dotted grip to move it. Near a screen edge it snaps gently.
+- The padlock locks/unlocks its position. Position and lock are remembered.
+- Appearance > Reset timer position, or the tray command, puts it back at the top.
+- The monkey and timer use separate bounded interactive windows. Decorations
+  remain permanently click-through. No monitor-size window takes mouse capture.
+
 THE TOP BAR
 - Click the clock to open the focus corner.
 - Click "I'm staying" when you choose to stay despite a distraction.
@@ -84,7 +101,7 @@ THE TOP BAR
 - Chase keeps following your cursor until switched off. Tucking turns chase off.
 - When a timer expires, a soft bell plays and the bar glows. Click Highlights
   to see the session intention, time and choices. Sound can be turned off.
-- The top bar has its own visibility switch. Blocker Only hides it too.
+- The top bar has its own visibility switch. Browser rules only hides it too.
 
 THE MONKEY
 Click and hold the monkey's head/body to drag him. His body and legs swing
@@ -137,7 +154,7 @@ The browser preview stays within its page and stores a separate browser copy
 of your data. The Windows app moves over other applications.
 
 Project: https://github.com/prachetas2003/Trial
-Preview: https://prachetas2003.github.io/Trial/roam/?v=0.9.1
+Preview: https://prachetas2003.github.io/Trial/roam/?v=0.10.0
 
 IF THE APP FREEZES ON STARTUP
 End Buildlings.exe in Windows Task Manager, then run Start-Safe-Mode.cmd

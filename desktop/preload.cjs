@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('companion', {
     ipcRenderer.on('companion:input', listener);
     return () => ipcRenderer.removeListener('companion:input', listener);
   },
+  timerDrag: phase=>ipcRenderer.send('companion:timer-drag',phase),
+  timerRect: rect=>ipcRenderer.send('companion:timer-rect',rect),
   setDragging: value => ipcRenderer.send('companion:dragging', value),
   setInteractive: value => ipcRenderer.send('companion:interactive', value),
   openFocus: view => ipcRenderer.send('companion:open-focus', view),

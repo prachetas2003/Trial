@@ -5,13 +5,7 @@ const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:
 const {spawnSync}=require('node:child_process');
 const {_electron,chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
-async function click(app,page,selector){
- let point=await page.locator(selector).evaluate(e=>{const r=e.getBoundingClientRect(),a=window.__buildlingsEngine.area();return{x:a.x+r.x+r.width/2,y:a.y+r.y+r.height/2};});
- if(process.platform==='win32')point=await app.evaluate(({screen},p)=>screen.dipToScreenPoint(p),{x:Math.round(point.x),y:Math.round(point.y)});
- const native=op=>{const r=spawnSync(process.platform==='win32'?'python':'python3',[path.join(root,'scripts/test-pointer.py'),String(Math.round(point.x)),String(Math.round(point.y)),op],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);};
- native('move');if(process.platform==='linux')await app.evaluate(({app,screen},p)=>{app.__testCursor=p;screen.getCursorScreenPoint=()=>app.__testCursor;const w=app.__buildlingsRuntime.getRuntime().win;w.setIgnoreMouseEvents(false);w.moveTop();},point);
- await page.waitForTimeout(120);native('click');await page.waitForTimeout(180);
-}
+const {pages,click,hidePanel,pointer,point,action}=require('./native-helpers.cjs');
 (async()=>{
  const clip=await fs.readFile(path.join(__dirname,'fixtures/focus-video.webm'));
  const server=http.createServer((req,res)=>{if(req.url==='/clip.webm'){res.writeHead(200,{'Content-Type':'video/webm'});res.end(clip);return;}
@@ -22,7 +16,7 @@ async function click(app,page,selector){
   browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||(process.platform==='win32'?chromium.executablePath():'/usr/bin/chromium'),headless:false,args:['--window-position=0,0','--autoplay-policy=no-user-gesture-required']});
   const video=await browser.newPage({viewport:null});await video.goto(`http://127.0.0.1:${server.address().port}/`);await video.locator('#play').click();await video.waitForFunction(()=>window.framesPresented>10);
   app=await _electron.launch({executablePath:require('electron'),args:['.',...(process.platform==='linux'?['--disable-setuid-sandbox','--use-angle=swiftshader']:[])],cwd:root,env:{...process.env,BUILDLINGS_TEST_DATA:temp},timeout:25000});
-  const overlay=await app.firstWindow();await overlay.waitForFunction(()=>window.__buildlingsFrame);
+  const p=await pages(app),overlay=p.timer;
   await app.evaluate(async({app})=>{for(let i=0;i<200&&!app.__buildlingsRuntime.getRuntime().focusWin?.isVisible();i++)await new Promise(r=>setTimeout(r,25));const r=app.__buildlingsRuntime;r.getRuntime().focusWin.setBounds({x:10,y:100,width:450,height:650});r.applyFocus({type:'preferences',values:{autoQuotes:false,completionSound:false}});r.applyFocus({type:'start'});});
   const display=await app.evaluate(({screen})=>screen.getPrimaryDisplay().workArea);const cdp=await video.context().newCDPSession(video),{windowId}=await cdp.send('Browser.getWindowForTarget');await cdp.send('Browser.setWindowBounds',{windowId,bounds:{left:display.x,top:display.y,width:display.width,height:display.height,windowState:'normal'}});
   const panel=app.windows().find(p=>p.url().endsWith('/focus.html'));await panel.locator('#session-controls').waitFor({state:'visible'});
@@ -33,10 +27,25 @@ async function click(app,page,selector){
    await click(app,overlay,'#bar-tuck');
    const sample=await app.evaluate(async({desktopCapturer,screen})=>{const d=screen.getPrimaryDisplay(),sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:d.size.width,height:d.size.height}}),s=sources.find(s=>s.display_id===String(d.id))||sources[0],im=s.thumbnail,b=im.toBitmap(),size=im.getSize(),idx=(Math.floor(size.height*.65)*size.width+Math.floor(size.width*.75))*4;return{b:b[idx],g:b[idx+1],r:b[idx+2],width:size.width,png:im.toPNG().toString('base64')};});
    await fs.mkdir(path.join(root,'test-results'),{recursive:true});await fs.writeFile(path.join(root,'test-results/video-desktop.png'),Buffer.from(sample.png,'base64'));delete sample.png;await video.screenshot({path:path.join(root,'test-results/video-browser.png')});
-   assert.ok(sample.width>0);if(process.platform==='win32')assert.ok(sample.b>100&&sample.g>60&&sample.r<70,`Video was obscured on the native desktop: ${JSON.stringify(sample)}`);
-   const decoded=await video.locator('video').evaluate(v=>{const c=document.createElement('canvas');c.width=c.height=1;c.getContext('2d').drawImage(v,0,0,1,1);return [...c.getContext('2d').getImageData(0,0,1,1).data];});assert.ok(decoded[0]<70&&decoded[1]>60&&decoded[2]>100);
+   assert.ok(sample.width>0);if(process.platform==='win32')assert.ok(sample.b>40&&sample.g>60&&sample.r<80,`Video was obscured on the native desktop: ${JSON.stringify(sample)}`);
+   const decoded=await video.locator('video').evaluate(v=>{const c=document.createElement('canvas');c.width=c.height=1;c.getContext('2d').drawImage(v,0,0,1,1);return [...c.getContext('2d').getImageData(0,0,1,1).data];});assert.ok(decoded[0]<80&&decoded[1]>60&&decoded[2]>40);
    assert.equal(await video.locator('video').evaluate(v=>v.paused),false);
   }
+  await hidePanel(app);await action(app,{type:'pause'});await action(app,{type:'presence',value:'wander'});await p.pet.waitForFunction(()=>!window.__buildlingsEngine.returning);await app.evaluate(({app})=>{const r=app.__buildlingsRuntime;if(!r.getRuntime().paused)r.togglePause();});
+  for(const kind of ['body','head','timer']){
+    const f=await p.pet.evaluate(()=>window.__buildlingsFrame),at=kind==='timer'?await point(app,p.timer,'#bar-grip'):{x:f.x,y:f.y-(kind==='head'?155:65)*f.scale},target=kind==='timer'?p.timer:p.pet;
+    await pointer(app,at,'move',target);await target.waitForTimeout(140);const start=await video.evaluate(()=>window.framesPresented);await pointer(app,at,'down',target);const colours=[];
+    try{
+      for(let j=0;j<5;j++){
+        if(kind!=='body')await pointer(app,{x:at.x+j*8,y:at.y+j*5},'move',target);
+        await target.waitForTimeout(170);
+        const rgb=process.platform==='win32'?await app.evaluate(async({desktopCapturer,screen})=>{const d=screen.getPrimaryDisplay(),ss=await desktopCapturer.getSources({types:['screen'],thumbnailSize:d.size}),im=(ss.find(s=>s.display_id===String(d.id))||ss[0]).thumbnail,b=im.toBitmap(),s=im.getSize(),i=(Math.floor(s.height*.45)*s.width+Math.floor(s.width*.85))*4;return[b[i+2],b[i+1],b[i]];}):await video.locator('video').evaluate(v=>{const c=document.createElement('canvas');c.width=c.height=1;c.getContext('2d').drawImage(v,0,0,1,1);return [...c.getContext('2d').getImageData(0,0,1,1).data].slice(0,3);});
+        assert.ok(rgb[0]<80&&rgb[1]>60&&rgb[2]>40,`Blank video while holding ${kind}: ${rgb}`);colours.push(rgb[2]);
+      }
+      assert.ok(Math.max(...colours)-Math.min(...colours)>30,`Video frames stopped changing while holding ${kind}`);assert.ok(await video.evaluate(()=>window.framesPresented)>start+10);
+    }finally{await pointer(app,{x:at.x+32,y:at.y+20},'up',target);}
+  }
+  console.log('PASS video colours keep changing during stationary body holds, captured head drags and captured timer drags');
   assert.ok(await video.evaluate(()=>window.framesPresented)>count+20);
   await fs.mkdir(path.join(root,'test-results'),{recursive:true});await video.screenshot({path:path.join(root,'test-results/video-under-overlay.png')});
   console.log('PASS a separate Chromium video keeps decoding coloured frames through native pause/resume, monkey tucking and panel slider changes');

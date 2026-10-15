@@ -31,7 +31,8 @@
   api.focusAction = async action => {
     let error = '';
     try {
-      if (action.type === 'appearance') {
+      if(action.type==='play-demo')api.send({playDemo:action.kind});
+      else if (action.type === 'appearance') {
         if (!['black', 'white'].includes(action.ink)) throw new Error('Choose a marker colour.');
         ink = action.ink; api.focusInk = ink; api.send({ settings: { ink } });
         window.dispatchEvent(new CustomEvent('companion-appearance', { detail: ink }));

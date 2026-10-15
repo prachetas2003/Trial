@@ -79,7 +79,7 @@
     }
     setPresence(value, now) {
       if (value === this.presence) return;
-      this.presence = value; this.pettedUntil = 0; this.strokeEnergy = 0; this.hopStart = null; this.reachStart = null; this.wanderPath = null;
+      this.tossStart=null;this.presence = value; this.pettedUntil = 0; this.strokeEnergy = 0; this.hopStart = null; this.reachStart = null; this.wanderPath = null;
       const b = safeArea(this.area(), this.scale);
       this.returning = value !== 'peek' && (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom);
       this.mode = value === 'peek' ? 'peek' : this.returning ? 'return' : 'idle';
@@ -93,13 +93,13 @@
       if (!value && !this.returning) this.target = { x: this.x, y: this.y };
     }
     beginDrag(cursor, now) {
-      this.dragging = true; this.dragOffset = { x: this.x - cursor.x, y: this.y - cursor.y };
+      this.tossStart=null;this.dragging = true; this.dragOffset = { x: this.x - cursor.x, y: this.y - cursor.y };
       this.dragCursor = { ...cursor }; this.hopStart = null; this.reachStart = null; this.pettedUntil = 0;
       this.wanderPath = null; this.mode = 'drag'; this.lastTime = now;
       this.vx = this.vy = 0;
     }
     dragTo(cursor) { if (this.dragging) this.dragCursor = { ...cursor }; }
-    endDrag(now) {
+    endDrag(now, {toss=false,velocity}={}) {
       if (!this.dragging) return null;
       this.dragging = false; this.actionUntil = now + 1300;
       this.vx = clamp(this.vx, -120, 120); this.vy = clamp(this.vy, -120, 120);
@@ -107,6 +107,7 @@
       this.target = this.presence === 'peek' ? this.peekTarget() : { x: this.x, y: this.y };
       const b = safeArea(this.area(), this.scale); this.returning = this.presence !== 'peek' && (this.x < b.left || this.x > b.right || this.y < b.top || this.y > b.bottom);
       if (this.returning) this.target = { x: clamp(this.x, b.left, b.right), y: clamp(this.y, b.top, b.bottom) };
+      if(toss&&velocity&&this.presence!=='peek'&&!this.returning&&Math.hypot(velocity.x,velocity.y)>80){this.vx=clamp(velocity.x,-420,420);this.vy=clamp(velocity.y,-360,360);this.tossStart=now;this.tossSign=Math.sign(this.vx)||1;this.mode='toss';}
       return { edge: this.edge, edgePosition: this.edgePosition };
     }
     updateHeld(dt) {
@@ -198,12 +199,21 @@
         else if (t < 1) reach = 1 - ease((t - .62) / .38);
         else { this.reachStart = null; this.mode = 'idle'; }
       }
-      return { hop, anticipation, landing, jumpPhase, reach };
+      const toss=this.tossStart==null?0:clamp((now-this.tossStart)/900,0,1);if(toss){hop+=Math.sin(Math.PI*toss)*24;jumpPhase='air';}
+      return { tossAngle:Math.sin(Math.PI*toss)*(this.tossSign||1)*.25, hop, anticipation, landing, jumpPhase, reach };
     }
     step(dt, now, cursor, hovering, pose) {
       this.previous = this.snapshot();
       if (this.dragging) { this.updateHeld(dt); this.heldPose(dt); spring(this.visual.walk, 0, 14, dt); spring(this.visual.pet, 0, 10, dt); return; }
       this.heldPose(dt);
+      if(this.playHeld){this.vx=this.vy=0;spring(this.visual.walk,0,14,dt);return;}
+      if(this.tossStart!=null){
+        const b=this.bounds();this.vx*=Math.exp(-4*dt);this.vy*=Math.exp(-4*dt);this.x=clamp(this.x+this.vx*dt,b.left,b.right);this.y=clamp(this.y+this.vy*dt,b.top,b.bottom);
+        if(this.x===b.left||this.x===b.right)this.vx*=-.18;if(this.y===b.top||this.y===b.bottom)this.vy*=-.18;
+        spring(this.visual.walk,0,14,dt);spring(this.visual.pet,0,10,dt);
+        if(now-this.tossStart>=900){this.tossStart=null;this.vx=this.vy=0;this.target={x:this.x,y:this.y};this.mode='idle';this.actionUntil=now+1800;}
+        return;
+      }
       const edgeTravel = this.presence === 'peek' || this.returning;
       const occupied = !edgeTravel && (this.paused || hovering || now < this.pettedUntil || this.reachStart !== null);
       if (this.presence === 'peek') {

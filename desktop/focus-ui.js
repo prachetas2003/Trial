@@ -39,6 +39,35 @@ root.innerHTML = `
   </section>
   <footer class="desk-footer">Your thoughts and sessions stay on this device.<br><span>No account. Just you and a little monkey.</span></footer>`;
 
+// Category navigation stays above the content and all frequently used controls.
+const nav=root.querySelector('.desk-tabs');nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Settings categories');
+nav.innerHTML=[['focus','Focus timer'],['blocking','Websites & tabs'],['monkey','Monkey'],['appearance','Appearance'],['notes','Notes & history']].map(([id,label],i)=>`<button type="button" role="tab" id="tab-${id}" data-desk-tab="${id}" aria-controls="${id}-view" aria-selected="${i===0}" aria-pressed="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('');
+root.querySelector('.desk-heading').after(nav);
+root.querySelector('.desk-heading h1').textContent='Mischief';
+root.querySelector('.desk-eyebrow').textContent='YOUR DESKTOP COMPANION';
+root.querySelector('.desk-intro').textContent='Start a timer, choose what stays on screen, and make room for your work.';
+root.querySelector('.quick-switches').setAttribute('aria-label','Quick visibility switches');
+const monkey=document.createElement('section');monkey.id='monkey-view';monkey.hidden=true;monkey.innerHTML=`<header class="category-heading"><span class="desk-eyebrow">MONKEY</span><h2>Your little screen companion</h2><p>Movement, encouragement, and a little hands-on play. Nothing demands your attention.</p></header><div id="monkey-controls" class="settings-group"></div><section class="play-card"><div class="section-heading"><h3>Play with Mischief</h3><label class="check-preference"><input id="play-enabled" type="checkbox"> Play interactions</label></div><p class="quiet-copy">Keep click-and-drag on below. Play happens only when you reach for him. Switch Play off for ordinary dragging.</p><ol class="play-guide"><li><strong>Pick up & dangle</strong><span>Grab his head, or drag his body. Paws and tail follow your hand with a little weight.</span></li><li><strong>Squish & release</strong><span>Press and hold his shirt without moving. Let go for a soft rebound.</span></li><li><strong>Tail spring</strong><span>Grab the curled tail, pull gently, then release.</span></li><li><strong>Marker sheen</strong><span>Stroke back and forth across him. The ink catches the light as he relaxes.</span></li><li><strong>Gentle toss</strong><span>Move a held monkey, then release. A short tumble settles safely inside the screen. Edge peeking and reduced motion keep him settled.</span></li></ol></section><section id="monkey-behaviour" class="settings-group"><h3>Movement & focus behaviour</h3></section><section id="monkey-quotes" class="settings-group"><h3>Encouragement</h3></section>`;
+root.querySelector('#appearance-view').before(monkey);
+const find=id=>root.querySelector('#'+id),move=(id,target)=>{const e=find(id);target.append(e.closest('label')||e);};
+find('monkey-controls').append(find('monkey-size').closest('.adjustment'));
+move('marker-ink',find('monkey-controls'));
+for(const id of ['drag-enabled','chase-cursor','peek-focus','return-session'])move(id,find('monkey-behaviour'));
+for(const id of ['auto-quotes','quiet-focus','quote-seconds'])move(id,find('monkey-quotes'));
+find('monkey-quotes').append(find('quotes-status'),find('encourage'));
+// Break options belong beside the timer; notes and history have their own destination.
+const breakOptions=document.createElement('div');breakOptions.className='break-options';move('long-break-minutes',breakOptions);find('focus-view').append(breakOptions);
+root.querySelector('.preferences-card').remove();
+const focusView=find('focus-view');focusView.prepend(root.querySelector('.focus-card'));
+const quickSetups=root.querySelector('.mode-card');quickSetups.querySelector('h2').textContent='Quick setups';quickSetups.querySelector('.quiet-copy').textContent='Presets apply a complete setup. Adjust any switch or category to make your own Custom setup.';
+root.querySelector('[data-mode=deep] small').textContent='Browser rules · quiet monkey';root.querySelector('[data-mode=blocker] strong').textContent='Browser rules only';root.querySelector('[data-mode=blocker] small').textContent='No monkey, timer bar or effects';
+const timerOptions=find('timer-opacity').closest('.adjustment');timerOptions.insertAdjacentHTML('beforeend','<label class="check-preference"><input id="timer-locked" type="checkbox"> Lock timer position</label><p class="quiet-copy">Drag the dotted grip on the floating timer. The padlock button locks or unlocks it. Position is remembered.</p><button id="reset-timer" type="button">Reset timer position</button>');
+find('reset-appearance').textContent='Reset appearance';
+root.querySelector('#blocking-view h2').textContent='Websites & tabs';find('shield-enabled').parentElement.lastChild.textContent=' Use browser rules';
+find('website-form').querySelector('button').textContent='Block website';
+find('block-shorts').parentElement.childNodes[1].textContent=' Hide YouTube Shorts ';find('block-reels').parentElement.childNodes[1].textContent=' Hide Instagram Reels';
+for(const [id,label]of [['focus','Focus timer'],['blocking','Websites & tabs'],['monkey','Monkey'],['appearance','Appearance'],['notes','Notes & history']]){find(id+'-view').setAttribute('role','tabpanel');find(id+'-view').setAttribute('aria-labelledby','tab-'+id);}
+
 const elements = new Map();
 const el = id => { if (!elements.has(id)) elements.set(id, root.querySelector(`#${id}`)); return elements.get(id); };
 const theme = matchMedia('(prefers-color-scheme: dark)');
@@ -83,7 +112,7 @@ function render(state) {
   if (prefKey !== lastPrefs) {
     lastPrefs = prefKey;
     for (const [id, value] of [['focus-minutes', p.focusMinutes], ['break-minutes', p.breakMinutes], ['long-break-minutes', p.longBreakMinutes], ['presence', state.presence || p.presence], ['quote-seconds', p.quoteSeconds], ['marker-ink', state.ink || 'black']]) if (document.activeElement !== el(id) || ['presence','marker-ink'].includes(id)) el(id).value = value;
-    for (const [id, value] of [['peek-focus', p.peekDuringFocus], ['auto-quotes', p.autoQuotes], ['quiet-focus', p.quietFocus], ['drag-enabled', p.dragEnabled], ['chase-cursor', p.chaseCursor], ['completion-sound', p.completionSound], ['return-session', p.returnAfterSession], ['quotes-enabled', p.quotesEnabled], ['show-hud', p.showHud], ['vignette', p.vignette], ['celebrations', p.celebrations]]) el(id).checked = value;
+    for (const [id, value] of [['peek-focus', p.peekDuringFocus], ['auto-quotes', p.autoQuotes], ['quiet-focus', p.quietFocus], ['drag-enabled', p.dragEnabled], ['chase-cursor', p.chaseCursor], ['completion-sound', p.completionSound], ['return-session', p.returnAfterSession], ['quotes-enabled', p.quotesEnabled], ['show-hud', p.showHud], ['vignette', p.vignette], ['celebrations', p.celebrations],['timer-locked',p.timerLocked],['play-enabled',p.playEnabled]]) el(id).checked = value;
   }
   el('quick-monkey').checked = state.presence !== 'hidden';
   for (const [id, value] of [['timer-opacity', p.timerOpacity], ['monkey-size', Math.round(p.monkeyScale * 100)], ['glow-intensity', p.glowIntensity], ['edge-coverage', p.edgeCoverage], ['screen-style', p.screenStyle]]) if (document.activeElement !== el(id)) el(id).value = value;
@@ -151,7 +180,7 @@ function renderShield(state) {
   el('shield-enabled').checked = shield.enabled;
   if (document.activeElement !== el('tab-policy')) el('tab-policy').value = shield.onlyWorkTabs ? 'work' : 'blocked';
   el('restrict-work-sites').checked = shield.restrictWorkSites; el('work-site-option').hidden = !shield.onlyWorkTabs;
-  el('workspace-help').textContent = shield.onlyWorkTabs ? 'Allow the tabs you need. All other tabs and new tabs are locked during focus. Website and feature blocks still apply.' : 'Select Block beside any tab you want unavailable during your focus session.';
+  el('workspace-help').textContent = shield.onlyWorkTabs ? 'Allow the tabs you need. All other tabs and new tabs are locked during focus. Website and feature blocks still apply.' : 'Tick Block this tab beside a page you want unavailable during focus. Your page stays open underneath a cover.';
   el('block-shorts').checked = shield.features.shorts; el('block-reels').checked = shield.features.reels;
   const active = shield.enabled && state.session?.running && state.session.kind === 'focus';
   el('browser-status').textContent = browser.preview ? 'Preview only · real blocking needs the app + extension' : browser.error || (browser.outdated ? 'Reload your updated FocusShield extension to activate protection' : (!browser.connected ? 'Not connected · connect the browser extension' : `${active ? browser.needsAttention ? 'Some tabs need attention' : browser.enforced ? 'Blocking active' : 'Connected · applying restrictions…' : 'Connected · blocking ready'} · ${browser.clients?.map(c => c.name).join(', ') || 'browser'}`));
@@ -182,7 +211,7 @@ function renderShield(state) {
     el('browser-tabs').replaceChildren(...tabs.map(tab => {
       const li = document.createElement('li'), text = document.createElement('div'), title = document.createElement('strong'), url = document.createElement('small'), status = document.createElement('small'), choices = document.createElement('div');
       li.dataset.tabKey = tab.key; title.textContent = tab.title; url.textContent = tab.url; status.className = 'tab-protection'; text.append(title, url, status); choices.className = 'tab-options';
-      const field = shield.onlyWorkTabs ? 'workTabs' : 'lockedTabs', label = shield.onlyWorkTabs ? 'Allow' : 'Block';
+      const field = shield.onlyWorkTabs ? 'workTabs' : 'lockedTabs', label = shield.onlyWorkTabs ? 'Allow during focus' : 'Block this tab';
       const item = document.createElement('label'), input = document.createElement('input'); input.type = 'checkbox'; input.checked = shield[field].includes(tab.key); input.setAttribute('aria-label', `${label}: ${tab.title}`);
       input.onchange = () => {
         const p = current.preferences.shield, opposite = field === 'workTabs' ? 'lockedTabs' : 'workTabs';
@@ -221,8 +250,9 @@ el('website-form').onsubmit = async event => { event.preventDefault(); if (await
 el('extension-folder').onclick = () => act({ type: 'browser-folder' });
 el('copy-pairing').onclick = async () => { if (await act({ type: 'copy-pairing' })) feedback('Pairing code copied. Paste it in your browser extension.'); };
 function section(name) {
-  for (const view of ['focus','blocking','appearance','notes']) el(view + '-view').hidden = view !== name;
-  for (const button of root.querySelectorAll('[data-desk-tab]')) button.setAttribute('aria-pressed', String(button.dataset.deskTab === name));
+  for (const view of ['focus','blocking','monkey','appearance','notes']) el(view + '-view').hidden = view !== name;
+  for (const button of root.querySelectorAll('[data-desk-tab]')) {const selected=button.dataset.deskTab===name;button.setAttribute('aria-pressed',String(selected));if(button.getAttribute('role')==='tab'){button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}}
+  root.querySelector('.desk-intro').textContent={focus:'Set your intention and focus time. Presets and break options are below.',blocking:'Choose websites, features and tabs to restrict during a running focus timer.',monkey:'Choose how Mischief moves, speaks and responds to your hand.',appearance:'Adjust the floating timer, neutral screen edges and celebration effects.',notes:'Save a thought for later, or revisit your recent focus sessions.'}[name];
   lastStatic = ''; if (current) render(current);
   root.scrollIntoView({ block: 'start', behavior: 'instant' });
 }
@@ -230,6 +260,8 @@ for (const button of root.querySelectorAll('[data-desk-tab]')) button.onclick = 
 el('choose-blocking').onclick = () => section('blocking');
 el('quick-monkey').onchange = () => act({ type: 'presence', value: el('quick-monkey').checked ? current.preferences.lastPresence : 'hidden' });
 for (const [id, key, factor] of [['timer-opacity','timerOpacity',1], ['monkey-size','monkeyScale',.01], ['glow-intensity','glowIntensity',1], ['edge-coverage','edgeCoverage',1]]) el(id).oninput = () => { el(id + '-value').textContent = el(id).value + (id === 'edge-coverage' ? ' px' : '%'); act({ type: 'preferences', values: { [key]: Number(el(id).value) * factor } }); };
+el('reset-timer').onclick=()=>act({type:'timer-reset'});
+nav.addEventListener('keydown',e=>{const keys=['ArrowRight','ArrowLeft','Home','End'];if(!keys.includes(e.key))return;const tabs=[...nav.querySelectorAll('[role=tab]')],i=tabs.indexOf(document.activeElement);if(i<0)return;e.preventDefault();const j=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;section(tabs[j].dataset.deskTab);tabs[j].focus();});
 el('screen-style').onchange = () => act({ type: 'preferences', values: { screenStyle: el('screen-style').value } });
 el('reset-appearance').onclick = () => { const d = window.MischiefFocus.defaults; act({ type: 'preferences', values: { timerOpacity: d.timerOpacity, monkeyScale: d.monkeyScale, glowIntensity: d.glowIntensity, screenStyle: d.screenStyle, edgeCoverage: d.edgeCoverage } }); };
 el('start-form').addEventListener('submit', async event => {
@@ -246,7 +278,7 @@ el('thought-form').addEventListener('submit', async event => {
   if (await act({ type: 'note-add', text: el('thought-input').value })) { el('thought-input').value = ''; feedback('Kept for later.'); }
 });
 el('thought-input').addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); el('thought-form').requestSubmit(); } });
-for (const [id, key, check] of [['focus-minutes', 'focusMinutes'], ['break-minutes', 'breakMinutes'], ['long-break-minutes', 'longBreakMinutes'], ['quote-seconds', 'quoteSeconds'], ['peek-focus', 'peekDuringFocus', true], ['auto-quotes', 'autoQuotes', true], ['quiet-focus', 'quietFocus', true], ['drag-enabled', 'dragEnabled', true], ['completion-sound', 'completionSound', true], ['return-session', 'returnAfterSession', true], ['quotes-enabled', 'quotesEnabled', true], ['show-hud', 'showHud', true], ['vignette', 'vignette', true], ['celebrations','celebrations',true]]) {
+for (const [id, key, check] of [['focus-minutes', 'focusMinutes'], ['break-minutes', 'breakMinutes'], ['long-break-minutes', 'longBreakMinutes'], ['quote-seconds', 'quoteSeconds'], ['peek-focus', 'peekDuringFocus', true], ['auto-quotes', 'autoQuotes', true], ['quiet-focus', 'quietFocus', true], ['drag-enabled', 'dragEnabled', true], ['completion-sound', 'completionSound', true], ['return-session', 'returnAfterSession', true], ['quotes-enabled', 'quotesEnabled', true], ['show-hud', 'showHud', true], ['vignette', 'vignette', true], ['celebrations','celebrations',true],['timer-locked','timerLocked',true],['play-enabled','playEnabled',true]]) {
   el(id).addEventListener('change', () => { if (el(id).checkValidity()) act({ type: 'preferences', values: { [key]: check ? el(id).checked : id === 'presence' ? el(id).value : Number(el(id).value) } }); });
 }
 el('presence').addEventListener('change', () => act({ type: 'presence', value: el('presence').value }));
@@ -255,5 +287,5 @@ el('marker-ink').addEventListener('change', () => act({ type: 'appearance', ink:
 el('encourage').addEventListener('click', () => act({ type: 'quote', category: 'hard' }));
 root.querySelector('.close-desk').addEventListener('click', () => api.hideFocus());
 api.onFocusState(render);
-api.onFocusView?.(view => { section(view === 'appearance' ? 'appearance' : view === 'blocking' ? 'blocking' : view === 'thought' ? 'notes' : 'focus'); if (view === 'blocking') el('shield-tabs').scrollIntoView({ block: 'start', behavior: 'instant' }); if (view === 'summary') el('session-summary').scrollIntoView({ block: 'center', behavior: 'instant' }); if (view === 'thought') { el('thought-input').scrollIntoView({ block: 'center', behavior: 'instant' }); el('thought-input').focus(); } });
+api.onFocusView?.(view => { section(view === 'monkey'?'monkey':view === 'appearance' ? 'appearance' : view === 'blocking' ? 'blocking' : view === 'thought' ? 'notes' : 'focus'); if (view === 'blocking') el('shield-tabs').scrollIntoView({ block: 'start', behavior: 'instant' }); if (view === 'summary') el('session-summary').scrollIntoView({ block: 'center', behavior: 'instant' }); if (view === 'thought') { el('thought-input').scrollIntoView({ block: 'center', behavior: 'instant' }); el('thought-input').focus(); } });
 render(await api.getFocusState());

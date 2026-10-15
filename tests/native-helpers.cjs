@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),path=require('node:path'),{spawnSync}=require('node:child_process'),{_electron}=require('playwright');
+const root=path.resolve(__dirname,'..');
+async function until(check,timeout=15000){const end=Date.now()+timeout;do{if(await check())return;await new Promise(r=>setTimeout(r,70));}while(Date.now()<end);assert.fail('Native condition timed out');}
+async function launch(temp,safe=false){const app=await _electron.launch({executablePath:require('electron'),args:['.',...(safe?['--safe-mode']:[]),...(process.platform==='linux'?['--disable-setuid-sandbox',...(safe?[]:['--use-angle=swiftshader'])]:[])],cwd:root,env:{...process.env,BUILDLINGS_TEST_DATA:temp},timeout:25000});await until(()=>app.evaluate(({app})=>!!app.__buildlingsRuntime?.getRuntime().focusWin?.isVisible()));return app;}
+async function pages(app){await until(()=>app.windows().some(p=>p.url().endsWith('/timer.html'))&&app.windows().some(p=>p.url().endsWith('/renderer.html')));const get=name=>app.windows().find(p=>p.url().endsWith('/'+name+'.html'));const p={pet:get('renderer'),timer:get('timer'),effects:get('effects'),panel:get('focus')};await p.pet.waitForFunction(()=>window.__buildlingsFrame);await p.timer.locator('#bar-timer').waitFor({state:'attached'});return p;}
+async function pointer(app,point,op='move',page){
+ if(process.platform==='linux')await app.evaluate(({app,screen},p)=>{app.__cursor=p;screen.getCursorScreenPoint=()=>app.__cursor;},point);
+ let physical=point;if(process.platform==='win32')physical=await app.evaluate(({screen},p)=>screen.dipToScreenPoint(p),{x:Math.round(point.x),y:Math.round(point.y)});
+ const r=spawnSync(process.platform==='win32'?'python':'python3',[path.join(root,'scripts/test-pointer.py'),String(Math.round(physical.x)),String(Math.round(physical.y)),op],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);
+ if(process.platform==='linux'&&page){const w=await app.browserWindow(page);await w.evaluate(w=>{w.setIgnoreMouseEvents(false);w.moveTop();});}
+}
+async function point(app,page,selector){const w=await app.browserWindow(page),b=await w.evaluate(w=>w.getBounds()),r=await page.locator(selector).boundingBox();assert.ok(r,selector+' is not visible');return{x:b.x+r.x+r.width/2,y:b.y+r.y+r.height/2};}
+async function click(app,page,selector){const p=await point(app,page,selector);await pointer(app,p,'move',page);await page.waitForTimeout(120);await pointer(app,p,'click',page);await page.waitForTimeout(160);}
+async function hidePanel(app){await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().focusWin?.hide());}
+async function action(app,a){return app.evaluate(({app},a)=>app.__buildlingsRuntime.applyFocus(a),a);}
+async function toss(app,start,dx,dy){let p=start,end={x:start.x+dx,y:start.y+dy};if(process.platform==='win32'){p=await app.evaluate(({screen},p)=>screen.dipToScreenPoint(p),{x:Math.round(start.x),y:Math.round(start.y)});const q=await app.evaluate(({screen},p)=>screen.dipToScreenPoint(p),{x:Math.round(end.x),y:Math.round(end.y)});dx=q.x-p.x;dy=q.y-p.y;}const r=spawnSync(process.platform==='win32'?'python':'python3',[path.join(root,'scripts/test-pointer.py'),String(Math.round(p.x)),String(Math.round(p.y)),'toss',String(Math.round(dx)),String(Math.round(dy))],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);if(process.platform==='linux')await app.evaluate(({app},p)=>{app.__cursor=p;},end);}
+module.exports={toss,launch,pages,pointer,point,click,hidePanel,action,until};

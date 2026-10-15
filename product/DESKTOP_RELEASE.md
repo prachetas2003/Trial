@@ -1,29 +1,36 @@
-Buildlings 0.9.1 improves launch visibility, milestone visibility and desktop recovery.
+Buildlings 0.10.0 separates native input surfaces, reorganizes controls and adds five hands-on interactions.
 
-- The focus controls open on launch, including when every overlay was hidden.
-  The timer bar appears when enabled; saved silent settings remain respected.
-- 25%, 50% and 75% celebrations remain inside the screen, above the focus edges,
-  with larger coloured pieces, a progress label and a two-second local burst.
-- Windows uses software composition by default for this 2D app, reducing reliance
-  on GPU-backed transparent surfaces alongside browser video. Safe Mode remains
-  available for lower drawing load (30 fps and 1x canvas resolution).
-- Normal monkey painting is capped at 60 fps. Monitor geometry is cached rather
-  than queried for every frame report. One native hit-test path controls mouse
-  pass-through, avoiding conflicting renderer/main toggles.
-- Sleep/lock pauses the timer, releases input capture and hides stale surfaces.
-  Resume/unlock rebuilds the overlay and controls, refreshes monitor bounds and
-  preserves notes, choices and paused time. Reopen controls if they were visible.
-- A frame heartbeat replaces a stalled overlay; crashed/unresponsive controls
-  also recover. Repeated crash loops remain bounded. Sleep rebuilds do not consume
-  the crash budget, and a healthy minute restores that budget.
+- The monkey uses a bounded 420×400 transparent window; the floating timer has
+  its own bounded window. The monitor-size decorations window remains permanently
+  click-through. Clicking or holding either control cannot make a monitor-size
+  surface interactive. Window movement uses asynchronous position updates, not
+  a Windows modal window-drag loop. Windows software graphics remains the default.
+- The timer has a dotted drag grip and a padlock. Move it anywhere, snap near an
+  edge, lock/unlock, and reset its position from Appearance or the tray. Position
+  and lock are saved. Missing monitors fall back to a visible work area.
+- Top navigation: Focus timer, Websites & tabs, Monkey, Appearance, Notes & history.
+  Tabs stay available while scrolling and support arrow/Home/End keyboard input.
+  The timer comes before quick setups. Website/tab actions use explicit labels.
+  Monkey movement, quotes and play have their own category and instructions.
+- Grab the head or drag the body to dangle with pendulum limbs. Press the shirt
+  without moving to squish and rebound. Pull/release the curled tail as a spring.
+  Cursor strokes create a moving marker sheen and happy expression. Release a
+  moving drag for a short bounded toss and soft settle. Edge peeking prevents
+  throws, reduced motion suppresses throws and damps springs. Play can be switched
+  off independently, retaining ordinary drag. No points, purchases or APIs.
+- Sleep recovery rebuilds all three surfaces. A failed pet drawing leaves the
+  timer usable. Actual pet/timer renderer failures and a stalled timer recover
+  with the session safely paused. Existing saved notes, history and pairing stay.
 
-Validation includes simulated sleep events, actual renderer crashes/long tasks,
-normal Windows software composition and local video playback beneath the native
-app. These checks do not reproduce physical laptop sleep, YouTube hardware
-video decoding or the affected laptop's GPU driver. The user's white-video root
-cause remains unconfirmed; the graphics change is a compatibility mitigation.
+Regression checks include actual native presses, holds, drags, release trajectories,
+lock/reset, crash recovery, simulated sleep, and a separate browser video whose
+colours change while inputs remain held. Windows checks sample visible desktop
+pixels during these interactions, rather than checking only decoded frames.
+These checks do not reproduce the user's physical laptop or YouTube hardware
+video decoding. The exact machine-specific blank-video fault remains unconfirmed;
+the input-surface change addresses the architecture implicated by the new report.
 
-Quit the old app, extract the entire ZIP into a fresh folder and run Buildlings.exe.
-Saved notes, history and pairing stay shared. FocusShield is unchanged (0.8.0);
-an already updated extension needs no reinstall. Windows 10/11 x64 preview.
-SHA256SUMS.txt accompanies the archive.
+Quit the previous app with Ctrl+Alt+Q, extract the entire ZIP into a fresh folder,
+and run Buildlings.exe. Start-Safe-Mode.cmd remains available for 30-fps/1x drawing.
+FocusShield is unchanged at 0.8.0; an already updated extension needs no reinstall.
+Windows 10/11 x64 preview. SHA256SUMS.txt accompanies the archive.
