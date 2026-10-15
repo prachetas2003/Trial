@@ -44,6 +44,9 @@ and Safe Mode plus all 11 unchanged extension files match. Download size:
 **163,586,686 bytes**. SHA256:
 `c186c556a90c8078090536b4dbf1bba46e3ce2f26f8c8dd17202e7849f2206b6`.
 
+All **21 checked live website/preview assets** match source after deployment.
+Pages commit: `7286ec7`; website links point to the verified 0.10.1 release.
+
 ---
 
 # Separate input surfaces, clearer categories and five play interactions — 0.10.0
