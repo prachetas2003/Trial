@@ -257,7 +257,7 @@ function updateInteractive(cursor=screen.getCursorScreenPoint()){
  const inBody=f&&((cursor.x-f.x)/(74*s))**2+((cursor.y-(f.y-94*s-f.hop))/(86*s))**2<=1;
  const tailX=f?.x+(f?.edge==='left'&&f?.mode==='peek'?-95:95)*s;
  const inTail=f&&focus.preferences.playEnabled&&Math.hypot((cursor.x-tailX)/(.9*s),(cursor.y-(f.y-95*s-f.hop))/s)<55;
- setInteractive(!hidden&&focus.preferences.dragEnabled&&(dragging||inBody||inTail));
+ setInteractive(!hidden&&f?.renderer==='canvas2d'&&focus.preferences.dragEnabled&&(dragging||inBody||inTail));
  if(timerWin&&!timerWin.isDestroyed()){
   const b=timerWin.getBounds(),r=hudRect;
   const hot=focus.preferences.showHud&&(timerGrab||(r&&cursor.x>=b.x+r.x&&cursor.x<=b.x+r.x+r.width&&cursor.y>=b.y+r.y&&cursor.y<=b.y+r.y+r.height));

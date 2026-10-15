@@ -115,7 +115,7 @@ function frame(now) {
     host.style.transformOrigin = `${scene?.footX ?? WINDOW.footX}px ${scene?.footY ?? WINDOW.footY}px`;
     if (enabled && now-lastPaint >= 1000/(compatibility?30:60)-.5) {
       try { scene?.draw(next, now); lastPaint=now; }
-      catch { scene=null; dragEnabled=false; if(grabZone)grabZone.hidden=true; window.companion.diagnostic?.({type:'renderer-error'}); hud?.showMessage('The monkey drawing failed. The timer still works; restart the overlay from the tray.'); }
+      catch { stopDrag(true);scene=null; dragEnabled=false;host.style.visibility='hidden';window.__buildlingsRenderer={type:'unavailable'}; if(grabZone)grabZone.hidden=true;if(tailZone)tailZone.hidden=true; window.companion.diagnostic?.({type:'renderer-error'}); hud?.showMessage('The monkey drawing failed. The timer still works; restart the overlay from the tray.'); }
     }
     if(tailZone){tailZone.style.transform=`translateY(${-next.hop}px)`;tailZone.style.left=next.edge==='left'&&next.mode==='peek'?'30px':'224px';}
     if (grabZone) grabZone.style.transform = `translateY(${-next.hop}px)`;
