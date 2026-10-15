@@ -1,3 +1,70 @@
+# Visible startup, milestone visibility and desktop recovery — 0.9.1
+
+Source: `c4d1a88`. Windows workflow:
+https://github.com/prachetas2003/Trial/actions/runs/38708027052
+
+The previous version could launch without a discoverable entry point when saved
+settings hid the timer and monkey. Launch now opens the Focus controls even in
+that state, preserving the user's saved overlay switches. Native startup tests
+launch with everything hidden and use the visible controls to restore the bar.
+Normal enabled timer visibility and native top-bar controls remain covered.
+
+Milestones could originate beyond a screen margin while the monkey peeked,
+and focus shading appeared above the small particles. Origins now stay inside
+the work area, pieces are larger and last about two seconds, and a brief
+percentage label appears above the edge shading. Browser tests measure particle
+bounds at all four margins with a 60% monkey, exercise real 25/50/75 thresholds,
+verify click-through, switches/reduced motion and complete cleanup. Counts stay
+10 local pieces per milestone and 14 local plus 34 screen pieces at completion.
+
+The original power handler merely sent a motion-clock reset to an existing
+window. Sleep/lock now pauses, releases input, stops polling and hides old
+surfaces. Wake/unlock coalesces paired events, refreshes displays and replaces
+the overlay and controls, restoring the panel only if it was visible. The timer
+stays paused. Four simulated native sleep/wake cycles preserve elapsed time,
+notes and visibility. Sleep rebuilds do not consume the crash-recovery budget.
+A genuinely blocked renderer (20-second long task) is replaced by heartbeat
+recovery, and an actually crashed controls renderer is replaced and usable.
+A healthy minute resets the overlay crash budget; repeated crash loops are bounded.
+
+Windows now uses software composition by default for this Canvas2D companion;
+Safe Mode additionally limits drawing to 30 fps and 1x resolution. Normal drawing
+is capped at 60 fps. Display geometry is cached between display-change events.
+The main process controls native hit testing instead of accepting competing
+renderer toggles. Windows checks verify hardware composition is disabled on a
+normal launch and retain the Safe Mode and existing native-interaction tests.
+
+The video regression runs a separate headed Chromium browser with a local VP8
+video under the native app, uses real OS pointer clicks on pause/resume/tuck plus
+panel slider changes, verifies decoded frame progress/colour, and samples the actual
+Windows desktop pixels after each interaction. The Windows pixel assertions
+passed. Local Xvfb has no compositing window manager, so those pixel assertions
+are explicitly unrun there; local decoding/input checks passed.
+
+Limitations: simulated power events are not physical laptop sleep. A local VP8
+clip is not YouTube hardware video decoding. The user's particular GPU/driver
+and white-video root cause remain unconfirmed. Software composition is a
+compatibility mitigation, not evidence of reproducing that original fault.
+FocusShield code/version is unchanged (0.8.0); no extension reinstall is needed.
+
+The Windows workflow passed every step: fresh install, **75 unit/server checks**,
+**20 native interaction checks**, **seven stability checks**, **five startup/wake
+groups**, **four panel/scroll groups**, **six polish groups**, **two video groups**,
+**eight extension groups**, packaging, checksum generation and public release.
+Local validation passed the 75 unit/server checks, 20 native checks, seven
+stability checks, four startup/wake groups, four panel groups, six polish groups
+and video decoding/input checks. Windows-only graphics and desktop pixel
+assertions were verified by the Windows workflow, not by uncomposited Xvfb.
+
+Release: [desktop-preview-22](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-22).
+The public ZIP was downloaded back, SHA256 and CRC verified. It reports 0.9.1;
+all 26 tracked desktop files in the ASAR match source. The Safe Mode launcher,
+quote references and all 11 unchanged FocusShield files match. Archive size:
+**163,576,102 bytes**. SHA256:
+`8d20b5cf7f15dd459982d08de6d61c358d3d279d734c5afe7584d1063405aaaa`.
+
+---
+
 # Synchronized focus, themed bubbles and celebrations — 0.9.0
 
 Release: [desktop-preview-21](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-21)
