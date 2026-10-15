@@ -2,10 +2,25 @@
 // Checks decoded frames AND desktop-composited pixels while native controls are used.
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),http=require('node:http');
-const {spawnSync}=require('node:child_process');
 const {_electron,chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const {pages,click,hidePanel,pointer,point,action}=require('./native-helpers.cjs');
+// Select a video pixel by geometry, before examining its colour. A doodle's
+// black ink is expected to occlude pixels underneath the doodle, not a video fault.
+async function sampleDesktop(app){return app.evaluate(async({app,desktopCapturer,screen})=>{
+ const runtime=app.__buildlingsRuntime.getRuntime(),d=screen.getPrimaryDisplay();
+ const bounds=()=>[runtime.win,runtime.timerWin,runtime.focusWin].filter(w=>w&&!w.isDestroyed()&&w.isVisible()).map(w=>w.getBounds());
+ const before=bounds(),sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:d.size});
+ const im=(sources.find(s=>s.display_id===String(d.id))||sources[0]).thumbnail,size=im.getSize(),bitmap=im.toBitmap(),excluded=[...before,...bounds()];
+ let point;
+ for(const y of [.25,.35,.45,.55,.65,.75,.8]){for(const x of [.95,.85,.75,.65,.55,.5,.45,.35,.25,.15,.05]){
+   const p={x:d.bounds.x+d.size.width*x,y:d.bounds.y+d.size.height*y};
+   if(excluded.every(b=>p.x<b.x-40||p.x>b.x+b.width+40||p.y<b.y-40||p.y>b.y+b.height+40)){point=p;break;}
+ }if(point)break;}
+ if(!point)throw new Error('No uncovered video pixel available: '+JSON.stringify(excluded));
+ const x=Math.min(size.width-1,Math.floor((point.x-d.bounds.x)/d.size.width*size.width)),y=Math.min(size.height-1,Math.floor((point.y-d.bounds.y)/d.size.height*size.height)),i=(y*size.width+x)*4;
+ return{r:bitmap[i+2],g:bitmap[i+1],b:bitmap[i],width:size.width,point,excluded,png:im.toPNG().toString('base64')};
+});}
 (async()=>{
  const clip=await fs.readFile(path.join(__dirname,'fixtures/focus-video.webm'));
  const server=http.createServer((req,res)=>{if(req.url==='/clip.webm'){res.writeHead(200,{'Content-Type':'video/webm'});res.end(clip);return;}
@@ -25,7 +40,7 @@ const {pages,click,hidePanel,pointer,point,action}=require('./native-helpers.cjs
    await click(app,overlay,'#bar-pause');await overlay.waitForFunction(r=>document.querySelector('#bar-label').textContent===(r?'Paused':'Focus'),i%2===0);
    await panel.locator('[data-desk-tab=appearance]').click();await panel.locator('#timer-opacity').focus();await panel.locator('#timer-opacity').press(i%2?'ArrowRight':'ArrowLeft');
    await click(app,overlay,'#bar-tuck');
-   const sample=await app.evaluate(async({desktopCapturer,screen})=>{const d=screen.getPrimaryDisplay(),sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:d.size.width,height:d.size.height}}),s=sources.find(s=>s.display_id===String(d.id))||sources[0],im=s.thumbnail,b=im.toBitmap(),size=im.getSize(),idx=(Math.floor(size.height*.65)*size.width+Math.floor(size.width*.75))*4;return{b:b[idx],g:b[idx+1],r:b[idx+2],width:size.width,png:im.toPNG().toString('base64')};});
+   const sample=await sampleDesktop(app);
    await fs.mkdir(path.join(root,'test-results'),{recursive:true});await fs.writeFile(path.join(root,'test-results/video-desktop.png'),Buffer.from(sample.png,'base64'));delete sample.png;await video.screenshot({path:path.join(root,'test-results/video-browser.png')});
    assert.ok(sample.width>0);if(process.platform==='win32')assert.ok(sample.b>40&&sample.g>60&&sample.r<80,`Video was obscured on the native desktop: ${JSON.stringify(sample)}`);
    const decoded=await video.locator('video').evaluate(v=>{const c=document.createElement('canvas');c.width=c.height=1;c.getContext('2d').drawImage(v,0,0,1,1);return [...c.getContext('2d').getImageData(0,0,1,1).data];});assert.ok(decoded[0]<80&&decoded[1]>60&&decoded[2]>40);
@@ -39,7 +54,11 @@ const {pages,click,hidePanel,pointer,point,action}=require('./native-helpers.cjs
       for(let j=0;j<5;j++){
         if(kind!=='body')await pointer(app,{x:at.x+j*8,y:at.y+j*5},'move',target);
         await target.waitForTimeout(170);
-        const rgb=process.platform==='win32'?await app.evaluate(async({desktopCapturer,screen})=>{const d=screen.getPrimaryDisplay(),ss=await desktopCapturer.getSources({types:['screen'],thumbnailSize:d.size}),im=(ss.find(s=>s.display_id===String(d.id))||ss[0]).thumbnail,b=im.toBitmap(),s=im.getSize(),i=(Math.floor(s.height*.45)*s.width+Math.floor(s.width*.85))*4;return[b[i+2],b[i+1],b[i]];}):await video.locator('video').evaluate(v=>{const c=document.createElement('canvas');c.width=c.height=1;c.getContext('2d').drawImage(v,0,0,1,1);return [...c.getContext('2d').getImageData(0,0,1,1).data].slice(0,3);});
+        let rgb;
+        if(process.platform==='win32'){
+          const sample=await sampleDesktop(app);await fs.writeFile(path.join(root,'test-results',`video-hold-${kind}-${j}.png`),Buffer.from(sample.png,'base64'));
+          rgb=[sample.r,sample.g,sample.b];
+        }else rgb=await video.locator('video').evaluate(v=>{const c=document.createElement('canvas');c.width=c.height=1;c.getContext('2d').drawImage(v,0,0,1,1);return [...c.getContext('2d').getImageData(0,0,1,1).data].slice(0,3);});
         assert.ok(rgb[0]<80&&rgb[1]>60&&rgb[2]>40,`Blank video while holding ${kind}: ${rgb}`);colours.push(rgb[2]);
       }
       assert.ok(Math.max(...colours)-Math.min(...colours)>30,`Video frames stopped changing while holding ${kind}`);assert.ok(await video.evaluate(()=>window.framesPresented)>start+10);
