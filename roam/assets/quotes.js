@@ -4,483 +4,483 @@
   "everyday": [
     {
       "id": "A001",
-      "text": "You don't have to arrive impressive. Just arrive."
+      "text": "You already did something important: you chose to begin."
     },
     {
       "id": "A002",
-      "text": "I'm here. You can take it one line at a time."
+      "text": "Starting turns a vague worry into something you can actually work with."
     },
     {
       "id": "A003",
-      "text": "Open the thing. That's enough for a beginning."
+      "text": "You do not need to finish the whole journey. Just keep the next promise."
     },
     {
       "id": "A004",
-      "text": "You can start before you feel ready."
+      "text": "You are not behind. You are in the part where the work is getting done."
     },
     {
       "id": "A005",
-      "text": "A rough start is still a real start."
+      "text": "The decision to stay matters more than how dramatic this session feels."
     },
     {
       "id": "A006",
-      "text": "One small honest step can carry more than it looks."
+      "text": "Once you have started, the question gets smaller: what is the next useful step?"
     },
     {
       "id": "A007",
-      "text": "You don't need the whole map. Just the next turn."
+      "text": "You do not need another burst of motivation. You already have a direction."
     },
     {
       "id": "A008",
-      "text": "Coming back counts as courage too."
+      "text": "Keep going long enough to give yourself evidence that you can."
     },
     {
       "id": "A009",
-      "text": "The blank page isn't judging you. Neither am I."
+      "text": "Every time you follow through, you make future follow-through a little easier to believe."
     },
     {
       "id": "A010",
-      "text": "We can make this a little less impossible together."
+      "text": "You are doing the part that people usually avoid: staying when the novelty wears off."
     },
     {
       "id": "A011",
-      "text": "You don't need a perfect day to make a useful hour."
+      "text": "This does not have to feel exciting to be valuable."
     },
     {
       "id": "A012",
-      "text": "Start with the part you can reach."
+      "text": "You are not wasting time by struggling with something worth learning."
     },
     {
       "id": "A013",
-      "text": "You can be unsure and still be moving."
+      "text": "Hard does not mean wrong. Sometimes hard just means new."
     },
     {
       "id": "A014",
-      "text": "Today doesn't have to look like anyone else's day."
+      "text": "You can feel resistance and still be exactly where you need to be."
     },
     {
       "id": "A015",
-      "text": "Your pace is allowed to be yours."
+      "text": "If this feels awkward, good. Awkward is often what learning feels like up close."
     },
     {
       "id": "A016",
-      "text": "Quiet effort still belongs to the story."
+      "text": "Progress can be quiet enough that you only notice it later."
     },
     {
       "id": "A017",
-      "text": "Some good work happens without an audience."
+      "text": "The work is not asking you to be fearless. It is asking you to stay."
     },
     {
       "id": "A018",
-      "text": "You don't have to prove anything to begin."
+      "text": "You do not have to prove you can do everything. Prove you can do the next thing."
     },
     {
       "id": "A019",
-      "text": "I'll keep you company while you figure out the next bit."
+      "text": "One honest block is how impossible things become ordinary."
     },
     {
       "id": "A020",
-      "text": "A tiny step can still change the direction of the day."
+      "text": "You are allowed to trust the process before you can see the result."
     },
     {
       "id": "A021",
-      "text": "There's room here for an imperfect attempt."
+      "text": "Your job right now is not to predict the outcome. It is to give the attempt a fair chance."
     },
     {
       "id": "A022",
-      "text": "You can learn while you're doing it."
+      "text": "You are building more than an output. You are building a pattern of returning."
     },
     {
       "id": "A023",
-      "text": "Not knowing yet is a perfectly normal place to be."
+      "text": "Do not judge the whole project from the hardest five minutes."
     },
     {
       "id": "A024",
-      "text": "An unfinished idea is welcome at this desk."
+      "text": "Confusion is not a sign to leave. It is often a sign that you are working on something new."
     },
     {
       "id": "A025",
-      "text": "You don't have to impress a doodle monkey."
+      "text": "You have already crossed the line between thinking about it and doing it."
     },
     {
       "id": "A026",
-      "text": "I brought absolutely no judgment. Also no snacks. Sorry."
+      "text": "Momentum does not always feel like momentum. Sometimes it just feels like not stopping."
     },
     {
       "id": "A027",
-      "text": "If today is weird, we can be weird together."
+      "text": "You do not need to be certain. You only need to keep testing the next step."
     },
     {
       "id": "A028",
-      "text": "I can sit quietly while you find your words."
+      "text": "Every difficult repetition makes this territory a little less unfamiliar."
     },
     {
       "id": "A029",
-      "text": "You're welcome here on the messy days too."
+      "text": "If you keep showing up, today's hard thing gets fewer chances to scare you tomorrow."
     },
     {
       "id": "A030",
-      "text": "I'm not keeping score. I'm keeping you company."
+      "text": "The task may be ordinary, but the habit of following through is not."
     },
     {
       "id": "A031",
-      "text": "You do the thinking. I'll handle the moral support."
+      "text": "You are practicing being someone who can rely on themselves."
     },
     {
       "id": "A032",
-      "text": "A little silliness belongs beside serious dreams."
+      "text": "One imperfect attempt gives you more to work with than ten perfect plans."
     },
     {
       "id": "A033",
-      "text": "I saved you the good branch. Excellent working conditions."
+      "text": "You are not supposed to know everything before you begin."
     },
     {
       "id": "A034",
-      "text": "My tail is curled in support of your mysterious human plans."
+      "text": "Your first job is not to be brilliant. It is to stay in the room."
     },
     {
       "id": "A035",
-      "text": "I can't solve the problem, but I can stay nearby."
+      "text": "Keep the promise small enough that you can actually keep it."
     },
     {
       "id": "A036",
-      "text": "You are more interesting than your to-do list."
+      "text": "You can dislike this part and still be proud that you are doing it."
     },
     {
       "id": "A037",
-      "text": "There's more to you than what gets finished today."
+      "text": "The fact that this takes effort does not mean you chose badly."
     },
     {
       "id": "A038",
-      "text": "One monkey. Plenty of patience."
+      "text": "Most meaningful things have a boring middle. Welcome to the middle."
     },
     {
       "id": "A039",
-      "text": "If this takes another try, I'll still be here."
+      "text": "You do not need to feel productive every minute for the session to count."
     },
     {
       "id": "A040",
-      "text": "A complicated day can still have one decent moment."
+      "text": "A rough session can still strengthen the habit of returning."
     },
     {
       "id": "A041",
-      "text": "You can change the plan without calling the day a failure."
+      "text": "Every time you restart instead of quitting, you change the story a little."
     },
     {
       "id": "A042",
-      "text": "An awkward draft is a perfectly respectable thing to have."
+      "text": "You are not starting from zero. You are starting from everything you learned last time."
     },
     {
       "id": "A043",
-      "text": "Even monkeys miss a branch sometimes."
+      "text": "Do not confuse slow progress with no progress."
     },
     {
       "id": "A044",
-      "text": "You can start over without starting from nothing."
+      "text": "The next step does not need to impress you. It just needs to exist."
     },
     {
       "id": "A045",
-      "text": "A mistake can give you a better question."
+      "text": "You can make the task smaller without making the goal smaller."
     },
     {
       "id": "A046",
-      "text": "You don't have to turn one hard moment into a verdict."
+      "text": "Staying with one problem a little longer is often where clarity shows up."
     },
     {
       "id": "A047",
-      "text": "Whatever happens with this task, you're still allowed to be proud of trying."
+      "text": "You are allowed to take yourself seriously before anyone else does."
     },
     {
       "id": "A048",
-      "text": "Thanks for sharing a little corner of your screen with me."
+      "text": "Future-you does not need a heroic version of you. They need a consistent one."
     },
     {
       "id": "A049",
-      "text": "Even if the task is ordinary, showing up is still practice."
+      "text": "Today does not need to be legendary. It just needs one thing moved forward."
     },
     {
       "id": "A050",
-      "text": "The task may be small. The habit of returning isn't."
+      "text": "You are still on the path, even if this part looks nothing like the highlight reel."
     },
     {
       "id": "A051",
-      "text": "Discipline is keeping a promise after the mood changes."
+      "text": "Finishing is useful. Returning is powerful."
     },
     {
       "id": "A052",
-      "text": "You don't need to feel motivated to do one honest piece."
+      "text": "You do not have to earn confidence first. Sometimes confidence arrives after the evidence."
     },
     {
       "id": "A053",
-      "text": "Do the next useful thing before negotiating with your mood."
+      "text": "If you made one choice to continue, the session has already taught you something about yourself."
     },
     {
       "id": "A054",
-      "text": "A little resistance doesn't get the final vote."
+      "text": "You can let the result be uncertain and still make the effort deliberate."
     },
     {
       "id": "A055",
-      "text": "Some work builds results. Some work builds your ability to work."
+      "text": "Stay with it long enough to discover what happens after the urge to stop."
     },
     {
       "id": "A056",
-      "text": "Hard things teach you that discomfort isn't always a stop sign."
+      "text": "I'm here. You do not have to do this part alone."
     },
     {
       "id": "A057",
-      "text": "You can dislike this step and still choose it on purpose."
+      "text": "You work. I'll keep the little corner of the screen warm."
     },
     {
       "id": "A058",
-      "text": "One kept promise makes the next one easier to believe."
+      "text": "No performance required. I'm just glad you're here."
     },
     {
       "id": "A059",
-      "text": "The boring middle is where a lot of good things are built."
+      "text": "If today feels strange, I can be your tiny normal thing."
     },
     {
       "id": "A060",
-      "text": "Consistency is courage in ordinary clothes."
+      "text": "You do not have to explain the hard part to me. I can just stay."
     },
     {
       "id": "A061",
-      "text": "Don't wait for perfect energy. Use the energy you actually have."
+      "text": "I brought company. You bring whatever energy you have."
     },
     {
       "id": "A062",
-      "text": "Five focused minutes are better than fifty minutes of circling."
+      "text": "You can be quiet. I am very good at quiet company."
     },
     {
       "id": "A063",
-      "text": "You don't have to win the day. Just honor this block."
+      "text": "If you need a minute, I'll still be here after the minute."
     },
     {
       "id": "A064",
-      "text": "Finish the next honest piece. Then reassess."
+      "text": "I am not counting your mistakes. I am counting myself lucky to hang out here."
     },
     {
       "id": "A065",
-      "text": "Your future self benefits from the work nobody applauds."
+      "text": "You do the human stuff. I'll handle being a small monkey nearby."
     },
     {
       "id": "A066",
-      "text": "Repetition is how awkward things become familiar."
+      "text": "Nothing to prove to me. We can just keep going."
     },
     {
       "id": "A067",
-      "text": "You are allowed to be a beginner and still take the practice seriously."
+      "text": "If your brain is noisy, you do not have to fight it alone."
     },
     {
       "id": "A068",
-      "text": "Every return makes focus a little more familiar."
+      "text": "I saved you the good branch. It has excellent thinking conditions."
     },
     {
       "id": "A069",
-      "text": "Progress is often quiet enough to miss while it's happening."
+      "text": "You are allowed to have a messy day and still have good company."
     },
     {
       "id": "A070",
-      "text": "You don't need a dramatic breakthrough. You need another useful attempt."
+      "text": "I do not care how impressive the task is. I care that it matters to you."
     },
     {
       "id": "A071",
-      "text": "Small standards kept repeatedly become character."
+      "text": "I can sit beside an unfinished thing. No problem."
     },
     {
       "id": "A072",
-      "text": "Try before you decide you can't."
+      "text": "You do not need to be cheerful for me to stay."
     },
     {
       "id": "A073",
-      "text": "The first answer doesn't need to be good. It needs to exist."
+      "text": "Even if this session is rough, we are still a team."
     },
     {
       "id": "A074",
-      "text": "Stuck is information. Change the angle, not the verdict."
+      "text": "I am not here to judge the pace. I am here to keep you company."
     },
     {
       "id": "A075",
-      "text": "Confusion can be the doorway, not the conclusion."
+      "text": "One little monkey. Zero deadlines."
     },
     {
       "id": "A076",
-      "text": "A failed attempt can save you from ten wrong turns."
+      "text": "If the world feels loud, we can make this corner small."
     },
     {
       "id": "A077",
-      "text": "Stay with the question long enough to learn its shape."
+      "text": "You can take the pressure down a notch. I am not going anywhere."
     },
     {
       "id": "A078",
-      "text": "Make the problem smaller until you can move it."
+      "text": "You do not have to carry the whole day into this one moment."
     },
     {
       "id": "A079",
-      "text": "Don't confuse a difficult hour with a permanent limit."
+      "text": "I'll be right here while you find your footing."
     },
     {
       "id": "A080",
-      "text": "One more thoughtful attempt can teach you more than another hour of worrying."
+      "text": "You are allowed to be tired and still worthy of encouragement."
     },
     {
       "id": "A081",
-      "text": "The work doesn't need your drama. It needs your attention."
+      "text": "I like you on the days you get things done and the days you do not."
     },
     {
       "id": "A082",
-      "text": "Your mood can come along, but it doesn't have to drive."
+      "text": "We can make this an ordinary, decent little moment."
     },
     {
       "id": "A083",
-      "text": "You build self-trust by doing what you said you'd try."
+      "text": "If you lose the thread, come back. I'll still be holding the branch."
     },
     {
       "id": "A084",
-      "text": "The point isn't to suffer. It's to become someone you can rely on."
+      "text": "Your work can be unfinished. My company is not conditional."
     },
     {
       "id": "A085",
-      "text": "Being disciplined doesn't mean being harsh with yourself."
+      "text": "Thanks for letting me share a little piece of your day."
     },
     {
       "id": "A086",
-      "text": "Every hard thing you do on purpose expands what “normal” feels like."
+      "text": "Tiny science note: specific 'when, where, and how' plans make follow-through more likely. You already chose the task; make the next step obvious."
     },
     {
       "id": "A087",
-      "text": "You don't need a perfect streak. You need a reliable way back."
+      "text": "Researchers call them implementation intentions: an 'if this, then I do that' plan can make starting easier when the cue appears."
     },
     {
       "id": "A088",
-      "text": "Start again before shame turns one missed day into a week."
+      "text": "Planning the exact moment you will act can reduce how much you have to negotiate with yourself later."
     },
     {
       "id": "A089",
-      "text": "Sometimes the strongest move is simply not quitting on the next step."
+      "text": "A clear cue plus a clear next action is powerful. Less deciding, more doing."
     },
     {
       "id": "A090",
-      "text": "Give this block your full attention. The rest of the day can wait."
+      "text": "Habit research suggests repeated actions in a consistent context become more automatic over time. Every return is practice."
     },
     {
       "id": "A091",
-      "text": "You haven't met every version of yourself yet."
+      "text": "There is no magical 21-day rule for habits. Repetition matters more than hitting a perfect number."
     },
     {
       "id": "A092",
-      "text": "Someone will make something wonderful. Why not you?"
+      "text": "Automaticity grows gradually. If this still takes effort, that does not mean the habit is failing."
     },
     {
       "id": "A093",
-      "text": "Your ideas deserve an experiment, not just a daydream."
+      "text": "Consistency gives your future self fewer decisions to make. That is part of how habits get easier."
     },
     {
       "id": "A094",
-      "text": "You are allowed to want a bigger life than the one you know."
+      "text": "Self-efficacy research points to mastery experiences as a major source of confidence. Sometimes doing comes before believing."
     },
     {
       "id": "A095",
-      "text": "One day, today's difficult thing may be your easy thing."
+      "text": "Actually completing difficult things gives you evidence about your own capability. Confidence can be built, not merely felt."
     },
     {
       "id": "A096",
-      "text": "You don't need permission to take your own work seriously."
+      "text": "Success after effort is especially useful evidence for self-belief. This hard part can become part of that evidence."
     },
     {
       "id": "A097",
-      "text": "A small start is still a vote for a larger future."
+      "text": "Your brain does not need a speech about confidence as much as you need another real experience of following through."
     },
     {
       "id": "A098",
-      "text": "Being new at something isn't evidence you don't belong."
+      "text": "Studies of knowledge workers found that even small progress can strongly improve motivation and how work feels."
     },
     {
       "id": "A099",
-      "text": "Make the attempt you wish you'd made."
+      "text": "Small wins are not fake wins. Progress is one of the things that helps motivation keep moving."
     },
     {
       "id": "A100",
-      "text": "You can build something that didn't exist yesterday."
+      "text": "Moving one meaningful thing forward can matter more to motivation than waiting for a huge breakthrough."
     },
     {
       "id": "A101",
-      "text": "The gap between taste and skill closes by making things."
+      "text": "If you can see progress, even a little, your motivation has something real to respond to."
     },
     {
       "id": "A102",
-      "text": "Don't wait to feel like the kind of person who can do it."
+      "text": "Research on attention residue suggests switching tasks can leave part of your attention stuck on the previous one."
     },
     {
       "id": "A103",
-      "text": "Your future isn't decided by this one session."
+      "text": "Staying with one task for this block is not boring discipline; it gives your attention fewer places to leak."
     },
     {
       "id": "A104",
-      "text": "Nobody can promise it'll work. That's what makes trying brave."
+      "text": "Every unnecessary switch asks your attention to relocate. One thing at a time is a kindness to your focus."
     },
     {
       "id": "A105",
-      "text": "Keep enough curiosity alive to surprise yourself."
+      "text": "If another task pops into your head, writing it down can help you return instead of carrying it around."
     },
     {
       "id": "A106",
-      "text": "The dream can be enormous. Today's step can be tiny."
+      "text": "You are allowed to pause without turning the pause into a verdict."
     },
     {
       "id": "A107",
-      "text": "You may be closer to a breakthrough in skill than your feelings can measure."
+      "text": "Rest does not erase the work you already did."
     },
     {
       "id": "A108",
-      "text": "Take your own potential seriously enough to practice."
+      "text": "A break can be part of staying with something for the long run."
     },
     {
       "id": "A109",
-      "text": "You're a person, not a progress bar."
+      "text": "You do not need to squeeze value out of every minute."
     },
     {
       "id": "A110",
-      "text": "Rest isn't a prize you have to earn."
+      "text": "Enough for now can still be part of a serious ambition."
     },
     {
       "id": "A111",
-      "text": "A break can protect the part of you that wants to try again."
+      "text": "One rough day cannot cancel a direction you keep choosing."
     },
     {
       "id": "A112",
-      "text": "Unclench your jaw. Yes, that one."
+      "text": "You are not a productivity score with a name attached."
     },
     {
       "id": "A113",
-      "text": "The world can wait while you drink some water."
+      "text": "Stopping before you are empty is allowed."
     },
     {
       "id": "A114",
-      "text": "A rested brain makes kinder decisions."
+      "text": "Water, food, sleep, sunlight: boring advice, surprisingly useful equipment."
     },
     {
       "id": "A115",
-      "text": "You don't have to squeeze one more drop out of this hour."
+      "text": "You can care deeply about your work without being cruel to yourself."
     },
     {
       "id": "A116",
-      "text": "Nothing falls apart because you looked away from the screen."
+      "text": "The goal is not to become someone who never gets tired. The goal is to know how to return."
     },
     {
       "id": "A117",
-      "text": "Enough is a word you're allowed to use."
+      "text": "A sustainable pace still counts as ambition."
     },
     {
       "id": "A118",
-      "text": "Ambition works better when it has somewhere to recover."
+      "text": "Your worth did not go up when the timer started, and it will not go down when it ends."
     },
     {
       "id": "A119",
-      "text": "Stopping at a good point is a skill too."
+      "text": "You can leave something unfinished and still have made meaningful progress."
     },
     {
       "id": "A120",
-      "text": "You can end the day unfinished and still let the day be over."
+      "text": "Tomorrow does not need you exhausted. It needs you able to come back."
     }
   ],
   "hard": [
@@ -696,7 +696,7 @@
     },
     {
       "id": "H043",
-      "text": "I made 5,127 mistakes - or “prototypes” as they are politely referred to.",
+      "text": "I made 5,127 mistakes - or ‘prototypes’ as they are politely referred to.",
       "author": "James Dyson"
     }
   ]
