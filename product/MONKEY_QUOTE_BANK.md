@@ -1,156 +1,153 @@
 # Mischief’s quote bank
 
-Editorial draft: **120 everyday lines + 43 harder-moment quotations**.
+Editorial draft: **120 original/evidence-informed lines + 43 harder-moment quotations**.
 
-The everyday deck is intentionally balanced:
-- **40% warmth and companionship**
-- **35% discipline and gentle motivation**
-- **15% ambition and inspiration**
-- **10% rest and perspective**
+The non-famous deck is designed to make Mischief feel less like a generic motivation
+app and more like a reassuring companion. Most lines tell the user that beginning,
+returning, struggling, and following through are signs that they are still on the
+right track. Warm lines reinforce that Mischief is simply there with them. A smaller
+“Tiny science” section turns well-supported psychology findings into plain-language
+encouragement.
 
-A001–A120 are original Mischief dialogue. H001–H043 are sourced quotations
-from accomplished investors, entrepreneurs, inventors, scientists, and builders.
-Each harder-moment entry displays only the quotation and the speaker’s name.
+A001–A120 are Mischief dialogue. A086–A105 are evidence-informed paraphrases, not
+direct scientific quotations. Their research notes live in
+[MONKEY_EVIDENCE_NOTES.md](MONKEY_EVIDENCE_NOTES.md).
 
-The everyday bank is for occasional companionship. The harder-moment bank
-is for someone requesting encouragement or choosing to stay with their work.
-No acknowledgement or extra monkey commentary accompanies those quotations.
+H001–H043 remain quotations from accomplished investors, entrepreneurs, inventors,
+scientists, and builders. Each harder-moment entry displays only the quotation and
+the speaker’s name.
 
-Verification links, source context, and excerpt notes for H001–H035 are kept in
-[MONKEY_QUOTE_SOURCES.md](MONKEY_QUOTE_SOURCES.md). Sources for H036–H043 are in
-[MONKEY_QUOTE_SOURCES_ADDITIONS.md](MONKEY_QUOTE_SOURCES_ADDITIONS.md).
+## You’re on the right track
 
-## Warmth and companionship
+- **A001** — You already did something important: you chose to begin.
+- **A002** — Starting turns a vague worry into something you can actually work with.
+- **A003** — You do not need to finish the whole journey. Just keep the next promise.
+- **A004** — You are not behind. You are in the part where the work is getting done.
+- **A005** — The decision to stay matters more than how dramatic this session feels.
+- **A006** — Once you have started, the question gets smaller: what is the next useful step?
+- **A007** — You do not need another burst of motivation. You already have a direction.
+- **A008** — Keep going long enough to give yourself evidence that you can.
+- **A009** — Every time you follow through, you make future follow-through a little easier to believe.
+- **A010** — You are doing the part that people usually avoid: staying when the novelty wears off.
+- **A011** — This does not have to feel exciting to be valuable.
+- **A012** — You are not wasting time by struggling with something worth learning.
+- **A013** — Hard does not mean wrong. Sometimes hard just means new.
+- **A014** — You can feel resistance and still be exactly where you need to be.
+- **A015** — If this feels awkward, good. Awkward is often what learning feels like up close.
+- **A016** — Progress can be quiet enough that you only notice it later.
+- **A017** — The work is not asking you to be fearless. It is asking you to stay.
+- **A018** — You do not have to prove you can do everything. Prove you can do the next thing.
+- **A019** — One honest block is how impossible things become ordinary.
+- **A020** — You are allowed to trust the process before you can see the result.
+- **A021** — Your job right now is not to predict the outcome. It is to give the attempt a fair chance.
+- **A022** — You are building more than an output. You are building a pattern of returning.
+- **A023** — Do not judge the whole project from the hardest five minutes.
+- **A024** — Confusion is not a sign to leave. It is often a sign that you are working on something new.
+- **A025** — You have already crossed the line between thinking about it and doing it.
+- **A026** — Momentum does not always feel like momentum. Sometimes it just feels like not stopping.
+- **A027** — You do not need to be certain. You only need to keep testing the next step.
+- **A028** — Every difficult repetition makes this territory a little less unfamiliar.
+- **A029** — If you keep showing up, today's hard thing gets fewer chances to scare you tomorrow.
+- **A030** — The task may be ordinary, but the habit of following through is not.
+- **A031** — You are practicing being someone who can rely on themselves.
+- **A032** — One imperfect attempt gives you more to work with than ten perfect plans.
+- **A033** — You are not supposed to know everything before you begin.
+- **A034** — Your first job is not to be brilliant. It is to stay in the room.
+- **A035** — Keep the promise small enough that you can actually keep it.
+- **A036** — You can dislike this part and still be proud that you are doing it.
+- **A037** — The fact that this takes effort does not mean you chose badly.
+- **A038** — Most meaningful things have a boring middle. Welcome to the middle.
+- **A039** — You do not need to feel productive every minute for the session to count.
+- **A040** — A rough session can still strengthen the habit of returning.
+- **A041** — Every time you restart instead of quitting, you change the story a little.
+- **A042** — You are not starting from zero. You are starting from everything you learned last time.
+- **A043** — Do not confuse slow progress with no progress.
+- **A044** — The next step does not need to impress you. It just needs to exist.
+- **A045** — You can make the task smaller without making the goal smaller.
+- **A046** — Staying with one problem a little longer is often where clarity shows up.
+- **A047** — You are allowed to take yourself seriously before anyone else does.
+- **A048** — Future-you does not need a heroic version of you. They need a consistent one.
+- **A049** — Today does not need to be legendary. It just needs one thing moved forward.
+- **A050** — You are still on the path, even if this part looks nothing like the highlight reel.
+- **A051** — Finishing is useful. Returning is powerful.
+- **A052** — You do not have to earn confidence first. Sometimes confidence arrives after the evidence.
+- **A053** — If you made one choice to continue, the session has already taught you something about yourself.
+- **A054** — You can let the result be uncertain and still make the effort deliberate.
+- **A055** — Stay with it long enough to discover what happens after the urge to stop.
 
-- **A001** — You don't have to arrive impressive. Just arrive.
-- **A002** — I'm here. You can take it one line at a time.
-- **A003** — Open the thing. That's enough for a beginning.
-- **A004** — You can start before you feel ready.
-- **A005** — A rough start is still a real start.
-- **A006** — One small honest step can carry more than it looks.
-- **A007** — You don't need the whole map. Just the next turn.
-- **A008** — Coming back counts as courage too.
-- **A009** — The blank page isn't judging you. Neither am I.
-- **A010** — We can make this a little less impossible together.
-- **A011** — You don't need a perfect day to make a useful hour.
-- **A012** — Start with the part you can reach.
-- **A013** — You can be unsure and still be moving.
-- **A014** — Today doesn't have to look like anyone else's day.
-- **A015** — Your pace is allowed to be yours.
-- **A016** — Quiet effort still belongs to the story.
-- **A017** — Some good work happens without an audience.
-- **A018** — You don't have to prove anything to begin.
-- **A019** — I'll keep you company while you figure out the next bit.
-- **A020** — A tiny step can still change the direction of the day.
-- **A021** — There's room here for an imperfect attempt.
-- **A022** — You can learn while you're doing it.
-- **A023** — Not knowing yet is a perfectly normal place to be.
-- **A024** — An unfinished idea is welcome at this desk.
-- **A025** — You don't have to impress a doodle monkey.
-- **A026** — I brought absolutely no judgment. Also no snacks. Sorry.
-- **A027** — If today is weird, we can be weird together.
-- **A028** — I can sit quietly while you find your words.
-- **A029** — You're welcome here on the messy days too.
-- **A030** — I'm not keeping score. I'm keeping you company.
-- **A031** — You do the thinking. I'll handle the moral support.
-- **A032** — A little silliness belongs beside serious dreams.
-- **A033** — I saved you the good branch. Excellent working conditions.
-- **A034** — My tail is curled in support of your mysterious human plans.
-- **A035** — I can't solve the problem, but I can stay nearby.
-- **A036** — You are more interesting than your to-do list.
-- **A037** — There's more to you than what gets finished today.
-- **A038** — One monkey. Plenty of patience.
-- **A039** — If this takes another try, I'll still be here.
-- **A040** — A complicated day can still have one decent moment.
-- **A041** — You can change the plan without calling the day a failure.
-- **A042** — An awkward draft is a perfectly respectable thing to have.
-- **A043** — Even monkeys miss a branch sometimes.
-- **A044** — You can start over without starting from nothing.
-- **A045** — A mistake can give you a better question.
-- **A046** — You don't have to turn one hard moment into a verdict.
-- **A047** — Whatever happens with this task, you're still allowed to be proud of trying.
-- **A048** — Thanks for sharing a little corner of your screen with me.
+## Warm company
 
-## Discipline and quiet strength
+- **A056** — I'm here. You do not have to do this part alone.
+- **A057** — You work. I'll keep the little corner of the screen warm.
+- **A058** — No performance required. I'm just glad you're here.
+- **A059** — If today feels strange, I can be your tiny normal thing.
+- **A060** — You do not have to explain the hard part to me. I can just stay.
+- **A061** — I brought company. You bring whatever energy you have.
+- **A062** — You can be quiet. I am very good at quiet company.
+- **A063** — If you need a minute, I'll still be here after the minute.
+- **A064** — I am not counting your mistakes. I am counting myself lucky to hang out here.
+- **A065** — You do the human stuff. I'll handle being a small monkey nearby.
+- **A066** — Nothing to prove to me. We can just keep going.
+- **A067** — If your brain is noisy, you do not have to fight it alone.
+- **A068** — I saved you the good branch. It has excellent thinking conditions.
+- **A069** — You are allowed to have a messy day and still have good company.
+- **A070** — I do not care how impressive the task is. I care that it matters to you.
+- **A071** — I can sit beside an unfinished thing. No problem.
+- **A072** — You do not need to be cheerful for me to stay.
+- **A073** — Even if this session is rough, we are still a team.
+- **A074** — I am not here to judge the pace. I am here to keep you company.
+- **A075** — One little monkey. Zero deadlines.
+- **A076** — If the world feels loud, we can make this corner small.
+- **A077** — You can take the pressure down a notch. I am not going anywhere.
+- **A078** — You do not have to carry the whole day into this one moment.
+- **A079** — I'll be right here while you find your footing.
+- **A080** — You are allowed to be tired and still worthy of encouragement.
+- **A081** — I like you on the days you get things done and the days you do not.
+- **A082** — We can make this an ordinary, decent little moment.
+- **A083** — If you lose the thread, come back. I'll still be holding the branch.
+- **A084** — Your work can be unfinished. My company is not conditional.
+- **A085** — Thanks for letting me share a little piece of your day.
 
-- **A049** — Even if the task is ordinary, showing up is still practice.
-- **A050** — The task may be small. The habit of returning isn't.
-- **A051** — Discipline is keeping a promise after the mood changes.
-- **A052** — You don't need to feel motivated to do one honest piece.
-- **A053** — Do the next useful thing before negotiating with your mood.
-- **A054** — A little resistance doesn't get the final vote.
-- **A055** — Some work builds results. Some work builds your ability to work.
-- **A056** — Hard things teach you that discomfort isn't always a stop sign.
-- **A057** — You can dislike this step and still choose it on purpose.
-- **A058** — One kept promise makes the next one easier to believe.
-- **A059** — The boring middle is where a lot of good things are built.
-- **A060** — Consistency is courage in ordinary clothes.
-- **A061** — Don't wait for perfect energy. Use the energy you actually have.
-- **A062** — Five focused minutes are better than fifty minutes of circling.
-- **A063** — You don't have to win the day. Just honor this block.
-- **A064** — Finish the next honest piece. Then reassess.
-- **A065** — Your future self benefits from the work nobody applauds.
-- **A066** — Repetition is how awkward things become familiar.
-- **A067** — You are allowed to be a beginner and still take the practice seriously.
-- **A068** — Every return makes focus a little more familiar.
-- **A069** — Progress is often quiet enough to miss while it's happening.
-- **A070** — You don't need a dramatic breakthrough. You need another useful attempt.
-- **A071** — Small standards kept repeatedly become character.
-- **A072** — Try before you decide you can't.
-- **A073** — The first answer doesn't need to be good. It needs to exist.
-- **A074** — Stuck is information. Change the angle, not the verdict.
-- **A075** — Confusion can be the doorway, not the conclusion.
-- **A076** — A failed attempt can save you from ten wrong turns.
-- **A077** — Stay with the question long enough to learn its shape.
-- **A078** — Make the problem smaller until you can move it.
-- **A079** — Don't confuse a difficult hour with a permanent limit.
-- **A080** — One more thoughtful attempt can teach you more than another hour of worrying.
-- **A081** — The work doesn't need your drama. It needs your attention.
-- **A082** — Your mood can come along, but it doesn't have to drive.
-- **A083** — You build self-trust by doing what you said you'd try.
-- **A084** — The point isn't to suffer. It's to become someone you can rely on.
-- **A085** — Being disciplined doesn't mean being harsh with yourself.
-- **A086** — Every hard thing you do on purpose expands what “normal” feels like.
-- **A087** — You don't need a perfect streak. You need a reliable way back.
-- **A088** — Start again before shame turns one missed day into a week.
-- **A089** — Sometimes the strongest move is simply not quitting on the next step.
-- **A090** — Give this block your full attention. The rest of the day can wait.
+## Tiny science
 
-## Inspiration and ambition
+- **A086** — Tiny science note: specific 'when, where, and how' plans make follow-through more likely. You already chose the task; make the next step obvious.
+- **A087** — Researchers call them implementation intentions: an 'if this, then I do that' plan can make starting easier when the cue appears.
+- **A088** — Planning the exact moment you will act can reduce how much you have to negotiate with yourself later.
+- **A089** — A clear cue plus a clear next action is powerful. Less deciding, more doing.
+- **A090** — Habit research suggests repeated actions in a consistent context become more automatic over time. Every return is practice.
+- **A091** — There is no magical 21-day rule for habits. Repetition matters more than hitting a perfect number.
+- **A092** — Automaticity grows gradually. If this still takes effort, that does not mean the habit is failing.
+- **A093** — Consistency gives your future self fewer decisions to make. That is part of how habits get easier.
+- **A094** — Self-efficacy research points to mastery experiences as a major source of confidence. Sometimes doing comes before believing.
+- **A095** — Actually completing difficult things gives you evidence about your own capability. Confidence can be built, not merely felt.
+- **A096** — Success after effort is especially useful evidence for self-belief. This hard part can become part of that evidence.
+- **A097** — Your brain does not need a speech about confidence as much as you need another real experience of following through.
+- **A098** — Studies of knowledge workers found that even small progress can strongly improve motivation and how work feels.
+- **A099** — Small wins are not fake wins. Progress is one of the things that helps motivation keep moving.
+- **A100** — Moving one meaningful thing forward can matter more to motivation than waiting for a huge breakthrough.
+- **A101** — If you can see progress, even a little, your motivation has something real to respond to.
+- **A102** — Research on attention residue suggests switching tasks can leave part of your attention stuck on the previous one.
+- **A103** — Staying with one task for this block is not boring discipline; it gives your attention fewer places to leak.
+- **A104** — Every unnecessary switch asks your attention to relocate. One thing at a time is a kindness to your focus.
+- **A105** — If another task pops into your head, writing it down can help you return instead of carrying it around.
 
-- **A091** — You haven't met every version of yourself yet.
-- **A092** — Someone will make something wonderful. Why not you?
-- **A093** — Your ideas deserve an experiment, not just a daydream.
-- **A094** — You are allowed to want a bigger life than the one you know.
-- **A095** — One day, today's difficult thing may be your easy thing.
-- **A096** — You don't need permission to take your own work seriously.
-- **A097** — A small start is still a vote for a larger future.
-- **A098** — Being new at something isn't evidence you don't belong.
-- **A099** — Make the attempt you wish you'd made.
-- **A100** — You can build something that didn't exist yesterday.
-- **A101** — The gap between taste and skill closes by making things.
-- **A102** — Don't wait to feel like the kind of person who can do it.
-- **A103** — Your future isn't decided by this one session.
-- **A104** — Nobody can promise it'll work. That's what makes trying brave.
-- **A105** — Keep enough curiosity alive to surprise yourself.
-- **A106** — The dream can be enormous. Today's step can be tiny.
-- **A107** — You may be closer to a breakthrough in skill than your feelings can measure.
-- **A108** — Take your own potential seriously enough to practice.
+## Perspective and recovery
 
-## Rest and perspective
-
-- **A109** — You're a person, not a progress bar.
-- **A110** — Rest isn't a prize you have to earn.
-- **A111** — A break can protect the part of you that wants to try again.
-- **A112** — Unclench your jaw. Yes, that one.
-- **A113** — The world can wait while you drink some water.
-- **A114** — A rested brain makes kinder decisions.
-- **A115** — You don't have to squeeze one more drop out of this hour.
-- **A116** — Nothing falls apart because you looked away from the screen.
-- **A117** — Enough is a word you're allowed to use.
-- **A118** — Ambition works better when it has somewhere to recover.
-- **A119** — Stopping at a good point is a skill too.
-- **A120** — You can end the day unfinished and still let the day be over.
+- **A106** — You are allowed to pause without turning the pause into a verdict.
+- **A107** — Rest does not erase the work you already did.
+- **A108** — A break can be part of staying with something for the long run.
+- **A109** — You do not need to squeeze value out of every minute.
+- **A110** — Enough for now can still be part of a serious ambition.
+- **A111** — One rough day cannot cancel a direction you keep choosing.
+- **A112** — You are not a productivity score with a name attached.
+- **A113** — Stopping before you are empty is allowed.
+- **A114** — Water, food, sleep, sunlight: boring advice, surprisingly useful equipment.
+- **A115** — You can care deeply about your work without being cruel to yourself.
+- **A116** — The goal is not to become someone who never gets tired. The goal is to know how to return.
+- **A117** — A sustainable pace still counts as ambition.
+- **A118** — Your worth did not go up when the timer started, and it will not go down when it ends.
+- **A119** — You can leave something unfinished and still have made meaningful progress.
+- **A120** — Tomorrow does not need you exhausted. It needs you able to come back.
 
 ## H. Harder moments — 43 quotations
 
@@ -196,4 +193,4 @@ Verification links, source context, and excerpt notes for H001–H035 are kept i
 - **H040** — “The discoveries are out there, waiting to be made. Why not by you?” — Paul Graham
 - **H041** — “Begin by trying the simplest thing that could possibly work.” — Paul Graham
 - **H042** — “If you do not work on an important problem, it's unlikely you'll do important work.” — Richard Hamming
-- **H043** — “I made 5,127 mistakes - or “prototypes” as they are politely referred to.” — James Dyson
+- **H043** — “I made 5,127 mistakes - or ‘prototypes’ as they are politely referred to.” — James Dyson
