@@ -1,3 +1,4 @@
+// Media-query changes are Chromium rendering tasks; allow a real frame before advancing the virtual clock.
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const { createServer } = require('../server.cjs');
@@ -81,9 +82,9 @@ const fs = require('node:fs/promises');
     assert.equal(await page.locator('body').evaluate(e=>e.style.getPropertyValue('--glow-rgb')),'0 0 0');
     assert.equal(await page.evaluate(()=>window.__mischiefFocus.preferences.glowIntensity),100);
     await page.locator('#screen-style').selectOption('auto');
-    await page.emulateMedia({colorScheme:'dark'}); await page.clock.runFor(100);
+    await page.emulateMedia({colorScheme:'dark'}); await page.waitForTimeout(100); await page.clock.runFor(100);
     assert.equal(await page.locator('body').evaluate(e=>e.style.getPropertyValue('--glow-rgb')),'0 0 0');
-    await page.emulateMedia({colorScheme:'light'}); await page.clock.runFor(100);
+    await page.emulateMedia({colorScheme:'light'}); await page.waitForTimeout(100); await page.clock.runFor(100);
     assert.equal(await page.locator('body').evaluate(e=>e.style.getPropertyValue('--glow-rgb')),'40 40 40',JSON.stringify(await page.evaluate(()=>({p:window.__mischiefFocus.preferences.screenStyle,dark:matchMedia('(prefers-color-scheme: dark)').matches,ink:window.companion.focusInk}))));
     assert.equal(await page.locator('.focus-edge').first().evaluate(e=>getComputedStyle(e).animationName),'none');
     await page.locator('#screen-style').selectOption('dark');

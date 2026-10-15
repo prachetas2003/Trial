@@ -1,3 +1,4 @@
+// Media-query changes are Chromium rendering tasks; allow a real frame before advancing the virtual clock.
 const assert=require('node:assert/strict'),fs=require('node:fs/promises');
 const {chromium}=require('playwright');const {createServer}=require('../server.cjs');
 (async()=>{const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||(process.platform==='win32'?chromium.executablePath():'/usr/bin/chromium'),headless:true});
@@ -17,7 +18,7 @@ try{
  const small=await page.locator('#speech-bubble').boundingBox();assert.ok(small.width<original.width*.65);assert.ok(await page.locator('#speech-bubble').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)*.6>=10.99));
  await page.locator('[data-desk-tab=appearance]').click();await page.locator('#screen-style').selectOption('dark');assert.equal(await page.locator('#speech-bubble').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(41, 39, 43)');
  await page.locator('#screen-style').selectOption('light');assert.equal(await page.locator('#speech-bubble').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 253, 244)');
- await page.locator('#screen-style').selectOption('auto');await page.emulateMedia({colorScheme:'dark'});await page.clock.runFor(100);assert.equal(await page.locator('#speech-bubble').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(41, 39, 43)');
+ await page.locator('#screen-style').selectOption('auto');await page.emulateMedia({colorScheme:'dark'}); await page.waitForTimeout(100);await page.clock.runFor(100);assert.equal(await page.locator('#speech-bubble').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(41, 39, 43)');
  await page.screenshot({path:'test-results/scaled-dark-bubble.png'});console.log('PASS speech bubble scales with monkey, keeps readable text and follows manual/automatic dark theme');
  await page.locator('#vignette').check();await page.locator('#edge-coverage').focus();await page.locator('#edge-coverage').press('End');assert.equal(await page.locator('#edge-coverage-value').textContent(),'280 px');assert.equal(await page.locator('.focus-edge[data-side=left]').evaluate(e=>getComputedStyle(e).width),'280px');
  await page.locator('[data-desk-tab=blocking]').click();await page.locator('#shield-setup').evaluate(e=>e.open=true);
