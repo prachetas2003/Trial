@@ -61,9 +61,11 @@ class Marker {
     if(gloss) {
       // Small broken glints and lengthwise nib streaks, anchored to each stroke.
       c.lineCap='round';c.lineJoin='round';c.lineWidth=Math.max(.65,width*.105);
+      c.globalAlpha=1;
       c.strokeStyle=outline?(this.ink===INK?'rgba(255,245,247,.23)':'rgba(255,255,255,.60)'):'rgba(255,247,222,.43)';
       for(let k=0;k<2;k++) {
         const from=Math.floor(points.length*(k===0?.10:.62)),to=Math.floor(points.length*(k===0?.36:.77));
+        const sheen=this.sheen||0;if(sheen){const start=Math.floor((this.sheenPhase||0)*Math.max(1,points.length-7));c.save();c.lineWidth=Math.max(1,width*.22);c.strokeStyle=`rgba(255,255,245,${sheen*.8})`;c.stroke(path(points.slice(start,start+7)));c.restore();}
         const segment=points.slice(from,to).map(([x,y])=>[x-width*.16,y-width*.23]);
         if(segment.length>1)c.stroke(path(segment));
       }
@@ -104,17 +106,19 @@ export class MonkeyScene {
   draw(frame,now) {
     if(this.ratio!==(window.__mischiefSafeMode ? 1 : Math.min(window.devicePixelRatio||1,2)))this.resize();
     const c=this.ctx,m=this.marker,dt=this.lastTime===null?1/60:clamp((now-this.lastTime)/1000,0,.06);this.lastTime=now;
-    const happy=clamp(frame.petWeight,0,1),walk=clamp(frame.walkWeight,0,1),phase=frame.walkPhase;
+    m.sheen=frame.sheen||0;m.sheenPhase=frame.sheenPhase||0;
+    const happy=clamp(frame.petWeight+(frame.squash||0)*2,0,1),walk=clamp(frame.walkWeight,0,1),phase=frame.walkPhase;
     const reach=spring(this.reach,frame.reach,17,dt),head=spring(this.head,frame.lookX*.055+frame.lean*.06,12,dt);
     const tail=spring(this.tail,-frame.lean*.16+Math.sin(now/1100)*.025+happy*.10,8,dt);
     const bob=Math.abs(Math.sin(phase))*2.7*walk,breath=Math.sin(now/1050)*.6;
     c.setTransform(this.ratio,0,0,this.ratio,0,0);c.clearRect(0,0,WINDOW.width,WINDOW.height);m.strokes=0;
-    c.save();c.translate(160,336-frame.hop);c.scale(frame.scaleX,frame.scaleY);c.translate(-160,-336);
+    c.save();c.translate(160,336-frame.hop);c.scale(frame.scaleX*(1+(frame.squash||0)*.8),frame.scaleY*(1-(frame.squash||0)));c.translate(-160,-336);
     if(frame.edge==='left' && frame.mode==='peek'){c.translate(160,0);c.scale(-1,1);c.translate(-160,0);}
-    c.translate(160,200);c.rotate(frame.bodySwing||0);c.translate(-160,-200);
+    c.translate(160,200);c.rotate((frame.bodySwing||0)+(frame.tossAngle||0));c.translate(-160,-200);
     // The tail follows the body, and stays behind the head and shirt.
     c.save();c.translate(182,286);c.rotate(tail);c.translate(-182,-286);
-    m.stroke(curves([182,286],[207,313,246,316,264,283],[278,255,277,220,258,212],[241,203,225,217,229,232],[233,247,253,246,256,233],[259,225,254,221,249,223]),8.2,INK,3);
+    const tx=frame.tailPullX||0,ty=frame.tailPullY||0;
+    m.stroke(curves([182,286],[207,313,246+tx*.2,316+ty*.2,264+tx*.4,283+ty*.4],[278+tx*.6,255+ty*.6,277+tx*.8,220+ty*.8,258+tx,212+ty],[241+tx,203+ty,225+tx,217+ty,229+tx,232+ty],[233+tx,247+ty,253+tx,246+ty,256+tx,233+ty],[259+tx,225+ty,254+tx,221+ty,249+tx,223+ty]),8.2,INK,3);
     c.restore();
     const held=clamp(frame.dragWeight||0,0,1),legSwing=frame.legSwing||0;
     const air=frame.jumpPhase==='air';
@@ -183,6 +187,6 @@ export class MonkeyScene {
       m.stroke(star.slice(0,Math.max(2,Math.ceil(star.length*draw))),2.3,p.index%2?ORANGE:INK,p.index,false);c.restore();
     }
     window.__buildlingsRenderer={type:'canvas2d',art:'original-marker-monkey',ink:this.ink,rigged:true,textureStable:true,pixelRatio:this.ratio,canvasWidth:WINDOW.width,canvasHeight:WINDOW.height,
-      dragWeight:held,bodySwing:frame.bodySwing||0,legSwing,strokes:m.strokes,particles:this.particles.length,petWeight:happy,reachWeight:reach,handScale:1+reach*.68,tailBend:tail,footX:this.footX,footY:this.footY};
+      interaction:frame.interaction,squash:frame.squash||0,sheen:frame.sheen||0,tailPullX:frame.tailPullX||0,tailPullY:frame.tailPullY||0,tossAngle:frame.tossAngle||0,dragWeight:held,bodySwing:frame.bodySwing||0,legSwing,strokes:m.strokes,particles:this.particles.length,petWeight:happy,reachWeight:reach,handScale:1+reach*.68,tailBend:tail,footX:this.footX,footY:this.footY};
   }
 }

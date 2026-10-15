@@ -6,7 +6,7 @@
   catch { saveError = 'Your saved browser data could not be read. This session starts fresh.'; }
   if (saved.ink === 'white') ink = 'white';
   const focus = new window.MischiefFocus.FocusCompanion({ saved, bank: window.MischiefQuotes });
-  const listeners = new Set(); let viewListener = () => {}, highlight = null;
+  const listeners = new Set(); let viewListener = () => {}, highlight = null, timerMoving = false;
   const quoteDelay = () => focus.preferences.quoteSeconds * 1000;
   nextQuote = Date.now() + quoteDelay();
   const mode = () => focus.presence();
@@ -16,7 +16,19 @@
     catch { saveError = 'Browser storage is unavailable or full. Your changes last only while this page stays open.'; }
     lastSave = Date.now();
   }
-  function state() { api.send({ presence: mode(), visible: mode() !== 'hidden', preferences: focus.preferences }); for (const listener of listeners) listener(snapshot()); }
+  function placePreviewTimer() {
+    const bar=document.querySelector('#timer-bar'),p=focus.preferences.timerPosition;
+    if(!bar||bar.hidden||timerMoving)return;
+    if(!p){bar.style.left='';bar.style.top='';bar.style.transform='';return;}
+    const r=bar.getBoundingClientRect();bar.style.left=Math.round(p.x*Math.max(0,innerWidth-r.width))+'px';bar.style.top=Math.round(p.y*Math.max(0,innerHeight-r.height))+'px';bar.style.transform='none';
+  }
+  api.timerDrag=phase=>{
+    timerMoving=phase==='start';if(timerMoving)return;
+    const bar=document.querySelector('#timer-bar');if(!bar)return;const r=bar.getBoundingClientRect();
+    focus.dispatch({type:'preferences',values:{timerPosition:{displayId:0,x:r.x/Math.max(1,innerWidth-r.width),y:r.y/Math.max(1,innerHeight-r.height)}}});save();state();
+  };
+  window.addEventListener('resize',placePreviewTimer);
+  function state() { api.send({ presence: mode(), visible: mode() !== 'hidden', preferences: focus.preferences }); for (const listener of listeners) listener(snapshot()); placePreviewTimer(); }
   function events() {
     for (const event of focus.drainEvents()) {
       if (event.type === 'quote') { api.send({ quote: event.quote }); nextQuote = Date.now() + quoteDelay(); }
@@ -31,7 +43,8 @@
   api.focusAction = async action => {
     let error = '';
     try {
-      if (action.type === 'appearance') {
+      if(action.type==='play-demo')api.send({playDemo:action.kind});
+      else if (action.type === 'appearance') {
         if (!['black', 'white'].includes(action.ink)) throw new Error('Choose a marker colour.');
         ink = action.ink; api.focusInk = ink; api.send({ settings: { ink } });
         window.dispatchEvent(new CustomEvent('companion-appearance', { detail: ink }));
@@ -44,7 +57,7 @@
     state(); events(); save(); const packet=snapshot(); for(const listener of listeners) listener(packet); return { error, state: packet };
   };
   api.getFocusState = async () => snapshot();
-  api.onFocusState = callback => { listeners.add(callback); callback(snapshot()); return () => listeners.delete(callback); };
+  api.onFocusState = callback => { listeners.add(callback); callback(snapshot()); placePreviewTimer(); return () => listeners.delete(callback); };
   api.onFocusView = callback => { viewListener = callback; };
   api.hideFocus = () => document.querySelector('#focus-dialog').close();
   api.openFocus = view => { highlight = null; state(); document.querySelector('#focus-dialog').showModal(); viewListener(view); };

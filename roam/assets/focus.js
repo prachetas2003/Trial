@@ -7,7 +7,7 @@
     deep: { presence: 'peek', quotesEnabled: false, autoQuotes: false, quietFocus: true, peekDuringFocus: true, chaseCursor: false, showHud: true, vignette: true, completionSound: true, shieldEnabled: true, celebrations: true },
     blocker: { presence: 'hidden', quotesEnabled: false, autoQuotes: false, quietFocus: true, peekDuringFocus: false, chaseCursor: false, showHud: false, vignette: false, completionSound: false, shieldEnabled: true, celebrations: false }
   };
-  const defaults = { focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, presence: 'wander', peekDuringFocus: true, autoQuotes: true, quietFocus: false, quoteSeconds: 12, dragEnabled: true, chaseCursor: false, completionSound: true, returnAfterSession: true, edge: 'right', edgePosition: .85, quotesEnabled: true, showHud: true, vignette: false, shield: shieldPolicy.settings(), timerOpacity: 95, monkeyScale: 1, glowIntensity: 25, edgeCoverage: 140, celebrations: true, screenStyle: 'auto', lastPresence: 'wander' };
+  const defaults = { focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, presence: 'wander', peekDuringFocus: true, autoQuotes: true, quietFocus: false, quoteSeconds: 12, dragEnabled: true, chaseCursor: false, completionSound: true, returnAfterSession: true, edge: 'right', edgePosition: .85, quotesEnabled: true, showHud: true, vignette: false, shield: shieldPolicy.settings(), timerOpacity: 95, monkeyScale: 1, glowIntensity: 25, edgeCoverage: 140, celebrations: true, screenStyle: 'auto', lastPresence: 'wander', timerLocked:false, timerPosition:null, playEnabled:true };
   const integer = (value, lo, hi, fallback) => Number.isFinite(value) ? Math.max(lo, Math.min(hi, Math.round(value))) : fallback;
   const line = (value, length) => typeof value === 'string' ? value.trim().slice(0, length) : '';
   const copy = value => JSON.parse(JSON.stringify(value));
@@ -20,6 +20,8 @@
     if (['left', 'right', 'top', 'bottom'].includes(saved.edge)) out.edge = saved.edge;
     if (Number.isFinite(saved.edgePosition)) out.edgePosition = Math.max(0, Math.min(1, saved.edgePosition));
     for (const key of ['dragEnabled', 'chaseCursor', 'completionSound', 'returnAfterSession', 'quotesEnabled', 'showHud', 'vignette']) if (typeof saved[key] === 'boolean') out[key] = saved[key];
+    for(const key of ['timerLocked','playEnabled'])if(typeof saved[key]==='boolean')out[key]=saved[key];
+    if(saved.timerPosition&&Number.isFinite(saved.timerPosition.displayId)&&Number.isFinite(saved.timerPosition.x)&&Number.isFinite(saved.timerPosition.y))out.timerPosition={displayId:saved.timerPosition.displayId,x:Math.max(0,Math.min(1,saved.timerPosition.x)),y:Math.max(0,Math.min(1,saved.timerPosition.y))};
     out.timerOpacity = integer(saved.timerOpacity, 15, 100, defaults.timerOpacity);
     out.monkeyScale = Number.isFinite(saved.monkeyScale) ? Math.max(.6, Math.min(1, saved.monkeyScale)) : defaults.monkeyScale;
     out.edgeCoverage = integer(saved.edgeCoverage, 64, 280, defaults.edgeCoverage);
@@ -139,6 +141,7 @@
           s.lastChoiceAt = now; s.choices = Math.min(99999, s.choices + 1);
           this.events.push({ type: 'stayed', choices: s.choices }); this.quote('hard', now); break;
         }
+        case 'timer-reset':this.preferences.timerPosition=null;this.preferences.timerLocked=false;break;
         case 'quote': this.quote(action.category === 'hard' ? 'hard' : 'everyday', now); break;
         case 'presence': {
           if (!['wander', 'peek', 'hidden'].includes(action.value)) throw new Error('Choose how the monkey appears.');
