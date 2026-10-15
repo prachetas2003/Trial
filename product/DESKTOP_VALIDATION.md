@@ -66,9 +66,12 @@ The public ZIP was downloaded back. SHA256 and CRC checks passed. It reports
 launcher and quote references match. Archive size: **163,586,222 bytes**. SHA256:
 `c9f2077bf4dc8c5c858d3164fde42d50c83f38d480dd20271ee1f25ff122bc37`.
 
+After deployment, all **21 checked live website/preview assets** match source.
+Pages commit: `d1b89b5`. Download links point to the verified release above.
+
 ---
 
-Visible startup, milestone visibility and desktop recovery — 0.9.1
+# Visible startup, milestone visibility and desktop recovery — 0.9.1
 
 Source: `c4d1a88`. Windows workflow:
 https://github.com/prachetas2003/Trial/actions/runs/38708027052
