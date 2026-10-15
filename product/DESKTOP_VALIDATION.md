@@ -1,3 +1,62 @@
+# Separate input surfaces, clearer categories and five play interactions — 0.10.0
+
+Local source: `f85186f` (implementation `c7499cc`). Public main and release remain
+at 0.9.1: automatic approval review rejected the main push and explicit approval
+is pending. No Windows CI or public release is claimed for this version yet.
+
+The interactive monkey is a 420×400 native surface; the timer is a separate
+bounded native surface (up to 660×124). Decorations remain on a permanently
+click-through work-area surface. Neither pet input nor timer input can switch
+the monitor-size surface into an interactive window. The decorations window does
+not forward mouse movement. Native window positioning uses ordinary asynchronous
+position updates; no native modal window-drag loop is started by a grip.
+
+The timer grip moves it, snaps near work-area boundaries and saves normalized
+position/display. Its padlock prevents movement. Reset is available in Appearance
+and the tray. Model checks cover invalid saved values, monitor removal, negative
+monitor coordinates, lock/position persistence and reset retaining saved work.
+
+The panel has persistent named top tabs: Focus timer, Websites & tabs, Monkey,
+Appearance, Notes & history. Arrow/Home/End navigation and ARIA tab roles are
+verified. Focus comes before quick setups. Website/tab actions have explicit
+names. Monkey behaviour, quotes and all five play instructions are grouped in
+Monkey. Layouts were checked at 320, 390 and 520px including the Monkey content;
+existing panel tests additionally cover 768px and stable scrolling with 200 tabs.
+
+The five interactions are native head/body dragging with pendulum limbs; a
+shirt press/release squish; a bounded tail spring; moving marker sheen while
+petting; and a release-velocity toss with short coast/arc/settle. Throws do not
+occur in edge-peeking or reduced-motion mode. Reduced motion damps springs; Play
+can be disabled while preserving ordinary dragging. Physics tests cover bounds,
+rebound/settling, stale velocity rejection and throw settling. Native checks use
+real pointer events, including a display-paced continuous drag/release path.
+
+Local validation passed: **82 unit/server/model checks**, **12 native interaction
+groups**, **five native stability groups**, **four native wake groups**, **four
+panel/browser groups**, **six polish groups**, and **one play/navigation group**.
+Native stability covers 12 alternating timer/panel pause/resume transitions,
+actual pet and timer renderer crashes, a failed canvas paint, saved work and Safe
+Mode. Wake checks rebuild all three surfaces after four paired simulated power
+events, retain paused elapsed time, recover a truly blocked timer renderer and
+replace a crashed controls renderer.
+
+The video fixture alternates blue/green to detect a frozen visible picture.
+A separate headed Chromium browser continues decoding/changing colours during
+native button clicks, stationary body holds, captured head drags and timer grip
+drags. Local checks passed. Windows CI contains desktop-pixel colour-change
+assertions during holds; these are explicitly unrun on uncomposited Xvfb.
+Physical laptop sleep, the user's GPU/driver and YouTube hardware decoding remain
+unverified. The architecture addresses the reported interaction path, but the
+user's exact white/black-video failure has not been reproduced on that laptop.
+
+A local Windows package was created using pinned Electron 44.7.0 with its artifact
+checksums preserved. ASAR version is 0.10.0; all 32 tracked desktop files match
+source. ZIP checksum/CRC evidence is in `dist/Mischief-0.10.0-local-verification.json`.
+This is package-content validation, not Windows execution validation. No extension
+files changed; installed FocusShield 0.8.0 remains compatible.
+
+---
+
 # Visible startup, milestone visibility and desktop recovery — 0.9.1
 
 Source: `c4d1a88`. Windows workflow:
