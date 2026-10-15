@@ -1,63 +1,74 @@
 # Separate input surfaces, clearer categories and five play interactions — 0.10.0
 
-Local source: `f85186f` (implementation `c7499cc`). Public main and release remain
-at 0.9.1: automatic approval review rejected the main push and explicit approval
-is pending. No Windows CI or public release is claimed for this version yet.
+Release: [desktop-preview-28](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-28).
+Source: `f9ebf6d` (main implementation `c7499cc`; held-input failure safety `179e288`).
+The [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38725600590)
+passed all **24 steps**: fresh install, **82 unit/server/model checks**, **12 native
+interaction groups**, **five native stability groups**, **four native wake groups**,
+**four panel/scroll groups**, **six polish groups**, **one play/navigation group**,
+video checks, **eight extension groups**, packaging, checksum and release upload.
 
-The interactive monkey is a 420×400 native surface; the timer is a separate
-bounded native surface (up to 660×124). Decorations remain on a permanently
-click-through work-area surface. Neither pet input nor timer input can switch
-the monitor-size surface into an interactive window. The decorations window does
-not forward mouse movement. Native window positioning uses ordinary asynchronous
-position updates; no native modal window-drag loop is started by a grip.
+The monkey uses a bounded 420×400 transparent native window. The timer has its
+own bounded native window (up to 660×124). Work-area decorations remain permanently
+click-through. Pet/timer interaction cannot make a monitor-size surface accept
+input. The decorations window does not forward mouse movement. Grips use ordinary
+position updates, not a Windows modal window-move loop. Windows software graphics
+remains the default; Safe Mode additionally uses 30-fps/1x drawing.
 
-The timer grip moves it, snaps near work-area boundaries and saves normalized
-position/display. Its padlock prevents movement. Reset is available in Appearance
-and the tray. Model checks cover invalid saved values, monitor removal, negative
-monitor coordinates, lock/position persistence and reset retaining saved work.
+Native timer checks drag the grip, verify saved normalized position, lock it and
+confirm it cannot move, then reset it. Unit checks cover invalid saved values,
+negative monitor coordinates, monitor removal, lock/position persistence and reset
+retaining notes. A local browser-preview check also verifies timer position remains
+moved across clock ticks and reload. No desktop data is shared with that preview.
 
-The panel has persistent named top tabs: Focus timer, Websites & tabs, Monkey,
-Appearance, Notes & history. Arrow/Home/End navigation and ARIA tab roles are
-verified. Focus comes before quick setups. Website/tab actions have explicit
-names. Monkey behaviour, quotes and all five play instructions are grouped in
-Monkey. Layouts were checked at 320, 390 and 520px including the Monkey content;
-existing panel tests additionally cover 768px and stable scrolling with 200 tabs.
+The five top tabs are Focus timer, Websites & tabs, Monkey, Appearance, and Notes &
+history. They stay available while scrolling, support arrow/Home/End navigation,
+and expose ARIA tab roles. Focus comes before quick setups. Website/tab actions
+use explicit names. Monkey movement, quotes and all five play instructions live
+in Monkey. Actual Monkey layouts are checked at 320, 390 and 520px; existing panel
+checks include 768px and stable scrolling with 200 tabs.
 
-The five interactions are native head/body dragging with pendulum limbs; a
-shirt press/release squish; a bounded tail spring; moving marker sheen while
-petting; and a release-velocity toss with short coast/arc/settle. Throws do not
-occur in edge-peeking or reduced-motion mode. Reduced motion damps springs; Play
-can be disabled while preserving ordinary dragging. Physics tests cover bounds,
-rebound/settling, stale velocity rejection and throw settling. Native checks use
-real pointer events, including a display-paced continuous drag/release path.
+Play consists of native head/body dragging with pendulum limbs; a shirt press and
+release squish; a bounded tail spring; marker sheen while stroking; and a short,
+bounded toss with coast/arc/settle. Edge peeking and reduced motion prevent throws.
+Reduced motion damps springs, and Play can be turned off while ordinary dragging
+remains. Unit checks cover bounds, rebound, settling and stale release velocity.
+Native checks use real pointer input, including a display-paced continuous toss.
+Speech bubbles keep the correct attachment during scaled jumps.
 
-Local validation passed: **82 unit/server/model checks**, **12 native interaction
-groups**, **five native stability groups**, **four native wake groups**, **four
-panel/browser groups**, **six polish groups**, and **one play/navigation group**.
-Native stability covers 12 alternating timer/panel pause/resume transitions,
-actual pet and timer renderer crashes, a failed canvas paint, saved work and Safe
-Mode. Wake checks rebuild all three surfaces after four paired simulated power
-events, retain paused elapsed time, recover a truly blocked timer renderer and
-replace a crashed controls renderer.
+Stability exercises 12 alternating native timer/panel pause-resume transitions,
+actual pet and timer renderer crashes, saved work, and Safe Mode. A paint failure
+is injected during a real held mouse press: capture releases, invisible hit areas
+hide, the pet cannot intercept clicks, and the separate timer remains usable.
+Wake tests rebuild all three surfaces after four paired simulated power events,
+retain paused time, recover a genuinely blocked timer renderer and replace a
+crashed controls renderer. Recovery tests bind to current native window IDs, so
+closed test pages cannot be mistaken for replacement windows. A 90-second wake
+deadline captures progress/diagnostics rather than allowing a stalled test to
+hold the build queue. Obsolete CI builds are cancelled; assertions remain active.
 
-The video fixture alternates blue/green to detect a frozen visible picture.
-A separate headed Chromium browser continues decoding/changing colours during
-native button clicks, stationary body holds, captured head drags and timer grip
-drags. Local checks passed. Windows CI contains desktop-pixel colour-change
-assertions during holds; these are explicitly unrun on uncomposited Xvfb.
-Physical laptop sleep, the user's GPU/driver and YouTube hardware decoding remain
-unverified. The architecture addresses the reported interaction path, but the
-user's exact white/black-video failure has not been reproduced on that laptop.
+A separate headed Chromium browser plays an alternating blue/green VP8 clip.
+Windows desktop pixels must stay coloured and keep changing during stationary
+body holds, captured head drags and timer grip drags. Decode progress is checked
+too. Sampling chooses a point outside visible app-window bounds by geometry before
+reading its colour; an earlier fixed pixel could land on the monkey's black ink.
+Screenshots are saved during holds. No colour-based retry or blank-frame skip is
+used. All Windows assertions passed. Local Xvfb lacks a compositor, so desktop-pixel
+assertions are explicitly unrun there; local decoding/input checks passed.
 
-A local Windows package was created using pinned Electron 44.7.0 with its artifact
-checksums preserved. ASAR version is 0.10.0; all 32 tracked desktop files match
-source. ZIP checksum/CRC evidence is in `dist/Mischief-0.10.0-local-verification.json`.
-This is package-content validation, not Windows execution validation. No extension
-files changed; installed FocusShield 0.8.0 remains compatible.
+Physical laptop sleep, the affected GPU/driver and YouTube hardware decoding still
+need device verification. The architecture addresses the reported input path;
+these tests do not establish the user's exact machine-specific root cause.
+FocusShield remains 0.8.0 and its 11 files are unchanged; no extension update is needed.
+
+The public ZIP was downloaded back. SHA256 and CRC checks passed. It reports
+0.10.0 and all **32 tracked desktop files** in the ASAR match source. The Safe Mode
+launcher and quote references match. Archive size: **163,586,222 bytes**. SHA256:
+`c9f2077bf4dc8c5c858d3164fde42d50c83f38d480dd20271ee1f25ff122bc37`.
 
 ---
 
-# Visible startup, milestone visibility and desktop recovery — 0.9.1
+Visible startup, milestone visibility and desktop recovery — 0.9.1
 
 Source: `c4d1a88`. Windows workflow:
 https://github.com/prachetas2003/Trial/actions/runs/38708027052
