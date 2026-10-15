@@ -19,7 +19,20 @@ milestones, on-screen bounds at all four margins, complete cleanup, and unchange
 completion/off/reduced-motion behavior. The quote/cadence check uses the existing
 Monkey category for the moved frequency selector; no app navigation was changed.
 
-Windows results and the final verified release link will be added after CI.
+Local quote display/cadence checks also passed, including full text, the existing
+12-second default, selectable frequency persistence and automatic-quote opt-out.
+
+Source: `909b34b`. [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38821608584)
+passed all **25 steps**: fresh install, all 83 unit checks, native regressions,
+interaction/recovery/wake, controls and scrolling, all six polish groups with the
+fuller milestones, play/navigation, video, extension, packaging and publication.
+Release: [desktop-preview-30](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-30).
+
+The published ZIP was downloaded back; SHA256 and archive CRC checks passed.
+All **32 tracked desktop files** in its ASAR match source and report version
+**0.10.2**. The included quote evidence notes and all unchanged FocusShield files
+match source. Size: **163,589,653 bytes**. SHA256:
+`b340fe8881cc68d03a8b96bcbb2bb13b17a55e55248cbcb4ec2761c96d6cb38c`.
 
 ---
 
