@@ -4,8 +4,15 @@ const { spring, WINDOW } = window.BuildlingsMotion;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const joint = () => ({ value: 0, velocity: 0 });
 const INK = '#191619', ORANGE = '#ff7546';
+const shapes=new Map();
+function shape(key,build){
+  let p=shapes.get(key);
+  if(p){shapes.delete(key);shapes.set(key,p);return p;}
+  p=build();shapes.set(key,p);if(shapes.size>128)shapes.delete(shapes.keys().next().value);return p;
+}
 
 function curves(start, ...segments) {
+  return shape('c:'+start+':'+segments.join(';'),()=>{
   const points = [start]; let a = start;
   for (const [bx, by, cx, cy, dx, dy] of segments) {
     const steps = Math.max(12, Math.ceil((Math.hypot(bx-a[0], by-a[1]) + Math.hypot(cx-bx, cy-by) + Math.hypot(dx-cx, dy-cy)) / 5));
@@ -15,13 +22,13 @@ function curves(start, ...segments) {
     }
     a=[dx,dy];
   }
-  return points;
+  return points;});
 }
 function ellipse(x,y,rx,ry,tilt=0) {
-  return Array.from({length:65},(_,i)=> {
+  return shape('e:'+ [x,y,rx,ry,tilt],()=>Array.from({length:65},(_,i)=> {
     const a=i/64*Math.PI*2, px=Math.cos(a)*rx, py=Math.sin(a)*ry;
     return [x+px*Math.cos(tilt)-py*Math.sin(tilt),y+px*Math.sin(tilt)+py*Math.cos(tilt)];
-  });
+  }));
 }
 function path(points) {
   const p=new Path2D();p.moveTo(...points[0]);for(const point of points.slice(1))p.lineTo(...point);return p;
@@ -30,6 +37,7 @@ function path(points) {
 class Marker {
   constructor(ctx) {
     this.ctx=ctx;this.strokes=0;this.ink=INK;
+    this.cacheEnabled=true;this.cache=new Map();this.seen=new WeakSet();this.cachePixels=0;this.cacheHits=0;
     const grain=document.createElement('canvas');grain.width=grain.height=64;
     const g=grain.getContext('2d');let seed=421;
     for(let i=0;i<310;i++) {
@@ -41,12 +49,44 @@ class Marker {
     this.grain=ctx.createPattern(grain,'repeat');
   }
   stroke(points,width=7,color=INK,seed=0,gloss=true) {
-    const c=this.ctx, left=[],right=[], outline=color===INK;this.strokes++;
+    this.strokes++;
+    const key=width+':'+color+':'+seed+':'+gloss+':'+this.ink;
+    const cached=this.cache.get(points);
+    if(this.cacheEnabled&&cached?.key===key){
+      this.cache.delete(points);this.cache.set(points,cached);this.cacheHits++;
+      this.ctx.drawImage(cached.canvas,cached.x,cached.y,cached.width,cached.height);
+      if(gloss&&this.sheen)this.shimmer(points,width);
+      return;
+    }
+    // Bake only reused geometry. Moving limbs use the normal vector path and
+    // never allocate a bitmap per frame. Bound retained textures to 8 MB.
+    if(this.cacheEnabled&&this.seen.has(points)){
+      const pad=width+5,x=Math.floor(Math.min(...points.map(p=>p[0]))-pad),y=Math.floor(Math.min(...points.map(p=>p[1]))-pad);
+      const w=Math.ceil(Math.max(...points.map(p=>p[0]))+pad-x),h=Math.ceil(Math.max(...points.map(p=>p[1]))+pad-y);
+      const ratio=window.__mischiefSafeMode?1:Math.min(2,window.devicePixelRatio||1),canvas=document.createElement('canvas');canvas.width=Math.ceil(w*ratio);canvas.height=Math.ceil(h*ratio);
+      const original=this.ctx,sheen=this.sheen;this.ctx=canvas.getContext('2d');this.ctx.setTransform(ratio,0,0,ratio,-x*ratio,-y*ratio);this.sheen=0;
+      try{this.paint(points,width,color,seed,gloss);}finally{this.ctx=original;this.sheen=sheen;}
+      const entry={key,canvas,x,y,width:w,height:h,pixels:canvas.width*canvas.height};
+      if(cached){this.cachePixels-=cached.pixels;this.cache.delete(points);}
+      this.cache.set(points,entry);this.cachePixels+=entry.pixels;
+      while(this.cachePixels>2*1024*1024||this.cache.size>96){const oldest=this.cache.keys().next().value;this.cachePixels-=this.cache.get(oldest).pixels;this.cache.delete(oldest);}
+      original.drawImage(canvas,x,y,w,h);if(gloss&&sheen)this.shimmer(points,width);return;
+    }
+    this.seen.add(points);this.paint(points,width,color,seed,gloss);
+  }
+  shimmer(points,width){
+    const c=this.ctx,start=Math.floor((this.sheenPhase||0)*Math.max(1,points.length-7));
+    c.save();c.lineCap='round';c.lineJoin='round';c.lineWidth=Math.max(1,width*.22);c.strokeStyle=`rgba(255,255,245,${this.sheen*.8})`;const strip=path(points.slice(start,start+7));c.stroke(strip);c.stroke(strip);c.restore();
+  }
+  paint(points,width,color,seed,gloss){
+    const c=this.ctx, left=[],right=[], outline=color===INK;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
     if(outline)color=this.ink;
     for(let i=0;i<points.length;i++) {
       const a=points[Math.max(0,i-1)], b=points[Math.min(points.length-1,i+1)], len=Math.hypot(b[0]-a[0],b[1]-a[1])||1;
       const radius=width/2*(1+.065*Math.sin(i*.29+seed)+.025*Math.sin(i*.83+seed*2));
       const nx=-(b[1]-a[1])/len,ny=(b[0]-a[0])/len;
+      minX=Math.min(minX,points[i][0]-radius);minY=Math.min(minY,points[i][1]-radius);maxX=Math.max(maxX,points[i][0]+radius);maxY=Math.max(maxY,points[i][1]+radius);
       left.push([points[i][0]+nx*radius,points[i][1]+ny*radius]);
       right.push([points[i][0]-nx*radius,points[i][1]-ny*radius]);
     }
@@ -57,7 +97,7 @@ class Marker {
     // A fine warm edge catches the glass light and keeps black ink readable
     // over dark editors without an opaque sticker backing or a glow cloud.
     if(outline){c.lineWidth=.85;c.strokeStyle='rgba(255,242,226,.38)';c.stroke(ribbon);}
-    c.clip(ribbon);c.fillStyle=this.grain;c.fillRect(-350,-400,700,800);
+    c.clip(ribbon);c.fillStyle=this.grain;c.fillRect(minX-1,minY-1,maxX-minX+2,maxY-minY+2);
     if(gloss) {
       // Small broken glints and lengthwise nib streaks, anchored to each stroke.
       c.lineCap='round';c.lineJoin='round';c.lineWidth=Math.max(.65,width*.105);
@@ -73,7 +113,7 @@ class Marker {
     }
     c.restore();
   }
-  dot(x,y,r=4,color=INK) {this.stroke([[x,y],[x+.15,y+.1]],r*2,color,8);}
+  dot(x,y,r=4,color=INK) {this.stroke(shape('d:'+x+':'+y,()=>[[x,y],[x+.15,y+.1]]),r*2,color,8);}
 }
 
 export class MonkeyScene {
@@ -187,6 +227,6 @@ export class MonkeyScene {
       m.stroke(star.slice(0,Math.max(2,Math.ceil(star.length*draw))),2.3,p.index%2?ORANGE:INK,p.index,false);c.restore();
     }
     window.__buildlingsRenderer={type:'canvas2d',art:'original-marker-monkey',ink:this.ink,rigged:true,textureStable:true,pixelRatio:this.ratio,canvasWidth:WINDOW.width,canvasHeight:WINDOW.height,
-      interaction:frame.interaction,squash:frame.squash||0,sheen:frame.sheen||0,tailPullX:frame.tailPullX||0,tailPullY:frame.tailPullY||0,tossAngle:frame.tossAngle||0,dragWeight:held,bodySwing:frame.bodySwing||0,legSwing,strokes:m.strokes,particles:this.particles.length,petWeight:happy,reachWeight:reach,handScale:1+reach*.68,tailBend:tail,footX:this.footX,footY:this.footY};
+      cacheHits:m.cacheHits,cachePixels:m.cachePixels,interaction:frame.interaction,squash:frame.squash||0,sheen:frame.sheen||0,tailPullX:frame.tailPullX||0,tailPullY:frame.tailPullY||0,tossAngle:frame.tossAngle||0,dragWeight:held,bodySwing:frame.bodySwing||0,legSwing,strokes:m.strokes,particles:this.particles.length,petWeight:happy,reachWeight:reach,handScale:1+reach*.68,tailBend:tail,footX:this.footX,footY:this.footY};
   }
 }

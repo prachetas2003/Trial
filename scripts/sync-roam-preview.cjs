@@ -9,7 +9,7 @@ for (const [source, name] of [['build/three.module.js', 'three.module.js'], ['bu
   fs.copyFileSync(path.join(root, 'node_modules/three', source), path.join(vendor, name));
 }
 for (const [source, name] of [
-  ['desktop/play.js','play.js'], ['desktop/motion.js', 'motion.js'], ['desktop/art.js', 'art.js'], ['desktop/sprout3d.js', 'sprout3d.js'], ['desktop/monkey.js', 'monkey.js'],
+  ['desktop/frame-clock.js','frame-clock.js'], ['desktop/play.js','play.js'], ['desktop/motion.js', 'motion.js'], ['desktop/art.js', 'art.js'], ['desktop/sprout3d.js', 'sprout3d.js'], ['desktop/monkey.js', 'monkey.js'],
   ['desktop/renderer.js', 'renderer.js'], ['desktop/renderer.css', 'renderer.css'], ['site/core.js', 'core.js'],
   ['desktop/shield-policy.js', 'shield-policy.js'], ['desktop/focus.js', 'focus.js'], ['desktop/quotes.js', 'quotes.js'], ['desktop/bubbles.js', 'bubbles.js'], ['desktop/celebrations.js','celebrations.js'],
   ['desktop/hud.js', 'hud.js'], ['desktop/hud.css', 'hud.css'], ['desktop/completion.wav', 'completion.wav'],

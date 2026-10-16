@@ -1,3 +1,50 @@
+# Rendering cost, frame pacing and clearer triple celebrations — 0.11.0
+
+The user confirmed ordinary walking in Buildlings.exe is choppy, not just effects
+or Safe Mode. Profiling identified repeated vector/texture/shadow work and
+phase-reset throttling as avoidable costs. Normal graphics settings, native input
+surfaces, z-order and the 0.10.1 video/crash/lock fixes remain unchanged.
+
+Repeated curve geometry and reused marker strokes now use bounded caches.
+Changing limbs remain vectors; live sheen stays dynamic. Ink texture memory is
+capped at 2,097,152 pixels (8 MiB), entries at 96 and geometry at 128 shapes.
+Single-use moving geometry does not allocate a texture. Grain fills use the ink
+bounds. Marker colour and pixel-ratio changes refresh textures as needed.
+
+Before optimization, the local software-raster baseline measured about 6.1 ms
+median at 1x and 10.1 ms at 2x. The regression test alternates cached and uncached
+renders, forces actual rasterization with getImageData, checks the ink image
+instead of JS time alone, and verifies cache bounds/colour changes. Final local
+medians: **4.4 -> 2.3 ms at 1x**, **11.3 -> 7.2 ms at 2x**. Mean premultiplied
+ink-channel difference is about 4/255 at 1x and 2.5/255 at 2x; side-by-side review
+retains the original character and marker grain. This is rendering headroom,
+not a claim of a particular frame rate on the user's laptop.
+
+A phase deadline replaces resetting timestamps on every paint/report. Three
+clock tests cover 60 fps targets on 60/120/144/165/240 Hz callbacks, alternating
+RAF jitter, Safe Mode's 30 fps limit and sleep recovery. The timer measures its
+hit rectangle only when dirty or when its heartbeat is due, avoiding continuous
+layout reads.
+
+Confetti is exactly 3x: milestone **48 local** (was 16), completion **42 local +
+102 screen** (was 14 + 34). Particles append as one fragment and remain bounded,
+click-through and short-lived. The celebration bubble has a bold title, separate
+supporting line, check icon, neutral light/dark styles and a 3.2-second duration.
+It sits above the monkey with its position kept inside the work area. Reduced
+motion/off switches remain effective.
+
+Local checks passed: **86 unit/server/model tests**, all six polish groups, and
+software/native performance checks. The original severe device stutter was not
+reproduced on Xvfb: old/new 2x software-only native samples were both near 60 fps.
+The separate Linux SwiftShader native fixture varies around 27–37 painted fps;
+its metric is recorded rather than described as a 60-fps result. Windows CI also
+collects native frame timings and reruns prior video/interaction/recovery checks.
+The user's exact GPU/CPU/display environment remains unverified.
+
+Windows results and verified download will be recorded after CI.
+
+---
+
 # Updated quote bank and fuller milestone confetti — 0.10.2
 
 The quote bank is byte-for-byte the file from the user-linked
