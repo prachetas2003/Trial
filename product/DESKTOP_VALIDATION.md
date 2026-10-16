@@ -41,7 +41,26 @@ its metric is recorded rather than described as a 60-fps result. Windows CI also
 collects native frame timings and reruns prior video/interaction/recovery checks.
 The user's exact GPU/CPU/display environment remains unverified.
 
-Windows results and verified download will be recorded after CI.
+Source: `9e8d4f8`. [Windows workflow](https://github.com/prachetas2003/Trial/actions/runs/38837013784)
+passed all **26 steps**, including all **86 unit tests**, native interaction,
+recovery/wake, polish/play, the new rendering/native timing stage, video and
+extension regressions, packaging and publication.
+
+Windows timing notice: cached vs uncached medians were **2.9 vs 5.6 ms at 1x**
+and **7.1 vs 12.5 ms at 2x** (about 48%/43% lower raster cost). The real native
+fixture observed **181 painted frames in 3 seconds** both during ordinary walking
+and during quotes + triple milestone confetti. RAF median/p95 gaps were about
+15.6/15.7 ms in both phases. These values are the runner's measurements, not a
+guarantee for the affected laptop. The software cost/artwork/cache assertions
+and the severe-native-stall checks all executed successfully.
+
+Release: [desktop-preview-31](https://github.com/prachetas2003/Trial/releases/tag/desktop-preview-31).
+
+The public ZIP was downloaded back: SHA256 and CRC checks passed. All **33 tracked
+desktop files** in the ASAR match tested source, including the new frame clock.
+Version is **0.11.0**; quote evidence notes and all 11 unchanged extension files
+match. Size: **163,591,508 bytes**. SHA256:
+`cfed1c233f49c59aacf33058ed14ec9897d2d6a4dd2cc7e1e49190e599c04862`.
 
 ---
 
