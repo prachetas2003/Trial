@@ -62,6 +62,9 @@ Version is **0.11.0**; quote evidence notes and all 11 unchanged extension files
 match. Size: **163,591,508 bytes**. SHA256:
 `cfed1c233f49c59aacf33058ed14ec9897d2d6a4dd2cc7e1e49190e599c04862`.
 
+All **22 checked live website/preview assets** match source, including the new
+frame clock. Pages commit: `a6a5c08`. Download links point to the verified ZIP.
+
 ---
 
 # Updated quote bank and fuller milestone confetti — 0.10.2
