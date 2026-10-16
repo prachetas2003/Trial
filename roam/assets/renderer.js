@@ -1,15 +1,16 @@
-import { MonkeyScene } from './monkey.js?v=0.10.2';
-import { SpeechBubble } from './bubbles.js?v=0.10.2';
-import { Celebrations } from './celebrations.js?v=0.10.2';
-import { OverlayBar } from './hud.js?v=0.10.2';
+import { MonkeyScene } from './monkey.js?v=0.11.0';
+import { SpeechBubble } from './bubbles.js?v=0.11.0';
+import { Celebrations } from './celebrations.js?v=0.11.0';
+import { OverlayBar } from './hud.js?v=0.11.0';
 const native=window.companion.native;
 const hud = native?null:new OverlayBar(window.companion);
 const play=new window.MischiefPlay.PlayPhysics();
 let tailZone,pressStart,pendingComplete=0;
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
-let motion, cursor = { x: 0, y: 0 }, selected = '', scene, lastReport = 0, enabled = true, grabZone, quotesEnabled = true, dragEnabled = true, heldPointer = null, lastInteractive = false, scale = 1;
-let lastPaint = 0, lastFrameTime = 0, frameFailures = 0, compatibility = false;
+let motion, cursor = { x: 0, y: 0 }, selected = '', scene, enabled = true, grabZone, quotesEnabled = true, dragEnabled = true, heldPointer = null, lastInteractive = false, scale = 1;
+let lastFrameTime = 0, frameFailures = 0, compatibility = false;
+const paintClock=new window.MischiefFrames.FrameClock(60),safePaintClock=new window.MischiefFrames.FrameClock(30),reportClock=new window.MischiefFrames.FrameClock(native?60:30);
 let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const bubble = native?null:new SpeechBubble(), celebrations = native?null:new Celebrations();
 function selectPet() {
@@ -113,8 +114,8 @@ function frame(now) {
     if(pendingComplete&&!motion.returning&&now-pendingComplete>300){pendingComplete=0;motion.reach(now);}
     host.style.transform = `translate3d(${native?50:next.x-area.x-(scene?.footX??WINDOW.footX)}px,${native?14:next.y-area.y-(scene?.footY??WINDOW.footY)}px,0) scale(${scale})`;
     host.style.transformOrigin = `${scene?.footX ?? WINDOW.footX}px ${scene?.footY ?? WINDOW.footY}px`;
-    if (enabled && now-lastPaint >= 1000/(compatibility?30:60)-.5) {
-      try { scene?.draw(next, now); lastPaint=now; }
+    if (enabled && (compatibility?safePaintClock:paintClock).due(now)) {
+      try { scene?.draw(next, now); }
       catch { stopDrag(true);scene=null; dragEnabled=false;host.style.visibility='hidden';window.__buildlingsRenderer={type:'unavailable'}; if(grabZone)grabZone.hidden=true;if(tailZone)tailZone.hidden=true; window.companion.diagnostic?.({type:'renderer-error'}); hud?.showMessage('The monkey drawing failed. The timer still works; restart the overlay from the tray.'); }
     }
     if(tailZone){tailZone.style.transform=`translateY(${-next.hop}px)`;tailZone.style.left=next.edge==='left'&&next.mode==='peek'?'30px':'224px';}
@@ -129,8 +130,8 @@ function frame(now) {
     document.body.dataset.mood = next.mode;
     window.__buildlingsFrame = { ...next, scale, pet: selected };
     window.dispatchEvent(new CustomEvent('companion-frame', { detail: window.__buildlingsFrame }));
-    if (now - lastReport > (native?15:33) || window.__reportedArea !== next.areaId) {
-      window.__reportedArea = next.areaId; lastReport = now;
+    if (reportClock.due(now) || window.__reportedArea !== next.areaId) {
+      window.__reportedArea = next.areaId;
       window.companion.report?.({ x: next.x, y: next.y, mode: next.mode, hop: next.hop * scale, scale, sparkleId: next.sparkleId, areaId: next.areaId, renderer: window.__buildlingsRenderer?.type, hudRect: bar, returning:motion.returning, edge:next.edge });
     }
   }
