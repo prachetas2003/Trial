@@ -1,28 +1,9 @@
-Buildlings 0.11.0 reduces marker rendering cost, steadies frame timing and makes celebrations clearer.
+Mischief 0.11.1 updates the owner's modified portable app from release `334455667788`.
 
-- Reuses bounded marker textures instead of rebuilding every unchanged ink
-  stroke, grain pass and shadow on every frame. Moving limbs, expressions,
-  springy interactions and the live petting sheen remain animated. The drawing
-  cache is capped at 8 MB; geometry reuse is bounded as well.
-- Replaces timestamp-reset throttling with a phase-based frame deadline. Normal
-  painting and native movement reports target 60 fps across 60/120/144/165/240 Hz
-  displays; small RAF jitter no longer unnecessarily skips frames. Safe Mode
-  retains its 30 fps limit. Timer hit-region measurements no longer force layout
-  on every frame when the timer has not changed.
-- Triples confetti: 48 local pieces at 25%, 50% and 75%; completion has 42 local
-  and 102 screen pieces. Milestones remain local, decorations stay click-through,
-  particles clean up, and the off/reduced-motion switches remain respected.
-- Celebration bubbles have a larger bold heading, a separate short detail line,
-  a check icon, light/dark styling and a longer readable duration. They appear
-  above the monkey, with placement kept inside the screen.
+- Timer dragging keeps mouse capture outside the previous hit rectangle and saves a valid display position on the first drag. Lock/unlock stays usable across clock updates. Position survives restarting; reset returns the bar to the top.
+- Background music uses the audio from the supplied **Mischief-Calm-Music-Preview (4).mp4**, bundled offline. Toggle it with the musical note on the timer, **Music** in the controls, or the tray menu. Adjust volume under **Focus timer → Background music**. Music starts off by default and loops when enabled. Music continues with the monkey, timer bar, or controls hidden; sleep pauses it until wake.
+- Keeps the modified release's single-overlay renderer. Packaging verifies the original ZIP's SHA-256 and preserves every original file outside `resources/app.asar`, including FocusShield and native-pet helpers. Adds `TIMER_AND_MUSIC.txt` with instructions and audio credits.
 
-Measured software-raster tests compare cached and uncached drawing at 1x/2x,
-check artwork pixels, colour changes and cache bounds, and exercise the native
-app while walking and showing quotes plus triple confetti. Frame-clock tests
-cover high-refresh displays, jitter and wake timing. These checks cannot promise
-an achieved frame rate on every laptop. Windows software graphics and the
-separate input surfaces remain in place to preserve the previous video fixes.
+Close the old app from its tray menu, extract the entire new ZIP into a fresh folder, and run **Buildlings.exe**. Saved sessions and preferences use the same app-data folder.
 
-The existing quote bank, timer, browser blocking, saved data and five play
-interactions remain. Quit the old app, extract the complete ZIP into a fresh
-folder and open Buildlings.exe. No extension update is required.
+Windows checks cover native drag capture, repeated lock/unlock, synchronized pause/resume, offline music decoding and looping, settings persistence, simulated suspend/resume, underlying video playback, browser blocking, and the actual packaged app. Physical laptop sleep and GPU-driver behaviour still depend on the machine.

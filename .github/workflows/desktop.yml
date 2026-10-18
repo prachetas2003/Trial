@@ -2,7 +2,7 @@ name: Windows desktop preview
 on:
   push:
     branches: [main]
-    paths: ['desktop/**', 'extension/**', 'site/core.js', 'scripts/**', 'tests/**', 'package*.json', 'product/DESKTOP_README.txt', 'product/DESKTOP_RELEASE.md', 'product/MONKEY_QUOTE_BANK.md', 'product/MONKEY_QUOTE_SOURCES.md', 'product/MONKEY_QUOTE_SOURCES_ADDITIONS.md', '.github/workflows/desktop.yml']
+    paths: ['desktop/**', 'extension/**', 'site/core.js', 'site/roam/focus-bridge.js', 'scripts/**', 'tests/**', 'package*.json', 'product/TIMER_AND_MUSIC.txt', 'product/DESKTOP_README.txt', 'product/DESKTOP_RELEASE.md', 'product/MONKEY_QUOTE_BANK.md', 'product/MONKEY_QUOTE_SOURCES.md', 'product/MONKEY_QUOTE_SOURCES_ADDITIONS.md', '.github/workflows/desktop.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -24,18 +24,9 @@ jobs:
           python-version: '3.12'
       - run: npm ci
       - run: npm test
-      - name: Verify reported native position and unlock regressions
-        timeout-minutes: 3
-        run: npm run test:regressions
-      - name: Verify native Windows interaction
-        timeout-minutes: 3
-        run: npm run test:desktop
-      - name: Verify desktop recovery and Safe Mode
-        timeout-minutes: 3
-        run: npm run test:stability
-      - name: Verify visible startup and wake recovery
-        timeout-minutes: 3
-        run: npm run test:wake
+      - name: Verify modified-release native timer input and music lifecycle
+        timeout-minutes: 4
+        run: npm run test:modified-desktop
       - name: Install browser test runtime
         run: npx playwright install chromium
       - name: Verify focus controls and scrolling
@@ -44,39 +35,38 @@ jobs:
         run: npm run test:polish
       - name: Verify play interactions and panel navigation
         run: npm run test:play
-      - name: Verify software rendering performance and native frame delivery
+      - name: Verify timer placement and real music decoding and looping
         timeout-minutes: 3
-        run: npm run test:performance
-      - name: Verify video under the native overlay
+        run: npm run test:timer-music
+      - name: Verify video under the modified native overlay
         timeout-minutes: 3
         run: npm run test:video
       - name: Verify browser blocking extension
         run: npm run test:extension
-      - name: Package Windows application
-        run: npm run package:desktop
-      - name: Create portable download
+      - name: Package from the checksum-verified owner-supplied modified release
+        run: npm run package:modified
+      - name: Verify timer and audio in the actual packaged download
         shell: pwsh
+        timeout-minutes: 4
         run: |
-          Copy-Item product/DESKTOP_README.txt dist/Buildlings-win32-x64/README.txt
-          Copy-Item product/MONKEY_QUOTE_SOURCES.md dist/Buildlings-win32-x64/QUOTE_SOURCES.md
-          Copy-Item product/MONKEY_QUOTE_SOURCES_ADDITIONS.md dist/Buildlings-win32-x64/QUOTE_SOURCES_ADDITIONS.md
-          Copy-Item product/MONKEY_EVIDENCE_NOTES.md dist/Buildlings-win32-x64/QUOTE_EVIDENCE_NOTES.md
-          Compress-Archive -Path dist/Buildlings-win32-x64/* -DestinationPath dist/Buildlings-Windows-x64.zip
-          $digest = (Get-FileHash dist/Buildlings-Windows-x64.zip -Algorithm SHA256).Hash.ToLower()
-          "$digest  Buildlings-Windows-x64.zip" | Set-Content -Encoding ascii dist/SHA256SUMS.txt
+          Expand-Archive dist/Buildlings-Windows-x64.zip dist/package-check
+          $env:BUILDLINGS_PACKAGE_EXE = (Resolve-Path dist/package-check/Buildlings.exe).Path
+          npm run test:modified-desktop
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: Buildlings-Windows-x64
           path: |
             dist/Buildlings-Windows-x64.zip
             dist/SHA256SUMS.txt
+            dist/modified-release-verification.json
           retention-days: 14
       - name: Publish downloadable preview
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Buildlings 0.11.0 — smoother rendering and clearer celebrations' --notes-file product/DESKTOP_RELEASE.md
+          gh release create "desktop-preview-$env:GITHUB_RUN_NUMBER" dist/Buildlings-Windows-x64.zip dist/SHA256SUMS.txt dist/modified-release-verification.json --repo "$env:GITHUB_REPOSITORY" --target "$env:GITHUB_SHA" --prerelease --title 'Mischief 0.11.1 — movable timer and optional background music' --notes-file product/DESKTOP_RELEASE.md
       - name: Save native test evidence
         if: always()
         uses: actions/upload-artifact@v4

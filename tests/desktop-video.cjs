@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
 const {pages,click,hidePanel,pointer,point,action}=require('./native-helpers.cjs');
 async function assertWindowOrder(app,at,role){
  if(process.platform!=='win32')return;
- const data=await app.evaluate(({app,screen},at)=>{const r=app.__buildlingsRuntime.getRuntime();return{handles:[r.win,r.timerWin,r.effectsWin].map(w=>{const b=w.getNativeWindowHandle();return String(b.length===8?b.readBigUInt64LE():b.readUInt32LE());}),point:screen.dipToScreenPoint({x:Math.round(at.x),y:Math.round(at.y)})};},at);
+ const data=await app.evaluate(({app,screen},at)=>{const r=app.__buildlingsRuntime.getRuntime();return{handles:[r.win,r.timerWin||r.win,r.effectsWin||r.win].map(w=>{const b=w.getNativeWindowHandle();return String(b.length===8?b.readBigUInt64LE():b.readUInt32LE());}),point:screen.dipToScreenPoint({x:Math.round(at.x),y:Math.round(at.y)})};},at);
  const result=spawnSync('python',[path.join(root,'scripts/test-window-order.py'),...data.handles,String(data.point.x),String(data.point.y)],{encoding:'utf8'});assert.equal(result.status,0,result.stderr);
  const order=JSON.parse(result.stdout);
  assert.match(order.foregroundTitle,/Mischief video fixture/,'The video browser must retain foreground focus');
@@ -20,9 +20,11 @@ async function assertWindowOrder(app,at,role){
 // black ink is expected to occlude pixels underneath the doodle, not a video fault.
 async function sampleDesktop(app){return app.evaluate(async({app,desktopCapturer,screen})=>{
  const runtime=app.__buildlingsRuntime.getRuntime(),d=screen.getPrimaryDisplay();
- const bounds=()=>[runtime.win,runtime.timerWin,runtime.focusWin].filter(w=>w&&!w.isDestroyed()&&w.isVisible()).map(w=>w.getBounds());
- const before=bounds(),sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:d.size});
- const im=(sources.find(s=>s.display_id===String(d.id))||sources[0]).thumbnail,size=im.getSize(),bitmap=im.toBitmap(),excluded=[...before,...bounds()];
+ const bounds=()=>[...(runtime.timerWin?[runtime.win,runtime.timerWin]:[]),runtime.focusWin].filter(w=>w&&!w.isDestroyed()&&w.isVisible()).map(w=>w.getBounds());
+ const ink=()=>runtime.timerWin?[]:[runtime.hudRect,{x:(runtime.lastFrame?.x??0)-200,y:(runtime.lastFrame?.y??0)-300,width:400,height:400}].filter(Boolean);
+ const original=bounds,boundsWithInk=()=>[...original(),...ink()];
+ const before=boundsWithInk(),sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:d.size});
+ const im=(sources.find(s=>s.display_id===String(d.id))||sources[0]).thumbnail,size=im.getSize(),bitmap=im.toBitmap(),excluded=[...before,...boundsWithInk()];
  let point;
  for(const y of [.25,.35,.45,.55,.65,.75,.8]){for(const x of [.95,.85,.75,.65,.55,.5,.45,.35,.25,.15,.05]){
    const p={x:d.bounds.x+d.size.width*x,y:d.bounds.y+d.size.height*y};
@@ -99,7 +101,7 @@ async function sampleDesktop(app){return app.evaluate(async({app,desktopCapturer
   console.log(process.platform==='win32'?'PASS native Windows desktop pixels retain visible video throughout overlay interaction':'UNRUN native desktop pixel assertions: Xvfb has no compositing window manager; Windows CI runs these assertions');
   console.log('Video test uses a local VP8 clip. YouTube hardware decoding and physical GPU-driver faults require testing on the affected laptop.');
  }catch(error){
-  if(app){const details=await app.evaluate(({app})=>{const r=app.__buildlingsRuntime.getRuntime();return{session:r.focus.snapshot().session,diagnostics:r.diagnostics,windows:[r.win,r.timerWin,r.effectsWin].map(w=>({bounds:w.getBounds(),visible:w.isVisible(),topmost:w.isAlwaysOnTop()}))};});console.error('Video failure state:',JSON.stringify(details));await fs.mkdir('test-results',{recursive:true});await fs.writeFile('test-results/video-failure-state.json',JSON.stringify(details,null,2));}
+  if(app){const details=await app.evaluate(({app})=>{const r=app.__buildlingsRuntime.getRuntime();return{session:r.focus.snapshot().session,diagnostics:r.diagnostics,windows:[r.win,r.timerWin||r.win,r.effectsWin||r.win].map(w=>({bounds:w.getBounds(),visible:w.isVisible(),topmost:w.isAlwaysOnTop()}))};});console.error('Video failure state:',JSON.stringify(details));await fs.mkdir('test-results',{recursive:true});await fs.writeFile('test-results/video-failure-state.json',JSON.stringify(details,null,2));}
   throw error;
  }finally{if(app)await app.close();if(browser)await browser.close();await new Promise(r=>server.close(r));await fs.rm(temp,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);if(process.env.GITHUB_ACTIONS)console.log('::error title=Video overlay::'+e.stack.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'));process.exitCode=1;});

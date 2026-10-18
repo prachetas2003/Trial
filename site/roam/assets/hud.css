@@ -4,3 +4,5 @@
 #timer-bar[hidden]{display:none!important}#timer-bar:hover{background:rgb(33 28 36 / max(.88,var(--timer-alpha,.95)))}#timer-bar #bar-settings{width:29px;padding:4px}@media(max-width:420px){#bar-stay>span:nth-child(2){display:none}#timer-bar #bar-settings{width:25px}}
 
 #timer-bar #bar-grip{cursor:grab;touch-action:none;font-size:21px;min-width:22px;padding:4px}#bar-grip:active{cursor:grabbing}#timer-bar #bar-lock{font-size:18px;padding:4px;min-width:25px}#bar-lock[aria-pressed=true]{background:#ffffff22}.timer-surface #timer-bar{top:8px}.timer-surface #bar-message{top:70px;font-size:11px;padding:5px 8px}.timer-surface{background:transparent}
+
+#timer-bar #bar-music{width:29px;padding:4px}#bar-music[aria-pressed=true]{background:#ffffff22}#timer-bar #bar-grip:active{transform:none}#timer-bar:has(#bar-grip:active){cursor:grabbing}

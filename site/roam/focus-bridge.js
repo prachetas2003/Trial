@@ -22,6 +22,7 @@
     if(!p){bar.style.left='';bar.style.top='';bar.style.transform='';return;}
     const r=bar.getBoundingClientRect();bar.style.left=Math.round(p.x*Math.max(0,innerWidth-r.width))+'px';bar.style.top=Math.round(p.y*Math.max(0,innerHeight-r.height))+'px';bar.style.transform='none';
   }
+  api.setDragging=value=>{timerMoving=value===true;};
   api.timerDrag=phase=>{
     timerMoving=phase==='start';if(timerMoving)return;
     const bar=document.querySelector('#timer-bar');if(!bar)return;const r=bar.getBoundingClientRect();

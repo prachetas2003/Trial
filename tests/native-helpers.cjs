@@ -10,6 +10,10 @@ async function pages(app){
   const ids=await app.evaluate(({app})=>{const r=app.__buildlingsRuntime.getRuntime(),id=w=>w&&!w.isDestroyed()?w.id:null;return{pet:id(r.win),timer:id(r.timerWin),effects:id(r.effectsWin),panel:id(r.focusWin)};});
   const entries=await Promise.all(app.windows().map(async page=>{try{const w=await app.browserWindow(page),id=await w.evaluate(w=>w.id);await w.dispose();return{id,page};}catch{return null;}}));
   const current=Object.fromEntries(Object.entries(ids).map(([role,id])=>[role,entries.find(e=>e&&e.id===id&&!e.page.isClosed())?.page]));
+  if(current.pet&&!ids.timer&&!ids.effects&&(!ids.panel||current.panel)){
+   await current.pet.waitForFunction(()=>window.__buildlingsFrame);await current.pet.locator('#bar-timer').waitFor({state:'attached'});
+   return {...current,timer:current.pet,effects:current.pet};
+  }
   if(current.pet&&current.timer&&current.effects&&(!ids.panel||current.panel)){
    try{await current.pet.waitForFunction(()=>window.__buildlingsFrame,null,{timeout:3000});await current.timer.locator('#bar-timer').waitFor({state:'attached',timeout:3000});const stable=await app.evaluate(({app},ids)=>{const r=app.__buildlingsRuntime.getRuntime();return r.win?.id===ids.pet&&r.timerWin?.id===ids.timer&&r.effectsWin?.id===ids.effects&&(!ids.panel||r.focusWin?.id===ids.panel);},ids);if(stable)return current;}
    catch(error){const replaced=await app.evaluate(({app},id)=>app.__buildlingsRuntime.getRuntime().win?.id!==id,ids.pet);if(!replaced&&!current.pet.isClosed()&&!current.timer.isClosed())throw error;}

@@ -1,0 +1,35 @@
+MISCHIEF 0.11.1 — TIMER & BACKGROUND MUSIC
+
+Close the old app using its tray menu > Quit Buildlings. Extract this whole ZIP
+into a new folder and launch Buildlings.exe. Your saved sessions and settings
+remain in the same app-data location.
+
+MOVE THE TIMER
+Drag the dotted grip at the left end of the floating timer. Release to save its
+position. The padlock locks or unlocks moving; it never locks the other buttons.
+Controls > Appearance > Reset timer position brings the bar back to the top.
+The tray menu also offers Show timer bar and Reset timer position.
+
+BACKGROUND MUSIC
+Click the musical-note button on the floating timer, or switch Music on in the
+controls panel. Set the volume under Focus timer > Background music.
+The tray menu also has a Background music switch.
+Music starts off by default, loops offline, and keeps playing when the panel or
+monkey is hidden. Pause/resume of the focus timer does not interrupt your music.
+Turning Music off pauses the track; turning it back on continues playback.
+Computer sleep pauses playback; it resumes on wake if Music is still enabled.
+
+BASE VERSION
+This update uses the modified portable release supplied by the owner, asset
+Buildlings-Windows-x64.current.1.zip from release 334455667788. All original
+runtime files, FocusShield files, and native-pet helpers are preserved byte for
+byte; only resources/app.asar is replaced. Backup ASAR files remain untouched.
+
+AUDIO CREDIT
+Quiet Branch: original composition prepared for Mischief. This release uses
+only the audio from the owner's uploaded Mischief-Calm-Music-Preview (4).mp4,
+converted to Ogg Vorbis for offline playback. No reference video is bundled.
+Original piano rendered with TimGM6mb (Tim Brechbill / David Bolton, GPL-2
+soundfont); synthesized pads/bass and score created for this project. The
+soundfont itself is not distributed. See product/previews/quiet-branch in the
+source repository for score and original preview provenance.

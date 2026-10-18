@@ -1,18 +1,24 @@
+import { BackgroundMusic } from './music.js';
 import { MonkeyScene } from './monkey.js?v=0.11.0';
 import { SpeechBubble } from './bubbles.js?v=0.11.0';
 import { Celebrations } from './celebrations.js?v=0.11.0';
 import { OverlayBar } from './hud.js?v=0.11.0';
 const native=window.companion.native;
-const hud = native?null:new OverlayBar(window.companion);
+// Single-overlay build: timer, quotes and celebrations live in this window again.
+const hud = new OverlayBar(window.companion);
+const music = new BackgroundMusic();
+window.addEventListener('mischief-music-error',()=>hud.showMessage('Background music could not play. Switch Music off and on to retry.'));
+window.companion.onFocusState(state=>music.configure(state.preferences));
+window.companion.getFocusState().then(state=>music.configure(state.preferences)).catch(()=>{});
 const play=new window.MischiefPlay.PlayPhysics();
-let tailZone,pressStart,pendingComplete=0;
+let tailZone,pressStart;
 const { CompanionMotion, WINDOW } = window.BuildlingsMotion;
 const host = document.querySelector('#companion-host');
 let motion, cursor = { x: 0, y: 0 }, selected = '', scene, enabled = true, grabZone, quotesEnabled = true, dragEnabled = true, heldPointer = null, lastInteractive = false, scale = 1;
 let lastFrameTime = 0, frameFailures = 0, compatibility = false;
-const paintClock=new window.MischiefFrames.FrameClock(60),safePaintClock=new window.MischiefFrames.FrameClock(30),reportClock=new window.MischiefFrames.FrameClock(native?60:30);
+const paintClock=new window.MischiefFrames.FrameClock(60),safePaintClock=new window.MischiefFrames.FrameClock(30),reportClock=new window.MischiefFrames.FrameClock(30);
 let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const bubble = native?null:new SpeechBubble(), celebrations = native?null:new Celebrations();
+const bubble = new SpeechBubble(), celebrations = new Celebrations();
 function selectPet() {
   if (scene) return;
   selected = 'monkey';
@@ -42,6 +48,7 @@ function selectPet() {
   }
 }
 function onInput(input) {
+  if(typeof input.suspended==='boolean')music.suspend(input.suspended);
   if (typeof input.safeMode === 'boolean') { compatibility=input.safeMode; window.__mischiefSafeMode=compatibility; }
   if (input.cursor) cursor = { ...input.cursor };
   if (input.areas) {
@@ -65,19 +72,19 @@ function onInput(input) {
   if (input.presence) motion.setPresence(input.presence === 'peek' ? 'peek' : 'wander', performance.now());
   if (typeof input.safeMode === 'boolean') compatibility = input.safeMode;
   if (input.preferences) {
-    scale = input.preferences.monkeyScale || 1; motion.setScale(scale); bubble?.setScale(scale); celebrations?.configure(input.preferences);play.enabled=input.preferences.playEnabled!==false;
+    scale = input.preferences.monkeyScale || 1; motion.setScale(scale); bubble.setScale(scale); celebrations.configure(input.preferences);play.enabled=input.preferences.playEnabled!==false;
     quotesEnabled = input.preferences.quotesEnabled !== false;
-    if (!quotesEnabled) { if(bubble){bubble.quote = null; bubble.element.hidden = true;} }
+    if (!quotesEnabled) { bubble.quote = null; bubble.element.hidden = true; }
     dragEnabled = input.preferences.dragEnabled !== false && !!scene; if (!dragEnabled) stopDrag();
     if (grabZone) grabZone.hidden = !dragEnabled;if(tailZone)tailZone.hidden=!dragEnabled||!play.enabled;
     if (!motion.dragging) motion.setEdge(input.preferences.edge, input.preferences.edgePosition);
     motion.setChasing(input.preferences.chaseCursor === true, performance.now());
   }
   if (!enabled) stopDrag();
-  if (input.completion) { hud?.complete(input.completion);if(native&&input.completion.completed&&input.completion.kind==='focus')pendingComplete=performance.now(); if(input.completion.completed && input.completion.kind==='focus') { celebrations?.enqueue({id:input.completion.id+':complete',kind:'complete'},performance.now()); } }
-  if(input.celebration)celebrations?.enqueue(input.celebration,performance.now());
-  if (input.quote && enabled && quotesEnabled) bubble?.show(input.quote, performance.now());
-  if(bubble)bubble.element.style.display = enabled && quotesEnabled ? '' : 'none';
+  if (input.completion) { hud.complete(input.completion); if(input.completion.completed && input.completion.kind==='focus') { celebrations.enqueue({id:input.completion.id+':complete',kind:'complete'},performance.now()); } }
+  if(input.celebration)celebrations.enqueue(input.celebration,performance.now());
+  if (input.quote && enabled && quotesEnabled) bubble.show(input.quote, performance.now());
+  bubble.element.style.display = enabled && quotesEnabled ? '' : 'none';
   if (input.action === 'call') { motion.pause(false, performance.now()); motion.pettedUntil = 0; motion.followCursor(cursor, performance.now()); }
   if (input.action === 'reach') motion.reach(performance.now());
   if (input.action === 'ack') { motion.pettedUntil = performance.now() + 1500; motion.sparkleId++; motion.reachStart = null; motion.mode = 'pet'; }
@@ -86,7 +93,7 @@ function onInput(input) {
   if (input.action === 'resume') { motion.lastTime = performance.now(); motion.accumulator = 0; }
 }
 window.companion.onInput(onInput);
-function point(event){const area=motion.area();return native?{x:event.screenX,y:event.screenY}:{x:area.x+event.clientX,y:area.y+event.clientY};}
+function point(event){const area=motion.area();return {x:area.x+event.clientX,y:area.y+event.clientY};}
 function stopDrag(cancel=false){
  if(heldPointer===null)return;const id=heldPointer;heldPointer=null;
  motion.playHeld=false;motion.actionUntil=performance.now()+1200;
@@ -109,14 +116,14 @@ function frame(now) {
   try {
   if (motion) {
     if (motion.dragging) motion.dragTo(cursor);
-    const next = motion.advance(now, cursor), area = motion.area(), bar = hud?.rectangle(area)||{x:0,y:0,width:0,height:0};
+    const next = motion.advance(now, cursor), area = motion.area(), bar = hud.rectangle(area);
     Object.assign(next,play.advance(now,next.petWeight,scale,reduceMotion));
-    if(pendingComplete&&!motion.returning&&now-pendingComplete>300){pendingComplete=0;motion.reach(now);}
-    host.style.transform = `translate3d(${native?50:next.x-area.x-(scene?.footX??WINDOW.footX)}px,${native?14:next.y-area.y-(scene?.footY??WINDOW.footY)}px,0) scale(${scale})`;
+    // Single fullscreen overlay: move the doodle with CSS, not by relocating a tiny HWND.
+    host.style.transform = `translate3d(${next.x-area.x-(scene?.footX??WINDOW.footX)}px,${next.y-area.y-(scene?.footY??WINDOW.footY)}px,0) scale(${scale})`;
     host.style.transformOrigin = `${scene?.footX ?? WINDOW.footX}px ${scene?.footY ?? WINDOW.footY}px`;
     if (enabled && (compatibility?safePaintClock:paintClock).due(now)) {
       try { scene?.draw(next, now); }
-      catch { stopDrag(true);scene=null; dragEnabled=false;host.style.visibility='hidden';window.__buildlingsRenderer={type:'unavailable'}; if(grabZone)grabZone.hidden=true;if(tailZone)tailZone.hidden=true; window.companion.diagnostic?.({type:'renderer-error'}); hud?.showMessage('The monkey drawing failed. The timer still works; restart the overlay from the tray.'); }
+      catch { stopDrag(true);scene=null; dragEnabled=false;host.style.visibility='hidden';window.__buildlingsRenderer={type:'unavailable'}; if(grabZone)grabZone.hidden=true;if(tailZone)tailZone.hidden=true; window.companion.diagnostic?.({type:'renderer-error'}); hud.showMessage('The monkey drawing failed. The timer still works; restart the overlay from the tray.'); }
     }
     if(tailZone){tailZone.style.transform=`translateY(${-next.hop}px)`;tailZone.style.left=next.edge==='left'&&next.mode==='peek'?'30px':'224px';}
     if (grabZone) grabZone.style.transform = `translateY(${-next.hop}px)`;
@@ -125,8 +132,8 @@ function frame(now) {
       const hot = motion.dragging || overBar || (enabled && dragEnabled && window.BuildlingsMotion.hitsPet(cursor, next.x, next.y, next.hop, scale));
       if (hot !== lastInteractive) { lastInteractive = hot; window.companion.setInteractive(hot); }
     }
-    bubble?.draw({ ...next, scale, x: next.x - area.x, y: next.y - area.y }, now, reduceMotion, bar.y - area.y + bar.height);
-    if(celebrations?.draw({...next,scale,x:next.x-area.x,y:next.y-area.y,returning:motion.returning},now,enabled,reduceMotion) && enabled)motion.reach(now);
+    bubble.draw({ ...next, scale, x: next.x - area.x, y: next.y - area.y }, now, reduceMotion, bar.y - area.y + bar.height);
+    if(celebrations.draw({...next,scale,x:next.x-area.x,y:next.y-area.y,returning:motion.returning},now,enabled,reduceMotion) && enabled)motion.reach(now);
     document.body.dataset.mood = next.mode;
     window.__buildlingsFrame = { ...next, scale, pet: selected };
     window.dispatchEvent(new CustomEvent('companion-frame', { detail: window.__buildlingsFrame }));
@@ -135,7 +142,7 @@ function frame(now) {
       window.companion.report?.({ x: next.x, y: next.y, mode: next.mode, hop: next.hop * scale, scale, sparkleId: next.sparkleId, areaId: next.areaId, renderer: window.__buildlingsRenderer?.type, hudRect: bar, returning:motion.returning, edge:next.edge });
     }
   }
-  } catch { if (frameFailures++ < 3) { window.companion.diagnostic?.({type:'renderer-error'}); hud?.showMessage('The monkey drawing stopped. Restart desktop overlay from the tray.'); } }
+  } catch { if (frameFailures++ < 3) { window.companion.diagnostic?.({type:'renderer-error'}); hud.showMessage('The monkey drawing stopped. Restart desktop overlay from the tray.'); } }
 }
 requestAnimationFrame(frame);
 window.companion.ready();

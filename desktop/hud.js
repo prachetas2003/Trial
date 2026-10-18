@@ -4,10 +4,10 @@ export class OverlayBar {
     this.theme.addEventListener('change', () => { if (this.state) this.render(this.state); });
     this.sound = new Audio(new URL('./completion.wav', import.meta.url)); this.sound.preload = 'auto'; this.lastCompletion = null;
     this.element = document.createElement('nav'); this.element.id = 'timer-bar'; this.element.setAttribute('aria-label', 'Mischief focus controls');
-    this.element.innerHTML = `<button type="button" id="bar-grip" title="Drag timer to move it" aria-label="Move timer"><svg width="12" height="20" viewBox="0 0 12 20" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="5" r="1.3"/><circle cx="9" cy="5" r="1.3"/><circle cx="3" cy="10" r="1.3"/><circle cx="9" cy="10" r="1.3"/><circle cx="3" cy="15" r="1.3"/><circle cx="9" cy="15" r="1.3"/></g></svg></button><button type="button" id="bar-timer" title="Open my focus corner"><span class="record-dot" aria-hidden="true"></span><span class="bar-time"><span id="bar-label">Ready to focus</span><output id="bar-clock">25:00</output></span></button><button type="button" id="bar-pause" aria-label="Pause timer" title="Pause timer" hidden>Ⅱ</button><span class="bar-divider" aria-hidden="true"></span><button type="button" id="bar-stay" title="Feeling distracted? Record a choice to stay" disabled><span aria-hidden="true">✦</span><span class="stay-label">I’m staying</span><span id="bar-choices">0</span></button><button type="button" id="bar-thought" title="Keep a thought for later" aria-label="Keep a thought for later">✎</button><button type="button" id="bar-tuck" title="Tuck monkey to the edge" aria-label="Tuck monkey to the edge"></button><button type="button" id="bar-chase" aria-pressed="false" title="Chase my cursor until switched off">Chase</button><button type="button" id="bar-settings" title="Quick controls" aria-label="Quick controls"><svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14M7 3v4M13 8v4M7 13v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" id="bar-lock" title="Lock timer position" aria-label="Lock timer position" aria-pressed="false">◇</button><span id="bar-feedback" class="sr-only" role="status" aria-live="polite"></span>`;
+    this.element.innerHTML = `<button type="button" id="bar-grip" title="Drag timer to move it" aria-label="Move timer"><svg width="12" height="20" viewBox="0 0 12 20" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="5" r="1.3"/><circle cx="9" cy="5" r="1.3"/><circle cx="3" cy="10" r="1.3"/><circle cx="9" cy="10" r="1.3"/><circle cx="3" cy="15" r="1.3"/><circle cx="9" cy="15" r="1.3"/></g></svg></button><button type="button" id="bar-timer" title="Open my focus corner"><span class="record-dot" aria-hidden="true"></span><span class="bar-time"><span id="bar-label">Ready to focus</span><output id="bar-clock">25:00</output></span></button><button type="button" id="bar-pause" aria-label="Pause timer" title="Pause timer" hidden>Ⅱ</button><span class="bar-divider" aria-hidden="true"></span><button type="button" id="bar-stay" title="Feeling distracted? Record a choice to stay" disabled><span aria-hidden="true">✦</span><span class="stay-label">I’m staying</span><span id="bar-choices">0</span></button><button type="button" id="bar-thought" title="Keep a thought for later" aria-label="Keep a thought for later">✎</button><button type="button" id="bar-tuck" title="Tuck monkey to the edge" aria-label="Tuck monkey to the edge"></button><button type="button" id="bar-chase" aria-pressed="false" title="Chase my cursor until switched off">Chase</button><button type="button" id="bar-music" title="Turn background music on" aria-label="Turn background music on" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 14V5l9-2v9M8 8l9-2" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="5" cy="15" rx="3" ry="2" fill="currentColor"/><ellipse cx="14" cy="13" rx="3" ry="2" fill="currentColor"/></svg></button><button type="button" id="bar-settings" title="Quick controls" aria-label="Quick controls"><svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14M7 3v4M13 8v4M7 13v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" id="bar-lock" title="Lock timer position" aria-label="Lock timer position" aria-pressed="false">◇</button><span id="bar-feedback" class="sr-only" role="status" aria-live="polite"></span>`;
     document.body.append(this.element);
     this.message = document.createElement('aside'); this.message.id = 'bar-message'; this.message.hidden = true; this.message.setAttribute('role','status'); document.body.append(this.message);
-    if(!api.native)for (const side of ['top','bottom','left','right']) { const edge=document.createElement('div'); edge.className='focus-edge'; edge.dataset.side=side; edge.setAttribute('aria-hidden','true'); document.body.append(edge); }
+    for (const side of ['top','bottom','left','right']) { const edge=document.createElement('div'); edge.className='focus-edge'; edge.dataset.side=side; edge.setAttribute('aria-hidden','true'); document.body.append(edge); }
     this.element.querySelector('#bar-pause').addEventListener('click', () => this.act({type:this.state?.session?.running ? 'pause' : 'resume'}));
     this.measuredAt=-Infinity; this.boundsDirty=true;
     addEventListener('resize', () => {this.boundsDirty=true;});
@@ -16,12 +16,41 @@ export class OverlayBar {
     this.element.querySelector('#bar-stay').addEventListener('click', async () => { if ((!this.state?.session?.running ? await this.act({type:'resume'}) : true) && await this.act({ type: 'stay' })) { this.element.classList.remove('choice-ack'); void this.element.offsetWidth; this.element.classList.add('choice-ack'); } });
     this.element.querySelector('#bar-tuck').addEventListener('click', () => this.act({ type: 'presence', value: this.state?.presence === 'wander' ? 'peek' : 'wander' }));
     this.element.querySelector('#bar-chase').addEventListener('click', () => this.act({ type: 'chase' }));
+    this.element.querySelector('#bar-music').addEventListener('click', () => this.act({type:'preferences',values:{musicEnabled:!this.state?.preferences.musicEnabled}}));
     this.element.querySelector('#bar-settings').addEventListener('click', () => api.openFocus('appearance'));
     const grip=this.element.querySelector('#bar-grip');
-    grip.addEventListener('pointerdown',e=>{if(e.button!==0||this.state?.preferences.timerLocked)return;e.preventDefault();this.gripPointer=e.pointerId;grip.setPointerCapture(e.pointerId);this.gripStart={x:e.clientX,y:e.clientY};api.timerDrag?.('start');});
-    const release=()=>{if(this.gripPointer==null)return;const id=this.gripPointer;this.gripPointer=null;if(grip.hasPointerCapture(id))grip.releasePointerCapture(id);api.timerDrag?.('end');};
+    grip.addEventListener('pointerdown',e=>{
+      if(e.button!==0||this.state?.preferences.timerLocked||this.gripPointer!=null)return;
+      e.preventDefault();this.gripPointer=e.pointerId;
+      const r=this.element.getBoundingClientRect();
+      this.gripStart={x:e.clientX,y:e.clientY,left:r.x,top:r.y};
+      // Keep the HWND interactive throughout capture, including outside stale hit bounds.
+      api.setDragging?.(true);grip.setPointerCapture(e.pointerId);
+    });
+    const release=()=>{
+      if(this.gripPointer==null)return;
+      const id=this.gripPointer,position=this.previewPosition;
+      this.gripPointer=null;this.previewPosition=null;
+      if(grip.hasPointerCapture(id))grip.releasePointerCapture(id);
+      // Persist before releasing the native input hold (IPC messages preserve order).
+      if(position){
+        const r=this.element.getBoundingClientRect();
+        this.act({type:'preferences',values:{timerPosition:{
+          displayId:Number.isFinite(this.area?.id)?this.area.id:(this.state?.preferences.timerPosition?.displayId??0),
+          x:Math.max(0,Math.min(1,r.x/Math.max(1,innerWidth-r.width))),
+          y:Math.max(0,Math.min(1,r.y/Math.max(1,innerHeight-r.height)))
+        }}});
+      }
+      api.setDragging?.(false);this.boundsDirty=true;
+    };
     for(const event of ['pointerup','pointercancel','lostpointercapture'])grip.addEventListener(event,release);
-    grip.addEventListener('pointermove',e=>{if(this.gripPointer==null||api.native)return;const r=this.element.getBoundingClientRect();this.previewPosition={x:Math.max(0,Math.min(innerWidth-r.width,r.x+e.clientX-this.gripStart.x)),y:Math.max(0,Math.min(innerHeight-r.height,r.y+e.clientY-this.gripStart.y))};this.gripStart={x:e.clientX,y:e.clientY};this.element.style.left=this.previewPosition.x+'px';this.element.style.top=this.previewPosition.y+'px';this.element.style.transform='none';this.boundsDirty=true;});
+    addEventListener('blur',release);
+    grip.addEventListener('pointermove',e=>{
+      if(this.gripPointer!==e.pointerId)return;
+      const r=this.element.getBoundingClientRect(),start=this.gripStart;
+      this.previewPosition={x:Math.max(0,Math.min(innerWidth-r.width,start.left+e.clientX-start.x)),y:Math.max(0,Math.min(innerHeight-r.height,start.top+e.clientY-start.y))};
+      this.element.style.left=this.previewPosition.x+'px';this.element.style.top=this.previewPosition.y+'px';this.element.style.transform='none';this.boundsDirty=true;
+    });
     this.element.querySelector('#bar-lock').onclick=()=>this.act({type:'preferences',values:{timerLocked:!this.state?.preferences.timerLocked}});
     api.onFocusState(state => this.render(state));
     api.getFocusState().then(state => this.render(state)).catch(() => {});
@@ -48,7 +77,16 @@ export class OverlayBar {
     if(this.locked!==locked){
       lock.setAttribute('aria-pressed',String(locked));lock.innerHTML=`<svg width="17" height="18" viewBox="0 0 20 22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="10" width="14" height="10" rx="3"/><path d="${locked?'M6 10V6a4 4 0 0 1 8 0v4':'M6 10V6a4 4 0 0 1 8-1'}"/><path d="M10 14v2"/></g></svg>`;lock.title=locked?'Unlock timer position':'Lock timer position';lock.setAttribute('aria-label',lock.title);this.element.querySelector('#bar-grip').disabled=locked;this.locked=locked;
     }
-    if(!this.api.native&&state.preferences.timerPosition===null&&!this.gripPointer){this.element.style.left='';this.element.style.top='';this.element.style.transform='';}
+    if(this.gripPointer==null){
+      const pos=state.preferences.timerPosition;
+      if(!pos){this.element.style.left='';this.element.style.top='';this.element.style.transform='';}
+      else{
+        const width=this.element.getBoundingClientRect().width||320, height=this.element.getBoundingClientRect().height||48;
+        this.element.style.left=Math.max(0,Math.min(innerWidth-width,(pos.x??.5)*Math.max(0,innerWidth-width)))+'px';
+        this.element.style.top=Math.max(0,Math.min(innerHeight-height,(pos.y??0)*Math.max(0,innerHeight-height)))+'px';
+        this.element.style.transform='none';
+      }
+    }
 
     const prefs = state.preferences;
     this.element.style.setProperty('--timer-alpha', String(prefs.timerOpacity / 100));
@@ -73,6 +111,7 @@ export class OverlayBar {
     const tuck = this.element.querySelector('#bar-tuck'), wandering = state.presence === 'wander';
     if (this.wandering !== wandering) tuck.innerHTML = `<svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="${wandering ? 'M5 5 15 15M8 15h7V8' : 'M15 15 5 5M5 12V5h7'}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     tuck.title = wandering ? 'Tuck monkey to the edge' : 'Bring monkey back'; tuck.setAttribute('aria-label', tuck.title); this.wandering = wandering;
+    const music=this.element.querySelector('#bar-music');music.setAttribute('aria-pressed',String(p.musicEnabled));music.title=p.musicEnabled?'Turn background music off':'Turn background music on';music.setAttribute('aria-label',music.title);
     this.element.querySelector('#bar-chase').setAttribute('aria-pressed', String(p.chaseCursor));
   }
   complete(event) {
@@ -86,6 +125,7 @@ export class OverlayBar {
     });
   }
   rectangle(area) {
+    this.area=area;
     const now=performance.now();
     if (this.boundsDirty || !this.rect?.width || now-this.measuredAt >= 50) { this.rect=this.element.getBoundingClientRect(); this.measuredAt=now; this.boundsDirty=false; }
     const r = this.element.hidden ? { x: 0, y: 0, width: 0, height: 0 } : this.rect;

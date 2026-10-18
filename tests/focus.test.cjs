@@ -149,3 +149,16 @@ test('twenty pause/resume cycles restore focus peeking and stale state cannot ro
 });
 
 test('upgrading a fully silent setup does not introduce celebrations',()=>{const f=make({version:2,preferences:{presence:'hidden',quotesEnabled:false,showHud:false,completionSound:false}});assert.equal(f.preferences.celebrations,false);f.dispatch({type:'preferences',values:{celebrations:true}},1000);assert.equal(f.preferences.celebrations,true);});
+
+test('music starts off, persists separately from timer/presets, and clamps volume',()=>{
+ const f=new FocusCompanion({bank,now:0});
+ assert.equal(f.preferences.musicEnabled,false);assert.equal(f.preferences.musicVolume,35);
+ f.dispatch({type:'preferences',values:{musicEnabled:true,musicVolume:180}},1);
+ assert.equal(f.preferences.musicVolume,100);
+ f.dispatch({type:'preset',name:'companion'},2);
+ assert.equal(f.preferences.musicEnabled,true);
+ const restored=new FocusCompanion({bank,saved:f.export(),now:10});
+ assert.equal(restored.preferences.musicEnabled,true);assert.equal(restored.preferences.musicVolume,100);
+ restored.dispatch({type:'preferences',values:{musicVolume:-20,musicEnabled:'yes'}},11);
+ assert.equal(restored.preferences.musicVolume,0);assert.equal(restored.preferences.musicEnabled,false);
+});
