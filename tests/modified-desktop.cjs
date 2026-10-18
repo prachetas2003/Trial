@@ -37,7 +37,7 @@ const root=path.resolve(__dirname,'..');
   await click(app,overlay,'#bar-timer');assert.equal(await panel.locator('#start-form').isVisible(),true);
   await action({type:'start'});
   for(let i=0;i<4;i++){
-   await hide();await click(app,overlay,'#bar-pause');await panel.waitForFunction(v=>document.querySelector('#session-pause').textContent===v,i%2===0?'Resume timer':'Pause timer');
+   await hide();await click(app,overlay,'#bar-pause');await until(async()=>await panel.locator('#session-pause').textContent()===(i%2===0?'Resume timer':'Pause timer'));
    assert.equal(await overlay.locator('#bar-clock').textContent(),await panel.locator('#timer-clock').textContent());
    assert.equal(await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().focus.presence()),i%2===0?'wander':'peek');
   }
@@ -46,7 +46,7 @@ const root=path.resolve(__dirname,'..');
   await panel.locator('#music-volume').fill('22');await panel.locator('#music-volume').dispatchEvent('input');await until(()=>app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().focus.preferences.musicVolume===22));
   await hide();assert.equal(await overlay.evaluate(()=>window.__mischiefMusic.playing),true);
   console.log('PASS native repeated unlock, panel/overlay timer synchronization, music controls and volume');
-  await app.evaluate(({powerMonitor})=>powerMonitor.emit('suspend'));await overlay.waitForFunction(()=>!window.__mischiefMusic.playing);
+  await app.evaluate(({powerMonitor})=>powerMonitor.emit('suspend'));await overlay.waitForFunction(()=>!window.__mischiefMusic.playing,null,{polling:50});
   assert.equal(await app.evaluate(({app})=>app.__buildlingsRuntime.getRuntime().suspended),true);
   await app.evaluate(({powerMonitor})=>powerMonitor.emit('resume'));
   await until(()=>app.windows().some(p=>p!==overlay&&p.url().endsWith('/renderer.html')));
