@@ -62,4 +62,4 @@ const root=path.resolve(__dirname,'..');
   await action({type:'timer-reset'});await overlay.waitForFunction(()=>document.querySelector('#timer-bar').getBoundingClientRect().y<20);
   console.log('PASS saved drag, volume and off preference survive app restart; reset restores top timer');
  }finally{if(app)await app.close();await fs.rm(temp,{recursive:true,force:true});}
-})().catch(e=>{console.error(e);process.exitCode=1;});
+})().catch(e=>{console.error(e);if(process.env.GITHUB_ACTIONS)console.log('::error title=Modified desktop regression::'+e.stack.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'));process.exitCode=1;});
